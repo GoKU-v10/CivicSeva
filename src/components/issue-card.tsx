@@ -59,7 +59,7 @@ export function IssueCard({ issue }: IssueCardProps) {
             <Progress value={progress} className="h-2" />
         </div>
         <Button asChild className="w-full" variant="outline">
-            <Link href={`/dashboard/my-issues/${issue.id}`}>
+            <Link href={`/track/${issue.id}`}>
                 View Details <ArrowRight className="ml-2" />
             </Link>
         </Button>

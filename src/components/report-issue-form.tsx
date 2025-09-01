@@ -182,7 +182,7 @@ export function ReportIssueForm() {
 
             if(result.success) {
                 appToast({ title: 'Success!', description: 'Issue submitted successfully.' });
-                router.push('/dashboard/my-issues');
+                router.push('/track');
             } else {
                 appToast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
             }

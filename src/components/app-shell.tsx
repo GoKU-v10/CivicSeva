@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ import {
   Bell,
   Settings,
   LifeBuoy,
+  Target,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -46,9 +48,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: FilePlus2,
     },
     {
-      href: '/dashboard/my-issues',
-      label: 'My Issues',
-      icon: ClipboardList,
+      href: '/track',
+      label: 'Track Issues',
+      icon: Target,
       badge: "3"
     },
     {
@@ -86,9 +88,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const allItems = [...menuItems, ...bottomMenuItems, adminMenuItem];
 
   const getPageTitle = () => {
-    const currentItem = allItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
+    // Handle the new /track and /track/[id] routes
+    if (pathname.startsWith('/track')) return 'Track Issues';
+    
+    const currentItem = allItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard' && item.href !== '/track');
     if (currentItem) return currentItem.label;
     if(pathname === '/dashboard') return 'Dashboard';
+    
     return 'CivicSeva';
   }
 

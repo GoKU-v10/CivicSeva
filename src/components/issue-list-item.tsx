@@ -45,7 +45,7 @@ export function IssueListItem({ issue }: IssueListItemProps) {
              <div className="flex flex-col items-end gap-2">
                 <IssueStatusBadge status={issue.status} />
                 <Button asChild variant="ghost" size="sm">
-                    <Link href={`/dashboard/my-issues/${issue.id}`}>
+                    <Link href={`/track/${issue.id}`}>
                         View Details <ArrowRight className="ml-2" />
                     </Link>
                 </Button>
