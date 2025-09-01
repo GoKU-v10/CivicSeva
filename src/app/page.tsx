@@ -9,7 +9,6 @@ import {
   Users,
   Building,
   Clock,
-  Star,
   Eye,
   Languages,
   ArrowRight,
