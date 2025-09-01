@@ -1,0 +1,90 @@
+import type { Issue } from './types';
+
+export const issues: Issue[] = [
+  {
+    id: 'IS-1',
+    title: 'Large pothole on main street',
+    description: 'A large and dangerous pothole has formed on the corner of Main St and 1st Ave, causing issues for traffic.',
+    imageUrl: 'https://picsum.photos/seed/pothole/800/600',
+    imageHint: 'pothole road',
+    location: {
+      latitude: 40.7128,
+      longitude: -74.0060,
+      address: 'Main St & 1st Ave, New York, NY',
+    },
+    status: 'Reported',
+    category: 'Pothole',
+    reportedAt: '2024-07-20T10:00:00Z',
+    department: 'Public Works',
+    confidence: 0.95
+  },
+  {
+    id: 'IS-2',
+    title: 'Graffiti on park wall',
+    description: 'The wall near the entrance of Central Park has been vandalized with spray paint.',
+    imageUrl: 'https://picsum.photos/seed/graffiti/800/600',
+    imageHint: 'graffiti wall',
+    location: {
+      latitude: 40.785091,
+      longitude: -73.968285,
+      address: 'Central Park, New York, NY',
+    },
+    status: 'In Progress',
+    category: 'Graffiti',
+    reportedAt: '2024-07-19T14:30:00Z',
+    department: 'Parks & Recreation',
+    confidence: 0.98
+  },
+  {
+    id: 'IS-3',
+    title: 'Streetlight out',
+    description: 'The streetlight at the intersection of Broad St and Wall St is not working.',
+    imageUrl: 'https://picsum.photos/seed/light/800/600',
+    imageHint: 'streetlight dark',
+    location: {
+      latitude: 40.7063,
+      longitude: -74.0111,
+      address: 'Broad St & Wall St, New York, NY',
+    },
+    status: 'Resolved',
+    category: 'Streetlight Outage',
+    reportedAt: '2024-07-15T22:15:00Z',
+    resolvedAt: '2024-07-17T11:00:00Z',
+    department: 'Transportation',
+    confidence: 0.99
+  },
+  {
+    id: 'IS-4',
+    title: 'Overflowing trash can',
+    description: 'Public trash can on 5th Avenue is overflowing, leading to litter on the sidewalk.',
+    imageUrl: 'https://picsum.photos/seed/trash/800/600',
+    imageHint: 'trash can',
+    location: {
+      latitude: 40.7739,
+      longitude: -73.965,
+      address: '5th Avenue, New York, NY',
+    },
+    status: 'Reported',
+    category: 'Waste Management',
+    reportedAt: '2024-07-21T09:00:00Z',
+    department: 'Sanitation',
+    confidence: 0.92
+  },
+    {
+    id: 'IS-5',
+    title: 'Damaged Stop Sign',
+    description: 'A stop sign at the corner of Liberty St and Nassau St is bent and difficult to see.',
+    imageUrl: 'https://picsum.photos/seed/sign/800/600',
+    imageHint: 'street sign',
+    location: {
+      latitude: 40.7088,
+      longitude: -74.009,
+      address: 'Liberty St & Nassau St, New York, NY',
+    },
+    status: 'In Progress',
+    category: 'Damaged Sign',
+    reportedAt: '2024-07-18T08:45:00Z',
+    department: 'Transportation',
+    confidence: 0.96
+  },
+];
