@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
-import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, Clock, AlertTriangle } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -272,6 +272,32 @@ export function ReportIssueForm() {
                         </FormItem>
                         )}
                     />
+                    
+                    <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>3. Location</FormLabel>
+                             <div className="flex gap-2">
+                                <FormControl>
+                                    <Input placeholder={location.address || "Detecting location..."} {...field} />
+                                </FormControl>
+                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
+                                    <MapPin className="size-4" />
+                                    <span className="sr-only">Detect Location</span>
+                                </Button>
+                             </div>
+                             {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
+                             {!location.error && location.latitude && location.longitude && (
+                                <FormDescription>
+                                    Lat: {location.latitude.toFixed(5)}, Lon: {location.longitude.toFixed(5)}
+                                </FormDescription>
+                             )}
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
 
                     <FormField
                         control={form.control}
@@ -279,7 +305,7 @@ export function ReportIssueForm() {
                         render={({ field }) => (
                         <FormItem>
                             <div className="flex justify-between items-center">
-                                <FormLabel>3. Description</FormLabel>
+                                <FormLabel>4. Description</FormLabel>
                                 <div className="flex items-center gap-2">
                                     <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => alert('Voice-to-text coming soon!')}>
                                         <Mic className="size-4" />
@@ -321,32 +347,6 @@ export function ReportIssueForm() {
                                 <span>Provide as much detail as possible.</span>
                                 <span>{descriptionLength} / 500</span>
                             </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>4. Location</FormLabel>
-                             <div className="flex gap-2">
-                                <FormControl>
-                                    <Input placeholder={location.address || "Detecting location..."} {...field} />
-                                </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
-                                    <MapPin className="size-4" />
-                                    <span className="sr-only">Detect Location</span>
-                                </Button>
-                             </div>
-                             {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
-                             {!location.error && location.latitude && location.longitude && (
-                                <FormDescription>
-                                    Lat: {location.latitude.toFixed(5)}, Lon: {location.longitude.toFixed(5)}
-                                </FormDescription>
-                             )}
                             <FormMessage />
                         </FormItem>
                         )}
