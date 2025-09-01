@@ -52,7 +52,7 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2">
             <Button asChild className="hidden sm:inline-flex">
-                <Link href="/login">Report Issue Now</Link>
+                <Link href="/report">Report Issue Now</Link>
             </Button>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setShowMobileMenu(!showMobileMenu)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
@@ -79,7 +79,7 @@ export default function LandingPage() {
                     Login
                     </Link>
                      <Button asChild className="w-full">
-                        <Link href="/login">Report Issue Now</Link>
+                        <Link href="/report">Report Issue Now</Link>
                     </Button>
                 </nav>
             </div>
@@ -106,7 +106,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Button size="lg" asChild>
-                <Link href="/dashboard/report">
+                <Link href="/report">
                   Report on Web
                   <ArrowRight className="ml-2" />
                 </Link>

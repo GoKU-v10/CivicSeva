@@ -43,11 +43,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: LayoutDashboard,
     },
     {
-      href: '/dashboard/report',
-      label: 'Report New Issue',
-      icon: FilePlus2,
-    },
-    {
       href: '/track',
       label: 'My Issues',
       icon: Target,

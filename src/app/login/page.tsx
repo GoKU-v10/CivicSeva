@@ -15,8 +15,10 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ShieldCheck, LogIn, User, UserCog, Building } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { createIssueAction } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -59,13 +61,47 @@ function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
   const [role, setRole] = useState('citizen');
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would have authentication logic here.
-    // For this prototype, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    const action = searchParams.get('action');
+    const redirectUrl = searchParams.get('redirect') || '/dashboard';
+
+    if (action === 'submit_issue') {
+        const pendingReportJSON = localStorage.getItem('pending_issue_report');
+        if (pendingReportJSON) {
+            const pendingReport = JSON.parse(pendingReportJSON);
+            
+            const formData = new FormData();
+            formData.append('description', pendingReport.description);
+            formData.append('category', pendingReport.category);
+            formData.append('address', pendingReport.location.address);
+            formData.append('photoDataUri', pendingReport.photoDataUris[0]); // Assuming one photo for now
+            formData.append('latitude', String(pendingReport.location.latitude));
+            formData.append('longitude', String(pendingReport.location.longitude));
+
+            const result = await createIssueAction(formData);
+
+            if (result.success) {
+                toast({ title: 'Success!', description: 'Issue submitted successfully.' });
+                localStorage.removeItem('pending_issue_report');
+                router.push(redirectUrl);
+            } else {
+                toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+                // Don't remove the data, so they can try again
+                router.push('/report'); // Go back to the report page on failure
+            }
+        } else {
+             toast({ variant: 'destructive', title: 'Error', description: "Could not find the pending report data. Please try again." });
+             router.push('/report');
+        }
+    } else {
+        // Default login behavior
+        router.push(redirectUrl);
+    }
   };
 
 

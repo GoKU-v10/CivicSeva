@@ -51,7 +51,9 @@ export function ReportIssueForm() {
     const { toast: appToast } = useAppToast();
     const router = useRouter();
     const [isSuggesting, startSuggestionTransition] = useTransition();
-    const [isSubmitting, startSubmissionTransition] = useTransition();
+    
+    // This state is just to show a loading spinner, not for triggering actions
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [location, setLocation] = useState<LocationState>({
         latitude: null,
@@ -162,31 +164,22 @@ export function ReportIssueForm() {
     };
 
     const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
-        if (photoDataUris.length === 0 || !location.latitude || !location.longitude) {
-            appToast({ variant: 'destructive', title: 'Missing photo or location data.' });
-            return;
-        }
-        
-        startSubmissionTransition(async () => {
-            const formData = new FormData();
-            formData.append('description', values.description);
-            formData.append('category', values.category);
-            formData.append('address', values.address || location.address);
-            // In a real implementation, you'd handle multiple URIs.
-            // For now, we send the first one for categorization.
-            formData.append('photoDataUri', photoDataUris[0]); 
-            formData.append('latitude', String(location.latitude));
-            formData.append('longitude', String(location.longitude));
-
-            const result = await createIssueAction(formData);
-
-            if(result.success) {
-                appToast({ title: 'Success!', description: 'Issue submitted successfully.' });
-                router.push('/track');
-            } else {
-                appToast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
-            }
-        });
+       // Instead of submitting, we now redirect to login
+       // We can store the form data in localStorage to repopulate after login
+       try {
+           const reportData = {
+               ...values,
+               photoDataUris,
+               location,
+           }
+           localStorage.setItem('pending_issue_report', JSON.stringify(reportData));
+       } catch (error) {
+           console.error("Could not save report data to local storage", error);
+       }
+       
+       setIsSubmitting(true);
+       // Redirect to login page, which should then handle the submission after auth
+       router.push('/login?redirect=/track&action=submit_issue');
     };
     
     const descriptionLength = form.watch('description')?.length || 0;
@@ -195,7 +188,7 @@ export function ReportIssueForm() {
         <Card>
             <CardHeader>
                 <CardTitle>Report a New Civic Issue</CardTitle>
-                <CardDescription>Provide detailed information about the issue for a faster resolution.</CardDescription>
+                <CardDescription>Provide detailed information about the issue. You will be asked to log in to submit.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
