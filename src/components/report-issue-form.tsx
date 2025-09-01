@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,219 +18,373 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
-import { Image as ImageIcon, Sparkles, MapPin, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, Clock, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Checkbox } from './ui/checkbox';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const reportIssueSchema = z.object({
-  description: z.string().min(10, {
-    message: 'Description must be at least 10 characters long.',
-  }),
-  photo: z.any().refine((files) => files?.length === 1, 'Photo is required.'),
+    description: z
+        .string()
+        .min(10, { message: 'Description must be at least 10 characters long.' })
+        .max(500, { message: 'Description must not exceed 500 characters.' }),
+    photos: z.any().refine((files) => files?.length >= 1, 'At least one photo is required.'),
+    category: z.string().min(1, 'Please select a category.'),
+    address: z.string().optional(),
+    terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions.'),
 });
+
 
 type LocationState = {
   latitude: number | null;
   longitude: number | null;
+  address: string;
   error: string | null;
 };
 
 export function ReportIssueForm() {
-  const { toast } = useToast();
-  const router = useRouter();
-  const [isSuggesting, startSuggestionTransition] = useTransition();
-  const [isSubmitting, startSubmissionTransition] = useTransition();
+    const { toast } = useToast();
+    const router = useRouter();
+    const [isSuggesting, startSuggestionTransition] = useTransition();
+    const [isSubmitting, startSubmissionTransition] = useTransition();
 
-  const [location, setLocation] = useState<LocationState>({
-    latitude: null,
-    longitude: null,
-    error: null,
-  });
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
+    const [location, setLocation] = useState<LocationState>({
+        latitude: null,
+        longitude: null,
+        address: '',
+        error: null,
+    });
+    const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+    const [photoDataUris, setPhotoDataUris] = useState<string[]>([]);
+    const [aiSuggestion, setAiSuggestion] = useState<{ category: string, confidence: number} | null>(null);
 
-  const form = useForm<z.infer<typeof reportIssueSchema>>({
-    resolver: zodResolver(reportIssueSchema),
-    defaultValues: {
-      description: '',
-    },
-  });
-  
-  const photoInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            error: null,
-          });
+    const form = useForm<z.infer<typeof reportIssueSchema>>({
+        resolver: zodResolver(reportIssueSchema),
+        defaultValues: {
+            description: '',
+            photos: undefined,
+            category: '',
+            address: '',
+            terms: false,
         },
-        (error) => {
-          setLocation({
-            latitude: null,
-            longitude: null,
-            error: error.message,
-          });
-          toast({
-            variant: 'destructive',
-            title: 'Location Error',
-            description: 'Could not fetch your location. Please ensure location services are enabled.',
-          });
-        }
-      );
-    }
-  }, [toast]);
-
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (loadEvent) => {
-        const dataUri = loadEvent.target?.result as string;
-        setPhotoPreview(URL.createObjectURL(file));
-        setPhotoDataUri(dataUri);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  const handleSuggestDescription = () => {
-    if (!photoDataUri) {
-        toast({ variant: 'destructive', title: 'Please upload a photo first.' });
-        return;
-    }
-    if (!location.latitude || !location.longitude) {
-        toast({ variant: 'destructive', title: 'Waiting for location data.' });
-        return;
-    }
-
-    startSuggestionTransition(async () => {
-        const formData = new FormData();
-        formData.append('photoDataUri', photoDataUri);
-        formData.append('locationData', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
-        
-        const result = await suggestDescriptionAction(formData);
-
-        if (result.success && result.description) {
-            form.setValue('description', result.description);
-            toast({ title: 'Description suggested by AI!' });
-        } else {
-            toast({ variant: 'destructive', title: 'Error', description: result.error });
-        }
     });
-  };
 
-  const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
-    if (!photoDataUri || !location.latitude || !location.longitude) {
-        toast({ variant: 'destructive', title: 'Missing photo or location data.' });
-        return;
-    }
-    
-    startSubmissionTransition(async () => {
-        const formData = new FormData();
-        formData.append('description', values.description);
-        formData.append('photoDataUri', photoDataUri);
-        formData.append('latitude', String(location.latitude));
-        formData.append('longitude', String(location.longitude));
+    const photoInputRef = useRef<HTMLInputElement>(null);
 
-        const result = await createIssueAction(formData);
-
-        if(result.success) {
-            toast({ title: 'Success', description: result.message });
-            router.push('/dashboard');
-        } else {
-            toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+    useEffect(() => {
+        if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+            const { latitude, longitude } = position.coords;
+            setLocation({ latitude, longitude, address: 'Fetching address...', error: null });
+            // In a real app, you would use a geocoding service here.
+            setTimeout(() => {
+                const fetchedAddress = '123 Main St, Anytown, USA';
+                setLocation(loc => ({...loc, address: fetchedAddress}));
+                form.setValue('address', fetchedAddress);
+            }, 1000);
+            },
+            (error) => {
+            setLocation({ latitude: null, longitude: null, address: '', error: error.message });
+            toast({
+                variant: 'destructive',
+                title: 'Location Error',
+                description: 'Could not fetch your location. Please enable location services and refresh.',
+            });
+            }
+        );
         }
-    });
-  };
+    }, [toast, form]);
 
-  return (
-    <Card>
-        <CardHeader>
-            <CardTitle>Report a New Issue</CardTitle>
-            <CardDescription>Fill out the details below. Our AI will help categorize it for a faster response.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                control={form.control}
-                name="photo"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Issue Photo</FormLabel>
-                        <FormControl>
-                            <div className="flex items-center gap-4">
-                                <div className="w-32 h-32 bg-muted rounded-lg flex items-center justify-center border-dashed border-2">
-                                {photoPreview ? (
-                                    <Image src={photoPreview} alt="Issue preview" width={128} height={128} className="object-cover rounded-lg w-full h-full" />
-                                ) : (
-                                    <ImageIcon className="size-8 text-muted-foreground" />
-                                )}
-                                </div>
-                                <Input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    className="hidden" 
-                                    id="photo-upload" 
-                                    ref={photoInputRef}
-                                    onChange={(e) => {
-                                        field.onChange(e.target.files);
-                                        handlePhotoChange(e);
-                                    }} 
-                                />
-                                <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
-                                    {photoPreview ? 'Change Photo' : 'Upload Photo'}
-                                </Button>
-                            </div>
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-                />
+    const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            const newPreviews: string[] = [];
+            const newDataUris: string[] = [];
+            const fileArray = Array.from(files);
 
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                        <div className="flex justify-between items-center">
-                            <FormLabel>Description</FormLabel>
-                            <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || !photoDataUri || !location.latitude}>
-                                {isSuggesting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
-                                AI Suggest
-                            </Button>
-                        </div>
-                        <FormControl>
-                            <Textarea
-                                placeholder="Describe the issue you see..."
-                                rows={5}
-                                {...field}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                
-                <div className="flex items-center p-3 rounded-lg bg-muted text-muted-foreground text-sm gap-2">
-                    <MapPin className="size-4 shrink-0" />
-                    {location.latitude && location.longitude ? 
-                        <span>Location captured: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span> :
-                        <span>{location.error || 'Fetching location...'}</span>
+            fileArray.forEach(file => {
+                newPreviews.push(URL.createObjectURL(file));
+                const reader = new FileReader();
+                reader.onload = (loadEvent) => {
+                    newDataUris.push(loadEvent.target?.result as string);
+                    if(newDataUris.length === fileArray.length) {
+                       setPhotoDataUris(uris => [...uris, ...newDataUris]);
                     }
-                </div>
+                };
+                reader.readAsDataURL(file);
+            });
+            setPhotoPreviews(previews => [...previews, ...newPreviews]);
+        }
+    };
+  
+    const handleSuggestDescription = () => {
+        if (photoDataUris.length === 0) {
+            toast({ variant: 'destructive', title: 'Please upload a photo first.' });
+            return;
+        }
+        if (!location.latitude || !location.longitude) {
+            toast({ variant: 'destructive', title: 'Waiting for location data.' });
+            return;
+        }
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-                    Submit Report
-                </Button>
-            </form>
-            </Form>
-        </CardContent>
-    </Card>
-  );
+        startSuggestionTransition(async () => {
+            const formData = new FormData();
+            formData.append('photoDataUri', photoDataUris[0]); // Suggest based on the first photo
+            formData.append('locationData', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
+            
+            const result = await suggestDescriptionAction(formData);
+
+            if (result.success && result.description) {
+                form.setValue('description', result.description);
+                toast({ title: 'Description suggested by AI!' });
+            } else {
+                toast({ variant: 'destructive', title: 'Error', description: result.error });
+            }
+        });
+    };
+
+    const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
+        if (photoDataUris.length === 0 || !location.latitude || !location.longitude) {
+            toast({ variant: 'destructive', title: 'Missing photo or location data.' });
+            return;
+        }
+        
+        startSubmissionTransition(async () => {
+            const formData = new FormData();
+            formData.append('description', values.description);
+            // In a real implementation, you'd handle multiple URIs.
+            // For now, we send the first one for categorization.
+            formData.append('photoDataUri', photoDataUris[0]); 
+            formData.append('latitude', String(location.latitude));
+            formData.append('longitude', String(location.longitude));
+
+            const result = await createIssueAction(formData);
+
+            if(result.success) {
+                toast({ title: 'Success!', description: 'Issue submitted successfully. Your issue ID is XYZ-123.' });
+                router.push('/dashboard/my-issues');
+            } else {
+                toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+            }
+        });
+    };
+    
+    const descriptionLength = form.watch('description')?.length || 0;
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Report a New Civic Issue</CardTitle>
+                        <CardDescription>Provide detailed information about the issue for a faster resolution.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <FormField
+                                control={form.control}
+                                name="photos"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Issue Photos/Videos</FormLabel>
+                                    <FormControl>
+                                        <div>
+                                            <Input 
+                                                type="file" 
+                                                accept="image/*,video/*" 
+                                                className="hidden" 
+                                                id="photo-upload" 
+                                                ref={photoInputRef}
+                                                multiple
+                                                onChange={(e) => {
+                                                    field.onChange(e.target.files);
+                                                    handlePhotoChange(e);
+                                                }} 
+                                            />
+                                            <div className="p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50" onClick={() => photoInputRef.current?.click()}>
+                                                <ImageIcon className="mx-auto size-12 text-muted-foreground" />
+                                                <p className="mt-2 text-sm text-muted-foreground">Drag & drop files here, or click to browse.</p>
+                                            </div>
+                                            {photoPreviews.length > 0 && (
+                                                <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                                                    {photoPreviews.map((src, index) => (
+                                                        <div key={index} className="relative aspect-square">
+                                                            <Image src={src} alt={`Preview ${index + 1}`} layout="fill" className="object-cover rounded-lg" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <div className="flex justify-between items-center">
+                                        <FormLabel>Description</FormLabel>
+                                        <div className="flex items-center gap-2">
+                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => alert('Voice-to-text coming soon!')}>
+                                                <Mic className="size-4" />
+                                            </Button>
+                                            <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}>
+                                                {isSuggesting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
+                                                AI Suggest
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <FormControl>
+                                        <Textarea placeholder="Describe the issue you see..." rows={6} {...field} maxLength={500} />
+                                    </FormControl>
+                                    <FormDescription className="flex justify-between">
+                                        <span>Provide as much detail as possible.</span>
+                                        <span>{descriptionLength} / 500</span>
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                     {aiSuggestion && (
+                                        <Alert>
+                                            <Sparkles className="h-4 w-4" />
+                                            <AlertTitle>AI Suggestion</AlertTitle>
+                                            <AlertDescription>
+                                                We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Select an issue category" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Pothole">Pothole</SelectItem>
+                                        <SelectItem value="Graffiti">Graffiti</SelectItem>
+                                        <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
+                                        <SelectItem value="Waste Management">Waste Management</SelectItem>
+                                        <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
+                                        <SelectItem value="Water Leak">Water Leak</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="address"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Location</FormLabel>
+                                    <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                                       {location.latitude && location.longitude ? (
+                                             <Image src={`https://picsum.photos/seed/${location.latitude}/600/400`} layout="fill" alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
+                                       ) : (
+                                            <p className="text-muted-foreground">Waiting for location...</p>
+                                       )}
+                                       <div className="absolute bottom-2 left-2 right-2 bg-background/80 p-2 rounded-md backdrop-blur-sm">
+                                            <FormControl>
+                                                <Input placeholder="Enter address manually or let us detect it" {...field} />
+                                            </FormControl>
+                                       </div>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="terms"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                    <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                        I confirm the information is accurate and accept the terms of service.
+                                    </FormLabel>
+                                    <FormMessage />
+                                    </div>
+                                </FormItem>
+                                )}
+                            />
+
+                            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                                Review & Submit Issue
+                            </Button>
+                        </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="lg:col-span-1 space-y-6 sticky top-20">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Languages className="size-5" /> Language</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Select defaultValue="en">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="en">English</SelectItem>
+                                <SelectItem value="hi">Hindi</SelectItem>
+                                <SelectItem value="mr">Marathi</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Clock className="size-5" /> Resolution Time</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Alert>
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>Expected Timeline</AlertTitle>
+                            <AlertDescription>
+                            Based on the selected category, the expected resolution time is <span className="font-bold">3-5 business days</span>. This may vary depending on issue severity.
+                            </AlertDescription>
+                        </Alert>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><AlertTriangle className="size-5" /> Please Note</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground space-y-2">
+                        <p>Submitting false or misleading information is a punishable offense.</p>
+                        <p>This platform is for civic issues only. For emergencies, please call 911.</p>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
 }
