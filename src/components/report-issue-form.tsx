@@ -249,7 +249,7 @@ export function ReportIssueForm() {
                                         <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                                             {photoPreviews.map((src, index) => (
                                                 <div key={index} className="relative aspect-square">
-                                                    <Image src={src} alt={`Preview ${index + 1}`} layout="fill" className="object-cover rounded-lg" />
+                                                    <Image src={src} alt={`Preview ${index + 1}`} fill className="object-cover rounded-lg" />
                                                 </div>
                                             ))}
                                         </div>
@@ -322,7 +322,7 @@ export function ReportIssueForm() {
                             <FormLabel>4. Location</FormLabel>
                             <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                                {location.latitude && location.longitude ? (
-                                     <Image src={`https://picsum.photos/seed/${location.latitude}/600/400`} layout="fill" alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
+                                     <Image src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+000(${location.longitude},${location.latitude})/${location.longitude},${location.latitude},15/600x400?access_token=pk.eyJ1IjoiZ29vZ2xlZGV2LXRlc3QiLCJhIjoiY2x5OHd6Z2tyMGRzZTJqcW1maXYyNm4weCJ9.Cdn_39Ie2tY1k51xHhP5Yw`} fill alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
                                ) : (
                                     <p className="text-muted-foreground">Waiting for location...</p>
                                )}
