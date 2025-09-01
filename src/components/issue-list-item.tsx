@@ -1,3 +1,5 @@
+
+'use client';
 import type { Issue } from '@/lib/types';
 import { IssueStatusBadge } from './issue-status-badge';
 import { Badge } from './ui/badge';
@@ -6,12 +8,20 @@ import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 interface IssueListItemProps {
     issue: Issue;
 }
 
 export function IssueListItem({ issue }: IssueListItemProps) {
+    const [reportedAt, setReportedAt] = useState('');
+
+    useEffect(() => {
+        setReportedAt(formatDistanceToNow(new Date(issue.reportedAt), { addSuffix: true }));
+    }, [issue.reportedAt]);
+
+
     return (
         <div className="flex items-center gap-4 p-4 hover:bg-muted/50 border-b last:border-b-0">
             <div className="relative hidden md:block aspect-square w-24 h-24 rounded-md overflow-hidden">
@@ -38,7 +48,7 @@ export function IssueListItem({ issue }: IssueListItemProps) {
                      <Dot />
                      <div className="flex items-center gap-1">
                         <Calendar className="size-3" />
-                        <span>Reported {formatDistanceToNow(new Date(issue.reportedAt), { addSuffix: true })}</span>
+                        <span>{reportedAt ? `Reported ${reportedAt}`: 'Loading date...'}</span>
                     </div>
                 </div>
             </div>
