@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -11,9 +12,11 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShieldCheck, LogIn } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ShieldCheck, LogIn, User, UserCog, Building } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -56,6 +59,7 @@ function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function LoginForm() {
   const router = useRouter();
+  const [role, setRole] = useState('citizen');
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +76,46 @@ export function LoginForm() {
           <ShieldCheck className="h-12 w-12 text-primary" />
         </div>
         <CardTitle>Welcome to CivicSeva</CardTitle>
-        <CardDescription>Sign in to your account to continue</CardDescription>
+        <CardDescription>Select your role and sign in to continue</CardDescription>
       </CardHeader>
       <CardContent>
        <form onSubmit={handleSignIn} className="space-y-4">
+        <div className="space-y-3">
+          <Label>I am a...</Label>
+          <RadioGroup defaultValue="citizen" onValueChange={setRole} className="grid grid-cols-3 gap-4">
+            <div>
+              <RadioGroupItem value="citizen" id="citizen" className="peer sr-only" />
+              <Label
+                htmlFor="citizen"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                <User className="mb-3 h-6 w-6" />
+                Citizen
+              </Label>
+            </div>
+            <div>
+              <RadioGroupItem value="admin" id="admin" className="peer sr-only" />
+              <Label
+                htmlFor="admin"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                <UserCog className="mb-3 h-6 w-6" />
+                Admin
+              </Label>
+            </div>
+            <div>
+              <RadioGroupItem value="official" id="official" className="peer sr-only" />
+              <Label
+                htmlFor="official"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                <Building className="mb-3 h-6 w-6" />
+                Official
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" placeholder="m@example.com" required defaultValue="citizen@test.com" />
@@ -91,7 +131,7 @@ export function LoginForm() {
         </div>
         <Button type="submit" className="w-full">
             <LogIn className="mr-2" />
-            Sign In with Email
+            Sign In
         </Button>
         </form>
 
@@ -114,16 +154,6 @@ export function LoginForm() {
             Facebook
           </Button>
         </div>
-
-        <div className="mt-4 flex flex-col items-center space-y-2 rounded-lg border bg-muted/50 p-4 text-center">
-            <h4 className="font-semibold">Government Official?</h4>
-            <p className="text-sm text-muted-foreground">Use your government ID to sign in for official duties.</p>
-            <Button variant="secondary" className="w-full">
-                <ShieldCheck className="mr-2" />
-                Sign in with Government ID
-            </Button>
-        </div>
-
       </CardContent>
       <CardFooter className="text-center text-sm">
         <p className="w-full">
