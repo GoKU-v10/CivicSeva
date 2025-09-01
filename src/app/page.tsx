@@ -47,7 +47,7 @@ export default function LandingPage() {
             </Link>
           </nav>
           <Button asChild>
-            <Link href="/dashboard/report">Report Issue Now</Link>
+            <Link href="/login">Report Issue Now</Link>
           </Button>
         </div>
       </header>
@@ -149,7 +149,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="py-16 md:py-24">
+        <section id="features" className="py-16 md-py-24">
           <div className="container mx-auto px-4 md:px-6">
             <h2 className="text-center text-3xl font-bold md:text-4xl">Key Features</h2>
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
