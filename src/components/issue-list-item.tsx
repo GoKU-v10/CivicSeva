@@ -5,7 +5,6 @@ import { IssueStatusBadge } from './issue-status-badge';
 import { Badge } from './ui/badge';
 import { MapPin, Calendar, Dot, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import Image from 'next/image';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -24,15 +23,6 @@ export function IssueListItem({ issue }: IssueListItemProps) {
 
     return (
         <div className="flex items-center gap-4 p-4 hover:bg-muted/50 border-b last:border-b-0">
-            <div className="relative hidden md:block aspect-square w-24 h-24 rounded-md overflow-hidden">
-                 <Image 
-                    src={issue.imageUrl}
-                    alt={issue.title}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={issue.imageHint}
-                />
-            </div>
             <div className="flex-grow">
                  <div className="flex items-center gap-2 mb-1">
                     <p className="text-xs text-muted-foreground font-mono">{issue.id}</p>

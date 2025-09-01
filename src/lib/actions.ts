@@ -1,9 +1,12 @@
+
 'use server';
 
 import { z } from 'zod';
 import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description';
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
 import { revalidatePath } from 'next/cache';
+import { issues } from './data';
+import type { Issue } from './types';
 
 const SuggestDescriptionSchema = z.object({
   photoDataUri: z.string(),
@@ -31,6 +34,8 @@ const CreateIssueSchema = z.object({
     photoDataUri: z.string().min(1, 'Please upload a photo.'),
     latitude: z.coerce.number(),
     longitude: z.coerce.number(),
+    category: z.string(),
+    address: z.string(),
 });
 
 
@@ -41,6 +46,8 @@ export async function createIssueAction(formData: FormData) {
             photoDataUri: formData.get('photoDataUri'),
             latitude: formData.get('latitude'),
             longitude: formData.get('longitude'),
+            category: formData.get('category'),
+            address: formData.get('address'),
         });
 
         const categorization = await categorizeIssue({
@@ -52,16 +59,37 @@ export async function createIssueAction(formData: FormData) {
             },
         });
 
+        const newIssue: Issue = {
+            id: `IS-${Math.floor(Math.random() * 1000)}`,
+            title: validatedData.description.substring(0, 50) + '...',
+            description: validatedData.description,
+            imageUrl: validatedData.photoDataUri,
+            imageHint: categorization.category.toLowerCase(),
+            images: [{ url: validatedData.photoDataUri, caption: 'User submitted photo' }],
+            location: {
+                latitude: validatedData.latitude,
+                longitude: validatedData.longitude,
+                address: validatedData.address || 'Address not provided',
+            },
+            status: 'Reported',
+            category: categorization.category as any,
+            priority: 'Medium',
+            reportedAt: new Date().toISOString(),
+            department: categorization.suggestedDepartment,
+            confidence: categorization.confidence,
+            updates: [
+                { timestamp: new Date().toISOString(), status: 'Reported', description: 'Issue submitted by citizen.' },
+            ],
+        };
+
         // In a real app, you would save this to a database.
-        // For this demo, we'll just log it.
-        console.log('New issue created and categorized:', {
-            ...validatedData,
-            ...categorization,
-        });
+        // For this demo, we'll prepend it to our in-memory array.
+        issues.unshift(newIssue);
 
         revalidatePath('/');
+        revalidatePath('/dashboard');
         revalidatePath('/dashboard/my-issues');
-        revalidatePath('/admin');
+        revalidatePath('/dashboard/admin');
         
         return { success: true, message: 'Issue reported successfully!' };
 

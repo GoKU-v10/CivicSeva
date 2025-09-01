@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useTransition, useRef } from 'react';
 import { useForm } from 'react-hook-form';
@@ -24,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { useToast as useAppToast } from '@/hooks/use-toast';
 
 const reportIssueSchema = z.object({
     category: z.string().min(1, 'Please select a category.'),
@@ -46,7 +48,7 @@ type LocationState = {
 };
 
 export function ReportIssueForm() {
-    const { toast } = useToast();
+    const { toast: appToast } = useAppToast();
     const router = useRouter();
     const [isSuggesting, startSuggestionTransition] = useTransition();
     const [isSubmitting, startSubmissionTransition] = useTransition();
@@ -57,6 +59,7 @@ export function ReportIssueForm() {
         address: '',
         error: null,
     });
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const [photoDataUris, setPhotoDataUris] = useState<string[]>([]);
     const [aiSuggestion, setAiSuggestion] = useState<{ category: string, confidence: number} | null>(null);
@@ -75,40 +78,38 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchLocation = () => {
-        if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-            const { latitude, longitude } = position.coords;
-            setLocation({ latitude, longitude, address: 'Fetching address...', error: null });
-            // In a real app, you would use a geocoding service here.
-            setTimeout(() => {
-                const fetchedAddress = '123 Main St, Anytown, USA';
-                setLocation(loc => ({...loc, address: fetchedAddress}));
-                form.setValue('address', fetchedAddress);
-            }, 1000);
-            },
-            (error) => {
-            setLocation({ latitude: null, longitude: null, address: '', error: 'Could not fetch your location. Please enable location services and refresh.' });
-            toast({
-                variant: 'destructive',
-                title: 'Location Error',
-                description: 'Could not fetch your location. Please enable location services and refresh.',
-            });
-            }
-        );
-        } else {
-            setLocation({ latitude: null, longitude: null, address: '', error: 'Geolocation is not supported by this browser.' });
-            toast({
-                variant: 'destructive',
-                title: 'Location Error',
-                description: 'Geolocation is not supported by this browser.',
-            });
-        }
-    };
-    
     useEffect(() => {
-        fetchLocation();
+        const getLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        // In a real app, you'd use a geocoding service here.
+                        // For now, we'll just show the coordinates and a placeholder address.
+                        const mockAddress = `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                        setLocation({ latitude, longitude, address: mockAddress, error: null });
+                        form.setValue('address', mockAddress);
+                    },
+                    (error) => {
+                        setLocation({ latitude: null, longitude: null, address: '', error: 'Could not fetch your location. Please enable location services and try again.' });
+                        appToast({
+                            variant: 'destructive',
+                            title: 'Location Error',
+                            description: 'Please enable location services to automatically detect your location.',
+                        });
+                    }
+                );
+            } else {
+                setLocation({ latitude: null, longitude: null, address: '', error: 'Geolocation is not supported by this browser.' });
+                 appToast({
+                    variant: 'destructive',
+                    title: 'Location Error',
+                    description: 'Geolocation is not supported by your browser.',
+                });
+            }
+        };
+
+        getLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -136,11 +137,11 @@ export function ReportIssueForm() {
   
     const handleSuggestDescription = () => {
         if (photoDataUris.length === 0) {
-            toast({ variant: 'destructive', title: 'Please upload a photo first.' });
+            appToast({ variant: 'destructive', title: 'Please upload a photo first.' });
             return;
         }
         if (!location.latitude || !location.longitude) {
-            toast({ variant: 'destructive', title: 'Waiting for location data.' });
+            appToast({ variant: 'destructive', title: 'Waiting for location data.' });
             return;
         }
 
@@ -153,22 +154,24 @@ export function ReportIssueForm() {
 
             if (result.success && result.description) {
                 form.setValue('description', result.description);
-                toast({ title: 'Description suggested by AI!' });
+                appToast({ title: 'Description suggested by AI!' });
             } else {
-                toast({ variant: 'destructive', title: 'Error', description: result.error });
+                appToast({ variant: 'destructive', title: 'Error', description: result.error });
             }
         });
     };
 
     const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
         if (photoDataUris.length === 0 || !location.latitude || !location.longitude) {
-            toast({ variant: 'destructive', title: 'Missing photo or location data.' });
+            appToast({ variant: 'destructive', title: 'Missing photo or location data.' });
             return;
         }
         
         startSubmissionTransition(async () => {
             const formData = new FormData();
             formData.append('description', values.description);
+            formData.append('category', values.category);
+            formData.append('address', values.address || location.address);
             // In a real implementation, you'd handle multiple URIs.
             // For now, we send the first one for categorization.
             formData.append('photoDataUri', photoDataUris[0]); 
@@ -178,10 +181,10 @@ export function ReportIssueForm() {
             const result = await createIssueAction(formData);
 
             if(result.success) {
-                toast({ title: 'Success!', description: 'Issue submitted successfully. Your issue ID is XYZ-123.' });
+                appToast({ title: 'Success!', description: 'Issue submitted successfully.' });
                 router.push('/dashboard/my-issues');
             } else {
-                toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+                appToast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
             }
         });
     };
@@ -273,7 +276,7 @@ export function ReportIssueForm() {
                         )}
                     />
                     
-                    <FormField
+                     <FormField
                         control={form.control}
                         name="address"
                         render={({ field }) => (
@@ -281,9 +284,31 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder={location.address || "Detecting location..."} {...field} />
+                                    <Input placeholder={location.error || location.address || "Detecting location..."} {...field} />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
+                                <Button type="button" variant="outline" size="icon" onClick={() => {
+                                     const getLocation = () => {
+                                        if (navigator.geolocation) {
+                                            navigator.geolocation.getCurrentPosition(
+                                                (position) => {
+                                                    const { latitude, longitude } = position.coords;
+                                                    const mockAddress = `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                                                    setLocation({ latitude, longitude, address: mockAddress, error: null });
+                                                    form.setValue('address', mockAddress);
+                                                },
+                                                (error) => {
+                                                    setLocation({ latitude: null, longitude: null, address: '', error: 'Could not fetch your location. Please enable location services and try again.' });
+                                                    appToast({
+                                                        variant: 'destructive',
+                                                        title: 'Location Error',
+                                                        description: 'Please enable location services to automatically detect your location.',
+                                                    });
+                                                }
+                                            );
+                                        }
+                                    };
+                                    getLocation();
+                                }}>
                                     <MapPin className="size-4" />
                                     <span className="sr-only">Detect Location</span>
                                 </Button>
@@ -307,7 +332,7 @@ export function ReportIssueForm() {
                             <div className="flex justify-between items-center">
                                 <FormLabel>4. Description</FormLabel>
                                 <div className="flex items-center gap-2">
-                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => alert('Voice-to-text coming soon!')}>
+                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => appToast({title: 'Voice-to-text coming soon!'})}>
                                         <Mic className="size-4" />
                                     </Button>
                                     <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}>
