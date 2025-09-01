@@ -18,6 +18,7 @@ import {
   FilePlus2,
   Shield,
   ShieldCheck,
+  LayoutDashboard,
 } from 'lucide-react';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -25,30 +26,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const menuItems = [
     {
-      href: '/',
+      href: '/dashboard',
       label: 'Dashboard',
-      icon: Home,
+      icon: LayoutDashboard,
     },
     {
-      href: '/report',
+      href: '/dashboard/report',
       label: 'Report Issue',
       icon: FilePlus2,
     },
     {
-      href: '/admin',
+      href: '/dashboard/admin',
       label: 'Admin',
       icon: Shield,
     },
   ];
+  
+  const getPageTitle = () => {
+    const currentItem = menuItems.find(item => pathname === item.href);
+    if (currentItem) return currentItem.label;
+    if (pathname.startsWith('/dashboard/admin')) return 'Admin';
+    if (pathname.startsWith('/dashboard/report')) return 'Report Issue';
+    return 'Dashboard';
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
         <Sidebar>
           <SidebarHeader>
-            <div className="flex items-center gap-2 p-2">
+            <Link href="/" className="flex items-center gap-2 p-2">
                 <ShieldCheck className="text-primary size-8" />
-                <h1 className="text-2xl font-bold text-primary">CivicSeva</h1>
-            </div>
+                <h1 className="text-2xl font-bold text-primary">CivicConnect</h1>
+            </Link>
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
@@ -76,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="lg:hidden" />
                 <div className="flex-1">
                     <h1 className="text-lg font-semibold md:text-2xl">
-                        {menuItems.find(item => item.href === pathname)?.label || 'Dashboard'}
+                        {getPageTitle()}
                     </h1>
                 </div>
             </header>
