@@ -1,4 +1,6 @@
 
+'use client';
+
 import {
   Card,
   CardContent,
@@ -14,6 +16,7 @@ import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
 
 interface IssueCardProps {
   issue: Issue;
@@ -22,6 +25,12 @@ interface IssueCardProps {
 export function IssueCard({ issue }: IssueCardProps) {
   const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
   
+  const [reportedDate, setReportedDate] = useState('');
+
+  useEffect(() => {
+    setReportedDate(format(new Date(issue.reportedAt), "PPP"));
+  }, [issue.reportedAt]);
+
   const categoryImage = {
     'Pothole': { url: 'https://picsum.photos/seed/pothole/800/600', hint: 'pothole road' },
     'Graffiti': { url: 'https://picsum.photos/seed/graffiti/800/600', hint: 'graffiti wall' },
@@ -61,7 +70,7 @@ export function IssueCard({ issue }: IssueCardProps) {
             </div>
             <div className="flex items-center gap-2">
                 <Calendar className="size-3" />
-                <span>Reported on {format(new Date(issue.reportedAt), "PPP")}</span>
+                <span>{reportedDate ? `Reported on ${reportedDate}` : 'Loading date...'}</span>
             </div>
         </div>
       </CardContent>
