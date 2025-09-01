@@ -75,7 +75,7 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
+    const fetchLocation = () => {
         if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -98,6 +98,10 @@ export function ReportIssueForm() {
             }
         );
         }
+    };
+    
+    useEffect(() => {
+        fetchLocation();
     }, [toast, form]);
 
     const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -320,18 +324,16 @@ export function ReportIssueForm() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>4. Location</FormLabel>
-                            <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                               {location.latitude && location.longitude ? (
-                                     <Image src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+000(${location.longitude},${location.latitude})/${location.longitude},${location.latitude},15/600x400?access_token=pk.eyJ1IjoiZ29vZ2xlZGV2LXRlc3QiLCJhIjoiY2x5OHd6Z2tyMGRzZTJqcW1maXYyNm4weCJ9.Cdn_39Ie2tY1k51xHhP5Yw`} fill alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
-                               ) : (
-                                    <p className="text-muted-foreground">Waiting for location...</p>
-                               )}
-                               <div className="absolute bottom-2 left-2 right-2 bg-background/80 p-2 rounded-md backdrop-blur-sm">
-                                    <FormControl>
-                                        <Input placeholder="Enter address manually or let us detect it" {...field} />
-                                    </FormControl>
-                               </div>
-                            </div>
+                             <div className="flex gap-2">
+                                <FormControl>
+                                    <Input placeholder={location.address || "Enter address or detect location"} {...field} />
+                                </FormControl>
+                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
+                                    <MapPin className="size-4" />
+                                    <span className="sr-only">Detect Location</span>
+                                </Button>
+                             </div>
+                             {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
                             <FormMessage />
                         </FormItem>
                         )}
