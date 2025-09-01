@@ -89,7 +89,7 @@ export function ReportIssueForm() {
             }, 1000);
             },
             (error) => {
-            setLocation({ latitude: null, longitude: null, address: '', error: error.message });
+            setLocation({ latitude: null, longitude: null, address: '', error: 'Could not fetch your location. Please enable location services and refresh.' });
             toast({
                 variant: 'destructive',
                 title: 'Location Error',
@@ -97,12 +97,20 @@ export function ReportIssueForm() {
             });
             }
         );
+        } else {
+            setLocation({ latitude: null, longitude: null, address: '', error: 'Geolocation is not supported by this browser.' });
+            toast({
+                variant: 'destructive',
+                title: 'Location Error',
+                description: 'Geolocation is not supported by this browser.',
+            });
         }
     };
     
     useEffect(() => {
         fetchLocation();
-    }, [toast, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -326,7 +334,7 @@ export function ReportIssueForm() {
                             <FormLabel>4. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder={location.address || "Enter address or detect location"} {...field} />
+                                    <Input placeholder={location.address || "Detecting location..."} {...field} />
                                 </FormControl>
                                 <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
                                     <MapPin className="size-4" />
@@ -334,6 +342,11 @@ export function ReportIssueForm() {
                                 </Button>
                              </div>
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
+                             {!location.error && location.latitude && location.longitude && (
+                                <FormDescription>
+                                    Lat: {location.latitude.toFixed(5)}, Lon: {location.longitude.toFixed(5)}
+                                </FormDescription>
+                             )}
                             <FormMessage />
                         </FormItem>
                         )}
