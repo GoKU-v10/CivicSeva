@@ -34,6 +34,7 @@ const reportIssueSchema = z.object({
     photos: z.any().refine((files) => files?.length >= 1, 'At least one photo is required.'),
     address: z.string().optional(),
     terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions.'),
+    language: z.string().optional(),
 });
 
 
@@ -68,6 +69,7 @@ export function ReportIssueForm() {
             photos: undefined,
             address: '',
             terms: false,
+            language: 'en',
         },
     });
 
@@ -175,216 +177,217 @@ export function ReportIssueForm() {
     const descriptionLength = form.watch('description')?.length || 0;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Report a New Civic Issue</CardTitle>
-                        <CardDescription>Provide detailed information about the issue for a faster resolution.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                             <FormField
-                                control={form.control}
-                                name="category"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>1. Category</FormLabel>
-                                     {aiSuggestion && (
-                                        <Alert>
-                                            <Sparkles className="h-4 w-4" />
-                                            <AlertTitle>AI Suggestion</AlertTitle>
-                                            <AlertDescription>
-                                                We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Select an issue category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Pothole">Pothole</SelectItem>
-                                        <SelectItem value="Graffiti">Graffiti</SelectItem>
-                                        <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
-                                        <SelectItem value="Waste Management">Waste Management</SelectItem>
-                                        <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
-                                        <SelectItem value="Water Leak">Water Leak</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="photos"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>2. Issue Photos/Videos</FormLabel>
-                                    <FormControl>
-                                        <div>
-                                            <Input 
-                                                type="file" 
-                                                accept="image/*,video/*" 
-                                                className="hidden" 
-                                                id="photo-upload" 
-                                                ref={photoInputRef}
-                                                multiple
-                                                onChange={(e) => {
-                                                    field.onChange(e.target.files);
-                                                    handlePhotoChange(e);
-                                                }} 
-                                            />
-                                            <div className="p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50" onClick={() => photoInputRef.current?.click()}>
-                                                <ImageIcon className="mx-auto size-12 text-muted-foreground" />
-                                                <p className="mt-2 text-sm text-muted-foreground">Drag & drop files here, or click to browse.</p>
-                                            </div>
-                                            {photoPreviews.length > 0 && (
-                                                <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                                                    {photoPreviews.map((src, index) => (
-                                                        <div key={index} className="relative aspect-square">
-                                                            <Image src={src} alt={`Preview ${index + 1}`} layout="fill" className="object-cover rounded-lg" />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex justify-between items-center">
-                                        <FormLabel>3. Description</FormLabel>
-                                        <div className="flex items-center gap-2">
-                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => alert('Voice-to-text coming soon!')}>
-                                                <Mic className="size-4" />
-                                            </Button>
-                                            <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}>
-                                                {isSuggesting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
-                                                AI Suggest
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <FormControl>
-                                        <Textarea placeholder="Describe the issue you see..." rows={6} {...field} maxLength={500} />
-                                    </FormControl>
-                                    <FormDescription className="flex justify-between">
-                                        <span>Provide as much detail as possible.</span>
-                                        <span>{descriptionLength} / 500</span>
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="address"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>4. Location</FormLabel>
-                                    <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                                       {location.latitude && location.longitude ? (
-                                             <Image src={`https://picsum.photos/seed/${location.latitude}/600/400`} layout="fill" alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
-                                       ) : (
-                                            <p className="text-muted-foreground">Waiting for location...</p>
-                                       )}
-                                       <div className="absolute bottom-2 left-2 right-2 bg-background/80 p-2 rounded-md backdrop-blur-sm">
-                                            <FormControl>
-                                                <Input placeholder="Enter address manually or let us detect it" {...field} />
-                                            </FormControl>
-                                       </div>
-                                    </div>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="terms"
-                                render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                    <FormLabel>
-                                        I confirm the information is accurate and accept the terms of service.
-                                    </FormLabel>
-                                    <FormMessage />
-                                    </div>
-                                </FormItem>
-                                )}
-                            />
-
-                            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-                                Review & Submit Issue
-                            </Button>
-                        </form>
-                        </Form>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="lg:col-span-1 space-y-6 sticky top-20">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Languages className="size-5" /> Language</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Select defaultValue="en">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select language" />
-                            </SelectTrigger>
+        <Card>
+            <CardHeader>
+                <CardTitle>Report a New Civic Issue</CardTitle>
+                <CardDescription>Provide detailed information about the issue for a faster resolution.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                     <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>1. Category</FormLabel>
+                             {aiSuggestion && (
+                                <Alert>
+                                    <Sparkles className="h-4 w-4" />
+                                    <AlertTitle>AI Suggestion</AlertTitle>
+                                    <AlertDescription>
+                                        We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select an issue category" />
+                                </SelectTrigger>
+                            </FormControl>
                             <SelectContent>
-                                <SelectItem value="en">English</SelectItem>
-                                <SelectItem value="hi">Hindi</SelectItem>
-                                <SelectItem value="mr">Marathi</SelectItem>
+                                <SelectItem value="Pothole">Pothole</SelectItem>
+                                <SelectItem value="Graffiti">Graffiti</SelectItem>
+                                <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
+                                <SelectItem value="Waste Management">Waste Management</SelectItem>
+                                <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
+                                <SelectItem value="Water Leak">Water Leak</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
-                        </Select>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Clock className="size-5" /> Resolution Time</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="photos"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>2. Issue Photos/Videos</FormLabel>
+                            <FormControl>
+                                <div>
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*,video/*" 
+                                        className="hidden" 
+                                        id="photo-upload" 
+                                        ref={photoInputRef}
+                                        multiple
+                                        onChange={(e) => {
+                                            field.onChange(e.target.files);
+                                            handlePhotoChange(e);
+                                        }} 
+                                    />
+                                    <div className="p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50" onClick={() => photoInputRef.current?.click()}>
+                                        <ImageIcon className="mx-auto size-12 text-muted-foreground" />
+                                        <p className="mt-2 text-sm text-muted-foreground">Drag & drop files here, or click to browse.</p>
+                                    </div>
+                                    {photoPreviews.length > 0 && (
+                                        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                                            {photoPreviews.map((src, index) => (
+                                                <div key={index} className="relative aspect-square">
+                                                    <Image src={src} alt={`Preview ${index + 1}`} layout="fill" className="object-cover rounded-lg" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                        <FormItem>
+                            <div className="flex justify-between items-center">
+                                <FormLabel>3. Description</FormLabel>
+                                <div className="flex items-center gap-2">
+                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => alert('Voice-to-text coming soon!')}>
+                                        <Mic className="size-4" />
+                                    </Button>
+                                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}>
+                                        {isSuggesting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
+                                        AI Suggest
+                                    </Button>
+                                </div>
+                            </div>
+                            <FormControl>
+                                <Textarea placeholder="Describe the issue you see..." rows={6} {...field} maxLength={500} />
+                            </FormControl>
+                            <FormDescription className="flex justify-between">
+                                <span>Provide as much detail as possible.</span>
+                                <span>{descriptionLength} / 500</span>
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>4. Location</FormLabel>
+                            <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                               {location.latitude && location.longitude ? (
+                                     <Image src={`https://picsum.photos/seed/${location.latitude}/600/400`} layout="fill" alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
+                               ) : (
+                                    <p className="text-muted-foreground">Waiting for location...</p>
+                               )}
+                               <div className="absolute bottom-2 left-2 right-2 bg-background/80 p-2 rounded-md backdrop-blur-sm">
+                                    <FormControl>
+                                        <Input placeholder="Enter address manually or let us detect it" {...field} />
+                                    </FormControl>
+                               </div>
+                            </div>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    
+                    <FormField
+                        control={form.control}
+                        name="language"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>5. Preferred Language</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select language for communication" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="en">English</SelectItem>
+                                    <SelectItem value="hi">Hindi</SelectItem>
+                                    <SelectItem value="mr">Marathi</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormDescription>
+                                We will send updates in this language.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <div className="space-y-4">
                         <Alert>
                             <Info className="h-4 w-4" />
-                            <AlertTitle>Expected Timeline</AlertTitle>
+                            <AlertTitle>Expected Resolution Timeline</AlertTitle>
                             <AlertDescription>
                             Based on the selected category, the expected resolution time is <span className="font-bold">3-5 business days</span>. This may vary depending on issue severity.
                             </AlertDescription>
                         </Alert>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><AlertTriangle className="size-5" /> Please Note</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground space-y-2">
-                        <p>Submitting false or misleading information is a punishable offense.</p>
-                        <p>This platform is for civic issues only. For emergencies, please call 911.</p>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+                         <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>Please Note</AlertTitle>
+                            <AlertDescription>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>Submitting false or misleading information is a punishable offense.</li>
+                                    <li>This platform is for civic issues only. For emergencies, please call 911.</li>
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+
+
+                    <FormField
+                        control={form.control}
+                        name="terms"
+                        render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                            <FormLabel>
+                                I confirm the information is accurate and accept the terms of service.
+                            </FormLabel>
+                            <FormMessage />
+                            </div>
+                        </FormItem>
+                        )}
+                    />
+
+                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                        Review & Submit Issue
+                    </Button>
+                </form>
+                </Form>
+            </CardContent>
+        </Card>
     );
 }
