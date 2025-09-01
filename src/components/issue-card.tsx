@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 interface IssueCardProps {
   issue: Issue;
@@ -51,7 +52,7 @@ export function IssueCard({ issue }: IssueCardProps) {
             </div>
             <div className="flex items-center gap-2">
                 <Calendar className="size-3" />
-                <span>Reported on {new Date(issue.reportedAt).toLocaleDateString()}</span>
+                <span>Reported on {format(new Date(issue.reportedAt), "PPP")}</span>
             </div>
         </div>
       </CardContent>
