@@ -12,6 +12,8 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarFooter,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -19,7 +21,14 @@ import {
   Shield,
   ShieldCheck,
   LayoutDashboard,
+  ClipboardList,
+  Map,
+  Bell,
+  Settings,
+  LifeBuoy,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,22 +41,54 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     },
     {
       href: '/dashboard/report',
-      label: 'Report Issue',
+      label: 'Report New Issue',
       icon: FilePlus2,
     },
     {
-      href: '/dashboard/admin',
-      label: 'Admin',
-      icon: Shield,
+      href: '/dashboard/my-issues',
+      label: 'My Issues',
+      icon: ClipboardList,
+      badge: "3"
+    },
+    {
+      href: '/dashboard/map',
+      label: 'Community Map',
+      icon: Map,
+    },
+     {
+      href: '/dashboard/notifications',
+      label: 'Notifications',
+      icon: Bell,
+      badge: "2"
     },
   ];
   
+  const bottomMenuItems = [
+     {
+      href: '/dashboard/settings',
+      label: 'Settings',
+      icon: Settings,
+    },
+    {
+      href: '/dashboard/help',
+      label: 'Help & Support',
+      icon: LifeBuoy,
+    },
+  ]
+  
+  const adminMenuItem = {
+    href: '/dashboard/admin',
+    label: 'Admin',
+    icon: Shield,
+  }
+
+  const allItems = [...menuItems, ...bottomMenuItems, adminMenuItem];
+
   const getPageTitle = () => {
-    const currentItem = menuItems.find(item => pathname === item.href);
+    const currentItem = allItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
     if (currentItem) return currentItem.label;
-    if (pathname.startsWith('/dashboard/admin')) return 'Admin';
-    if (pathname.startsWith('/dashboard/report')) return 'Report Issue';
-    return 'Dashboard';
+    if(pathname === '/dashboard') return 'Dashboard';
+    return 'CivicConnect';
   }
 
   return (
@@ -66,20 +107,64 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarMenuItem key={item.href}>
                   <Link href={item.href} legacyBehavior passHref>
                     <SidebarMenuButton
-                      isActive={pathname === item.href}
+                      isActive={pathname.startsWith(item.href)}
                       tooltip={{
                         children: item.label,
-                        className: 'bg-sidebar text-sidebar-foreground',
                       }}
                     >
                       <item.icon />
                       <span>{item.label}</span>
+                      {item.badge && <Badge className="ml-auto">{item.badge}</Badge>}
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarContent>
+          <SidebarFooter className="mt-auto">
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <Link href={adminMenuItem.href} legacyBehavior passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(adminMenuItem.href)}
+                            tooltip={{ children: adminMenuItem.label }}
+                        >
+                            <adminMenuItem.icon />
+                            <span>{adminMenuItem.label}</span>
+                        </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+                <SidebarSeparator />
+                 {bottomMenuItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                    <Link href={item.href} legacyBehavior passHref>
+                        <SidebarMenuButton
+                        isActive={pathname.startsWith(item.href)}
+                        tooltip={{
+                            children: item.label,
+                        }}
+                        >
+                        <item.icon />
+                        <span>{item.label}</span>
+                        </SidebarMenuButton>
+                    </Link>
+                    </SidebarMenuItem>
+                ))}
+                <SidebarSeparator />
+                 <div className="p-2">
+                    <div className="p-2 flex items-center gap-2 rounded-lg bg-sidebar-accent">
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage src="https://picsum.photos/seed/user/80/80" />
+                            <AvatarFallback>U</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-sidebar-accent-foreground">John Doe</span>
+                            <span className="text-xs text-muted-foreground">john.doe@email.com</span>
+                        </div>
+                    </div>
+                </div>
+            </SidebarMenu>
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset>
             <header className="flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
@@ -89,6 +174,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         {getPageTitle()}
                     </h1>
                 </div>
+                <Button variant="ghost" size="icon">
+                    <Bell />
+                    <span className="sr-only">Notifications</span>
+                </Button>
             </header>
             <main className="flex-1 p-4 md:p-6 lg:p-8">
                 {children}
