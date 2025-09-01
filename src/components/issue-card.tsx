@@ -21,16 +21,28 @@ interface IssueCardProps {
 
 export function IssueCard({ issue }: IssueCardProps) {
   const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
+  
+  const categoryImage = {
+    'Pothole': { url: 'https://picsum.photos/seed/pothole/800/600', hint: 'pothole road' },
+    'Graffiti': { url: 'https://picsum.photos/seed/graffiti/800/600', hint: 'graffiti wall' },
+    'Streetlight Outage': { url: 'https://picsum.photos/seed/light/800/600', hint: 'streetlight dark' },
+    'Waste Management': { url: 'https://picsum.photos/seed/trash/800/600', hint: 'trash can' },
+    'Damaged Sign': { url: 'https://picsum.photos/seed/sign/800/600', hint: 'street sign' },
+    'Water Leak': { url: 'https://picsum.photos/seed/water/800/600', hint: 'water leak' },
+    'Other': { url: 'https://picsum.photos/seed/other/800/600', hint: 'civic issue' },
+  };
+
+  const displayImage = categoryImage[issue.category] || categoryImage['Other'];
 
   return (
     <Card className="flex flex-col overflow-hidden group">
         <CardHeader className="relative p-0 h-40">
             <Image 
-                src={issue.imageUrl} 
+                src={displayImage.url} 
                 alt={issue.title} 
                 fill 
                 className="object-cover"
-                data-ai-hint={issue.imageHint}
+                data-ai-hint={displayImage.hint}
             />
             <div className="absolute top-2 right-2">
                 <IssueStatusBadge status={issue.status} />

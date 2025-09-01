@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     },
     {
       href: '/track',
-      label: 'Track Issues',
+      label: 'My Issues',
       icon: Target,
       badge: "3"
     },
@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const getPageTitle = () => {
     // Handle the new /track and /track/[id] routes
-    if (pathname.startsWith('/track')) return 'Track Issues';
+    if (pathname.startsWith('/track')) return 'My Issues';
     
     const currentItem = allItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard' && item.href !== '/track');
     if (currentItem) return currentItem.label;
