@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import type { Issue } from '@/lib/types';
 import { IssueStatusBadge } from './issue-status-badge';
 import { Badge } from './ui/badge';
@@ -12,14 +11,6 @@ interface IssueListItemProps {
 export function IssueListItem({ issue }: IssueListItemProps) {
     return (
         <div className="flex items-start gap-4 p-4 hover:bg-muted/50 border-b last:border-b-0">
-            <Image
-                src={issue.imageUrl}
-                alt={issue.title}
-                width={120}
-                height={90}
-                className="rounded-md object-cover aspect-[4/3]"
-                data-ai-hint={issue.imageHint}
-            />
             <div className="flex-grow">
                 <div className="flex items-center gap-2 mb-1">
                     <Badge variant="secondary">{issue.category}</Badge>
