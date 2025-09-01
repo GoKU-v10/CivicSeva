@@ -55,11 +55,11 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://picsum.photos/seed/skyline/1920/1080"
-            alt="City skyline"
+            src="https://picsum.photos/seed/people/1920/1080"
+            alt="A diverse group of people collaborating on a city project."
             fill
             className="object-cover"
-            data-ai-hint="city skyline"
+            data-ai-hint="diverse people"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
