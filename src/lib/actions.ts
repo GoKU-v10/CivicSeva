@@ -60,6 +60,7 @@ export async function createIssueAction(formData: FormData) {
         });
 
         revalidatePath('/');
+        revalidatePath('/dashboard/my-issues');
         revalidatePath('/admin');
         
         return { success: true, message: 'Issue reported successfully!' };
