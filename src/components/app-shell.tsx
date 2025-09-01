@@ -126,10 +126,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter className="mt-auto">
-            <SidebarMenu>
                 <SidebarMenuItem>
                     <Link href={adminMenuItem.href}>
                         <SidebarMenuButton
@@ -141,6 +137,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         </SidebarMenuButton>
                     </Link>
                 </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter className="mt-auto">
+            <SidebarMenu>
                 <SidebarSeparator />
                  {bottomMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
