@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { suggestIssueDescription, createIssueAction } from '@/lib/actions';
+import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
 import { Image as ImageIcon, Sparkles, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -54,6 +54,8 @@ export function ReportIssueForm() {
       description: '',
     },
   });
+  
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -109,7 +111,7 @@ export function ReportIssueForm() {
         formData.append('photoDataUri', photoDataUri);
         formData.append('locationData', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
         
-        const result = await suggestIssueDescription(formData);
+        const result = await suggestDescriptionAction(formData);
 
         if (result.success && result.description) {
             form.setValue('description', result.description);
@@ -168,14 +170,19 @@ export function ReportIssueForm() {
                                     <ImageIcon className="size-8 text-muted-foreground" />
                                 )}
                                 </div>
-                                <Input type="file" accept="image/*" className="hidden" id="photo-upload" onChange={(e) => {
-                                    field.onChange(e.target.files);
-                                    handlePhotoChange(e);
-                                }} />
-                                <Button type="button" variant="outline" asChild>
-                                    <label htmlFor="photo-upload">
-                                        {photoPreview ? 'Change Photo' : 'Upload Photo'}
-                                    </label>
+                                <Input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    id="photo-upload" 
+                                    ref={photoInputRef}
+                                    onChange={(e) => {
+                                        field.onChange(e.target.files);
+                                        handlePhotoChange(e);
+                                    }} 
+                                />
+                                <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
+                                    {photoPreview ? 'Change Photo' : 'Upload Photo'}
                                 </Button>
                             </div>
                         </FormControl>
