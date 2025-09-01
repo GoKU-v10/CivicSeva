@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { IssueStatusBadge } from "@/components/issue-status-badge"
 import { DataTableColumnHeader } from "./data-table-column-header"
 import { DataTableRowActions } from "./data-table-row-actions"
+import { format } from "date-fns"
 
 export const columns: ColumnDef<Issue>[] = [
   {
@@ -44,7 +45,7 @@ export const columns: ColumnDef<Issue>[] = [
       <DataTableColumnHeader column={column} title="Reported" />
     ),
     cell: ({ row }) => {
-        return <span>{new Date(row.original.reportedAt).toLocaleDateString()}</span>
+        return <span>{format(new Date(row.original.reportedAt), 'MM/dd/yyyy')}</span>
     }
   },
   {

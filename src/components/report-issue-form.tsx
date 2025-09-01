@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
+import { suggestIssueDescription, createIssueAction } from '@/lib/actions';
 import { Image as ImageIcon, Sparkles, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -109,7 +109,7 @@ export function ReportIssueForm() {
         formData.append('photoDataUri', photoDataUri);
         formData.append('locationData', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
         
-        const result = await suggestDescriptionAction(formData);
+        const result = await suggestIssueDescription(formData);
 
         if (result.success && result.description) {
             form.setValue('description', result.description);
@@ -137,7 +137,7 @@ export function ReportIssueForm() {
 
         if(result.success) {
             toast({ title: 'Success', description: result.message });
-            router.push('/');
+            router.push('/dashboard');
         } else {
             toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
         }
