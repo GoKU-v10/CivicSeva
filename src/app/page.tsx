@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,8 +17,11 @@ import {
   Shield,
 } from 'lucide-react';
 import Image from 'next/image';
+import { useState } from 'react';
 
 export default function LandingPage() {
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-sm">
@@ -45,10 +50,40 @@ export default function LandingPage() {
               Login
             </Link>
           </nav>
-          <Button asChild>
-            <Link href="/login">Report Issue Now</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild className="hidden sm:inline-flex">
+                <Link href="/login">Report Issue Now</Link>
+            </Button>
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setShowMobileMenu(!showMobileMenu)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                <span className="sr-only">Toggle menu</span>
+            </Button>
+          </div>
         </div>
+        {showMobileMenu && (
+             <div className="md:hidden bg-background/95">
+                <nav className="flex flex-col items-center gap-4 p-4">
+                    <Link href="#how-it-works" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
+                    How It Works
+                    </Link>
+                    <Link href="#statistics" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
+                    Statistics
+                    </Link>
+                    <Link href="#features" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
+                    Features
+                    </Link>
+                    <Link href="#contact" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
+                    Contact
+                    </Link>
+                    <Link href="/login" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
+                    Login
+                    </Link>
+                     <Button asChild className="w-full">
+                        <Link href="/login">Report Issue Now</Link>
+                    </Button>
+                </nav>
+            </div>
+        )}
       </header>
 
       <main className="flex-1">
@@ -58,6 +93,7 @@ export default function LandingPage() {
             alt="Citizens collaborating with government officials in a city hall."
             fill
             className="object-cover"
+            priority
             data-ai-hint="government citizens"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
