@@ -26,12 +26,12 @@ import { Checkbox } from './ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const reportIssueSchema = z.object({
+    category: z.string().min(1, 'Please select a category.'),
     description: z
         .string()
         .min(10, { message: 'Description must be at least 10 characters long.' })
         .max(500, { message: 'Description must not exceed 500 characters.' }),
     photos: z.any().refine((files) => files?.length >= 1, 'At least one photo is required.'),
-    category: z.string().min(1, 'Please select a category.'),
     address: z.string().optional(),
     terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions.'),
 });
@@ -63,9 +63,9 @@ export function ReportIssueForm() {
     const form = useForm<z.infer<typeof reportIssueSchema>>({
         resolver: zodResolver(reportIssueSchema),
         defaultValues: {
+            category: '',
             description: '',
             photos: undefined,
-            category: '',
             address: '',
             terms: false,
         },
@@ -185,12 +185,48 @@ export function ReportIssueForm() {
                     <CardContent>
                         <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                             <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>1. Category</FormLabel>
+                                     {aiSuggestion && (
+                                        <Alert>
+                                            <Sparkles className="h-4 w-4" />
+                                            <AlertTitle>AI Suggestion</AlertTitle>
+                                            <AlertDescription>
+                                                We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Select an issue category" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Pothole">Pothole</SelectItem>
+                                        <SelectItem value="Graffiti">Graffiti</SelectItem>
+                                        <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
+                                        <SelectItem value="Waste Management">Waste Management</SelectItem>
+                                        <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
+                                        <SelectItem value="Water Leak">Water Leak</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+
                             <FormField
                                 control={form.control}
                                 name="photos"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Issue Photos/Videos</FormLabel>
+                                    <FormLabel>2. Issue Photos/Videos</FormLabel>
                                     <FormControl>
                                         <div>
                                             <Input 
@@ -231,7 +267,7 @@ export function ReportIssueForm() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <div className="flex justify-between items-center">
-                                        <FormLabel>Description</FormLabel>
+                                        <FormLabel>3. Description</FormLabel>
                                         <div className="flex items-center gap-2">
                                             <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => alert('Voice-to-text coming soon!')}>
                                                 <Mic className="size-4" />
@@ -256,46 +292,10 @@ export function ReportIssueForm() {
 
                             <FormField
                                 control={form.control}
-                                name="category"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                     {aiSuggestion && (
-                                        <Alert>
-                                            <Sparkles className="h-4 w-4" />
-                                            <AlertTitle>AI Suggestion</AlertTitle>
-                                            <AlertDescription>
-                                                We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Select an issue category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Pothole">Pothole</SelectItem>
-                                        <SelectItem value="Graffiti">Graffiti</SelectItem>
-                                        <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
-                                        <SelectItem value="Waste Management">Waste Management</SelectItem>
-                                        <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
-                                        <SelectItem value="Water Leak">Water Leak</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
                                 name="address"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Location</FormLabel>
+                                    <FormLabel>4. Location</FormLabel>
                                     <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                                        {location.latitude && location.longitude ? (
                                              <Image src={`https://picsum.photos/seed/${location.latitude}/600/400`} layout="fill" alt="Map preview" className="object-cover" data-ai-hint="map satellite" />
