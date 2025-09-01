@@ -1,3 +1,4 @@
+
 import { issues } from "@/lib/data";
 import type { Issue, IssueUpdate, IssueImage } from "@/lib/types";
 import { notFound } from "next/navigation";
@@ -10,7 +11,7 @@ import { IssueStatusBadge } from "@/components/issue-status-badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Image from "next/image";
 import { format } from "date-fns";
-import { MapPin, Building, Clock, Calendar, CheckCircle2, ThumbsUp, ThumbsDown, MessageSquare, Star } from "lucide-react";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
@@ -32,6 +33,13 @@ function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) 
 }
 
 function ImageGallery({ images }: { images: IssueImage[] }) {
+    if (!images || images.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
+                <p className="text-muted-foreground">No images available for this issue.</p>
+            </div>
+        );
+    }
     return (
         <Carousel className="w-full">
             <CarouselContent>
@@ -40,7 +48,7 @@ function ImageGallery({ images }: { images: IssueImage[] }) {
                     <div className="p-1">
                         <Card>
                             <CardContent className="relative aspect-video flex items-center justify-center p-6">
-                                <Image src={image.url} alt={image.caption} fill className="object-cover rounded-lg" />
+                                <Image src={image.url} alt={image.caption} fill className="object-cover rounded-lg" data-ai-hint="issue photo" />
                                 <Badge className="absolute bottom-2 left-2">{image.caption}</Badge>
                             </CardContent>
                         </Card>
@@ -48,8 +56,8 @@ function ImageGallery({ images }: { images: IssueImage[] }) {
                 </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-4" />
-            <CarouselNext className="-right-4" />
+            <CarouselPrevious className="md:-left-12" />
+            <CarouselNext className="md:-right-12" />
         </Carousel>
     )
 }
@@ -156,30 +164,30 @@ export default function IssueDetailPage({ params }: { params: { id: string } }) 
                                 <Badge variant="secondary" className="mt-1">{issue.category}</Badge>
                             </div>
                              <Separator />
-                            <div className="flex items-center gap-2 text-sm">
-                                <Building className="size-4 text-muted-foreground" />
+                            <div className="flex items-start gap-2 text-sm">
+                                <Building className="size-4 text-muted-foreground mt-1" />
                                 <div>
                                     <h4 className="font-semibold">Department</h4>
                                     <p className="text-muted-foreground">{issue.department}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
-                                <MapPin className="size-4 text-muted-foreground" />
+                            <div className="flex items-start gap-2 text-sm">
+                                <MapPin className="size-4 text-muted-foreground mt-1" />
                                 <div>
                                     <h4 className="font-semibold">Location</h4>
                                     <p className="text-muted-foreground">{issue.location.address}</p>
                                 </div>
                             </div>
-                             <div className="flex items-center gap-2 text-sm">
-                                <Calendar className="size-4 text-muted-foreground" />
+                             <div className="flex items-start gap-2 text-sm">
+                                <Calendar className="size-4 text-muted-foreground mt-1" />
                                 <div>
                                     <h4 className="font-semibold">Reported On</h4>
                                     <p className="text-muted-foreground">{format(new Date(issue.reportedAt), "PPP")}</p>
                                 </div>
                             </div>
                             {issue.eta && (
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Clock className="size-4 text-muted-foreground" />
+                                <div className="flex items-start gap-2 text-sm">
+                                    <Clock className="size-4 text-muted-foreground mt-1" />
                                     <div>
                                         <h4 className="font-semibold">Est. Completion</h4>
                                         <p className="text-muted-foreground">{format(new Date(issue.eta), "PPP")}</p>

@@ -4,7 +4,6 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, ArrowRight } from 'lucide-react';
@@ -25,15 +24,22 @@ export function IssueCard({ issue }: IssueCardProps) {
 
   return (
     <Card className="flex flex-col overflow-hidden group">
-      <CardHeader className="p-4">
-        <div className="flex justify-between items-start">
-            <div>
-                <Badge variant="secondary">{issue.category}</Badge>
+        <CardHeader className="relative p-0 h-40">
+            <Image 
+                src={issue.imageUrl} 
+                alt={issue.title} 
+                fill 
+                className="object-cover"
+                data-ai-hint={issue.imageHint}
+            />
+            <div className="absolute top-2 right-2">
+                <IssueStatusBadge status={issue.status} />
             </div>
-            <IssueStatusBadge status={issue.status} />
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0 flex-grow">
+            <div className="absolute bottom-2 left-2">
+                 <Badge variant="secondary">{issue.category}</Badge>
+            </div>
+        </CardHeader>
+      <CardContent className="p-4 flex-grow">
         <p className="text-xs text-muted-foreground font-mono">{issue.id}</p>
         <h3 className="text-base font-semibold leading-tight mt-1">{issue.title}</h3>
         <div className="mt-2 space-y-1 text-xs text-muted-foreground">
