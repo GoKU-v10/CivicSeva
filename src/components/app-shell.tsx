@@ -106,7 +106,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <Link href={item.href} legacyBehavior passHref>
+                  <Link href={item.href}>
                     <SidebarMenuButton
                       isActive={pathname.startsWith(item.href)}
                       tooltip={{
@@ -125,7 +125,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarFooter className="mt-auto">
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <Link href={adminMenuItem.href} legacyBehavior passHref>
+                    <Link href={adminMenuItem.href}>
                         <SidebarMenuButton
                             isActive={pathname.startsWith(adminMenuItem.href)}
                             tooltip={{ children: adminMenuItem.label }}
@@ -138,7 +138,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarSeparator />
                  {bottomMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
-                    <Link href={item.href} legacyBehavior passHref>
+                    <Link href={item.href}>
                         <SidebarMenuButton
                         isActive={pathname.startsWith(item.href)}
                         tooltip={{
