@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const currentItem = allItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
     if (currentItem) return currentItem.label;
     if(pathname === '/dashboard') return 'Dashboard';
-    return 'CivicConnect';
+    return 'CivicSeva';
   }
 
   return (
@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2 p-2">
                 <ShieldCheck className="text-primary size-8" />
-                <h1 className="text-2xl font-bold text-primary">CivicConnect</h1>
+                <h1 className="text-2xl font-bold text-primary">CivicSeva</h1>
             </Link>
           </SidebarHeader>
           <SidebarContent>

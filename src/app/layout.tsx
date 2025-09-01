@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'CivicConnect',
+  title: 'CivicSeva',
   description: 'Report civic issues and track their resolution in real-time.',
 };
 

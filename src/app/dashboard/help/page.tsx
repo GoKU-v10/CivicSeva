@@ -50,7 +50,7 @@ export default function HelpPage() {
         <CardContent className="flex items-center gap-4">
             <div className="flex items-center gap-2">
                 <LifeBuoy className="h-6 w-6 text-primary" />
-                <span>support@civicconnect.app</span>
+                <span>support@civicseva.app</span>
             </div>
             <div className="flex items-center gap-2">
                 <Phone className="h-6 w-6 text-primary" />

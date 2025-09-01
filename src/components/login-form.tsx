@@ -60,7 +60,7 @@ export function LoginForm() {
         <div className="mx-auto mb-4 flex items-center justify-center">
           <ShieldCheck className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle>Welcome to CivicConnect</CardTitle>
+        <CardTitle>Welcome to CivicSeva</CardTitle>
         <CardDescription>Sign in to your account to continue</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

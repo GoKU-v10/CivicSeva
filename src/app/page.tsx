@@ -25,7 +25,7 @@ export default function LandingPage() {
           <Link href="/" className="flex items-center gap-2">
             <ShieldCheck className="h-8 w-8 text-primary" />
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-primary">CivicConnect</span>
+              <span className="text-xl font-bold text-primary">CivicSeva</span>
               <span className="text-xs text-muted-foreground">Building Better Cities Together</span>
             </div>
           </Link>
@@ -55,11 +55,11 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://picsum.photos/seed/people/1920/1080"
-            alt="A diverse group of people collaborating on a city project."
+            src="https://picsum.photos/seed/civic/1920/1080"
+            alt="Citizens collaborating with government officials in a city hall."
             fill
             className="object-cover"
-            data-ai-hint="diverse people"
+            data-ai-hint="government citizens"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
@@ -191,7 +191,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
-              <h3 className="text-lg font-semibold">CivicConnect</h3>
+              <h3 className="text-lg font-semibold">CivicSeva</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Partnering with governments to build smarter, more responsive cities.
               </p>
@@ -225,7 +225,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-8 border-t border-muted pt-8 text-center text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} CivicConnect. All rights reserved.
+            &copy; {new Date().getFullYear()} CivicSeva. All rights reserved.
           </div>
         </div>
       </footer>
