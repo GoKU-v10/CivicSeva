@@ -6,7 +6,7 @@ import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
 import { revalidatePath } from 'next/cache';
 import { issues } from './data';
-import type { Issue } from './types';
+import type { Issue, IssueCategory } from './types';
 
 const SuggestDescriptionSchema = z.object({
   photoDataUri: z.string(),
@@ -50,21 +50,17 @@ export async function createIssueAction(formData: FormData) {
             address: formData.get('address'),
         });
 
-        const categorization = await categorizeIssue({
-            description: validatedData.description,
-            photoDataUri: validatedData.photoDataUri,
-            location: {
-                latitude: validatedData.latitude,
-                longitude: validatedData.longitude,
-            },
-        });
+        // For the prototype, we'll use the user-selected category.
+        // In a real app, you might use the AI categorization as a suggestion
+        // or for backend routing.
+        const userCategory = validatedData.category as IssueCategory;
 
         const newIssue: Issue = {
-            id: `IS-${Math.floor(Math.random() * 1000)}`,
-            title: validatedData.description.substring(0, 50) + '...',
+            id: `IS-${Math.floor(Math.random() * 10000)}`,
+            title: validatedData.description.substring(0, 50) + (validatedData.description.length > 50 ? '...' : ''),
             description: validatedData.description,
             imageUrl: validatedData.photoDataUri,
-            imageHint: categorization.category.toLowerCase(),
+            imageHint: userCategory.toLowerCase(),
             images: [{ url: validatedData.photoDataUri, caption: 'User submitted photo' }],
             location: {
                 latitude: validatedData.latitude,
@@ -72,11 +68,10 @@ export async function createIssueAction(formData: FormData) {
                 address: validatedData.address || 'Address not provided',
             },
             status: 'Reported',
-            category: categorization.category as any,
-            priority: 'Medium',
+            category: userCategory,
+            priority: 'Medium', // Default priority
             reportedAt: new Date().toISOString(),
-            department: categorization.suggestedDepartment,
-            confidence: categorization.confidence,
+            department: 'Pending Assignment', // Default department
             updates: [
                 { timestamp: new Date().toISOString(), status: 'Reported', description: 'Issue submitted by citizen.' },
             ],
@@ -86,10 +81,7 @@ export async function createIssueAction(formData: FormData) {
         // For this demo, we'll prepend it to our in-memory array.
         issues.unshift(newIssue);
 
-        revalidatePath('/');
-        revalidatePath('/dashboard');
         revalidatePath('/track');
-        revalidatePath('/dashboard/admin');
         
         return { success: true, message: 'Issue reported successfully!' };
 
