@@ -3,7 +3,7 @@ import { issues } from "@/lib/data";
 
 export default function MyIssuesPage() {
     // In a real application, you would fetch only the issues reported by the logged-in user.
-    const userIssues = issues.slice(0, 3); 
+    const userIssues = issues; 
 
     return (
         <div>
