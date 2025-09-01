@@ -1,8 +1,11 @@
 import type { Issue } from '@/lib/types';
 import { IssueStatusBadge } from './issue-status-badge';
 import { Badge } from './ui/badge';
-import { MapPin, Calendar, Dot } from 'lucide-react';
+import { MapPin, Calendar, Dot, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import Image from 'next/image';
+import { Button } from './ui/button';
+import Link from 'next/link';
 
 interface IssueListItemProps {
     issue: Issue;
@@ -10,14 +13,23 @@ interface IssueListItemProps {
 
 export function IssueListItem({ issue }: IssueListItemProps) {
     return (
-        <div className="flex items-start gap-4 p-4 hover:bg-muted/50 border-b last:border-b-0">
+        <div className="flex items-center gap-4 p-4 hover:bg-muted/50 border-b last:border-b-0">
+            <div className="relative hidden md:block aspect-square w-24 h-24 rounded-md overflow-hidden">
+                 <Image 
+                    src={issue.imageUrl}
+                    alt={issue.title}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={issue.imageHint}
+                />
+            </div>
             <div className="flex-grow">
-                <div className="flex items-center gap-2 mb-1">
+                 <div className="flex items-center gap-2 mb-1">
+                    <p className="text-xs text-muted-foreground font-mono">{issue.id}</p>
+                    <Dot />
                     <Badge variant="secondary">{issue.category}</Badge>
-                    <IssueStatusBadge status={issue.status} />
                 </div>
                 <h3 className="font-semibold text-base">{issue.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{issue.description}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                     <div className="flex items-center gap-1">
                         <MapPin className="size-3" />
@@ -29,6 +41,14 @@ export function IssueListItem({ issue }: IssueListItemProps) {
                         <span>Reported {formatDistanceToNow(new Date(issue.reportedAt), { addSuffix: true })}</span>
                     </div>
                 </div>
+            </div>
+             <div className="flex flex-col items-end gap-2">
+                <IssueStatusBadge status={issue.status} />
+                <Button asChild variant="ghost" size="sm">
+                    <Link href={`/dashboard/my-issues/${issue.id}`}>
+                        View Details <ArrowRight className="ml-2" />
+                    </Link>
+                </Button>
             </div>
         </div>
     )

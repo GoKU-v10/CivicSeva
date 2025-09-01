@@ -1,0 +1,205 @@
+import { issues } from "@/lib/data";
+import type { Issue, IssueUpdate, IssueImage } from "@/lib/types";
+import { notFound } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { IssueStatusBadge } from "@/components/issue-status-badge";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import Image from "next/image";
+import { format } from "date-fns";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, ThumbsUp, ThumbsDown, MessageSquare, Star } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+
+function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
+    return (
+        <div className="flex gap-4">
+            <div className="flex flex-col items-center">
+                <div className="flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground">
+                    <CheckCircle2 className="size-4" />
+                </div>
+                {!isLast && <div className="w-px h-full bg-border flex-1" />}
+            </div>
+            <div className="pb-8">
+                <p className="font-semibold">{item.status}</p>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">{format(new Date(item.timestamp), "PPP p")}</p>
+            </div>
+        </div>
+    )
+}
+
+function ImageGallery({ images }: { images: IssueImage[] }) {
+    return (
+        <Carousel className="w-full">
+            <CarouselContent>
+                {images.map((image, index) => (
+                <CarouselItem key={index}>
+                    <div className="p-1">
+                        <Card>
+                            <CardContent className="relative aspect-video flex items-center justify-center p-6">
+                                <Image src={image.url} alt={image.caption} fill className="object-cover rounded-lg" />
+                                <Badge className="absolute bottom-2 left-2">{image.caption}</Badge>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="-left-4" />
+            <CarouselNext className="-right-4" />
+        </Carousel>
+    )
+}
+
+function RateService() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>How was the service?</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">Your feedback helps us improve our services.</p>
+                <div className="flex items-center justify-center gap-4">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                        <Button key={rating} variant="outline" size="icon" className="h-12 w-12 rounded-full">
+                            <Star className="size-6" />
+                        </Button>
+                    ))}
+                </div>
+            </CardContent>
+             <CardFooter className="flex justify-end">
+                <Button>Submit Rating</Button>
+            </CardFooter>
+        </Card>
+    )
+}
+
+
+export default function IssueDetailPage({ params }: { params: { id: string } }) {
+    const issue = issues.find(i => i.id === params.id);
+
+    if (!issue) {
+        notFound();
+    }
+
+    const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
+
+    return (
+        <div className="max-w-6xl mx-auto space-y-8">
+             <div>
+                <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
+                <h1 className="text-3xl font-bold">{issue.title}</h1>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Photo Gallery</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ImageGallery images={issue.images} />
+                        </CardContent>
+                    </Card>
+
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Issue Timeline</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div>
+                                {issue.updates.map((update, index) => (
+                                    <TimelineItem key={index} item={update} isLast={index === issue.updates.length - 1} />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {issue.status === 'Resolved' && (
+                       <RateService />
+                    )}
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Comments</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                           <div className="space-y-4">
+                               <div className="flex gap-4">
+                                   <Textarea placeholder="Add a public comment..." />
+                                   <Button>
+                                       <MessageSquare className="mr-2" />
+                                       Comment
+                                   </Button>
+                               </div>
+                           </div>
+                        </CardContent>
+                    </Card>
+
+                </div>
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <h4 className="font-semibold text-sm">Status</h4>
+                                <IssueStatusBadge status={issue.status} className="mt-1" />
+                            </div>
+                            <Separator />
+                             <div>
+                                <h4 className="font-semibold text-sm">Category</h4>
+                                <Badge variant="secondary" className="mt-1">{issue.category}</Badge>
+                            </div>
+                             <Separator />
+                            <div className="flex items-center gap-2 text-sm">
+                                <Building className="size-4 text-muted-foreground" />
+                                <div>
+                                    <h4 className="font-semibold">Department</h4>
+                                    <p className="text-muted-foreground">{issue.department}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                                <MapPin className="size-4 text-muted-foreground" />
+                                <div>
+                                    <h4 className="font-semibold">Location</h4>
+                                    <p className="text-muted-foreground">{issue.location.address}</p>
+                                </div>
+                            </div>
+                             <div className="flex items-center gap-2 text-sm">
+                                <Calendar className="size-4 text-muted-foreground" />
+                                <div>
+                                    <h4 className="font-semibold">Reported On</h4>
+                                    <p className="text-muted-foreground">{format(new Date(issue.reportedAt), "PPP")}</p>
+                                </div>
+                            </div>
+                            {issue.eta && (
+                                <div className="flex items-center gap-2 text-sm">
+                                    <Clock className="size-4 text-muted-foreground" />
+                                    <div>
+                                        <h4 className="font-semibold">Est. Completion</h4>
+                                        <p className="text-muted-foreground">{format(new Date(issue.eta), "PPP")}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Progress</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Progress value={progress} className="h-3" />
+                            <p className="text-sm text-center text-muted-foreground mt-2">{progress}% complete</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    )
+}

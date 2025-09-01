@@ -7,16 +7,27 @@ export const issues: Issue[] = [
     description: 'A large and dangerous pothole has formed on the corner of Main St and 1st Ave, causing issues for traffic.',
     imageUrl: 'https://picsum.photos/seed/pothole/800/600',
     imageHint: 'pothole road',
+    images: [
+      { url: 'https://picsum.photos/seed/pothole1/800/600', caption: 'Before' },
+      { url: 'https://picsum.photos/seed/pothole2/800/600', caption: 'Work in progress' },
+      { url: 'https://picsum.photos/seed/pothole3/800/600', caption: 'After' },
+    ],
     location: {
       latitude: 40.7128,
       longitude: -74.0060,
       address: 'Main St & 1st Ave, New York, NY',
     },
-    status: 'Reported',
+    status: 'In Progress',
     category: 'Pothole',
+    priority: 'High',
     reportedAt: '2024-07-20T10:00:00Z',
     department: 'Public Works',
-    confidence: 0.95
+    confidence: 0.95,
+    updates: [
+      { timestamp: '2024-07-20T10:00:00Z', status: 'Reported', description: 'Issue submitted by citizen.' },
+      { timestamp: '2024-07-20T11:30:00Z', status: 'In Progress', description: 'Assigned to Public Works. A team has been dispatched.' },
+    ],
+    eta: '2024-07-23T17:00:00Z',
   },
   {
     id: 'IS-2',
@@ -24,16 +35,24 @@ export const issues: Issue[] = [
     description: 'The wall near the entrance of Central Park has been vandalized with spray paint.',
     imageUrl: 'https://picsum.photos/seed/graffiti/800/600',
     imageHint: 'graffiti wall',
+    images: [
+       { url: 'https://picsum.photos/seed/graffiti/800/600', caption: 'Before' },
+    ],
     location: {
       latitude: 40.785091,
       longitude: -73.968285,
       address: 'Central Park, New York, NY',
     },
-    status: 'In Progress',
+    status: 'Reported',
     category: 'Graffiti',
+    priority: 'Medium',
     reportedAt: '2024-07-19T14:30:00Z',
     department: 'Parks & Recreation',
-    confidence: 0.98
+    confidence: 0.98,
+    updates: [
+       { timestamp: '2024-07-19T14:30:00Z', status: 'Reported', description: 'Issue submitted by citizen.' },
+    ],
+    eta: '2024-07-22T17:00:00Z',
   },
   {
     id: 'IS-3',
@@ -41,6 +60,10 @@ export const issues: Issue[] = [
     description: 'The streetlight at the intersection of Broad St and Wall St is not working.',
     imageUrl: 'https://picsum.photos/seed/light/800/600',
     imageHint: 'streetlight dark',
+    images: [
+      { url: 'https://picsum.photos/seed/light/800/600', caption: 'Before' },
+      { url: 'https://picsum.photos/seed/resolved/800/600', caption: 'After' },
+    ],
     location: {
       latitude: 40.7063,
       longitude: -74.0111,
@@ -48,10 +71,16 @@ export const issues: Issue[] = [
     },
     status: 'Resolved',
     category: 'Streetlight Outage',
+    priority: 'Medium',
     reportedAt: '2024-07-15T22:15:00Z',
     resolvedAt: '2024-07-17T11:00:00Z',
     department: 'Transportation',
-    confidence: 0.99
+    confidence: 0.99,
+    updates: [
+       { timestamp: '2024-07-15T22:15:00Z', status: 'Reported', description: 'Issue submitted by citizen.' },
+       { timestamp: '2024-07-16T09:00:00Z', status: 'In Progress', description: 'Maintenance crew scheduled.' },
+       { timestamp: '2024-07-17T11:00:00Z', status: 'Resolved', description: 'Streetlight has been repaired.' },
+    ],
   },
   {
     id: 'IS-4',
@@ -59,16 +88,25 @@ export const issues: Issue[] = [
     description: 'Public trash can on 5th Avenue is overflowing, leading to litter on the sidewalk.',
     imageUrl: 'https://picsum.photos/seed/trash/800/600',
     imageHint: 'trash can',
+    images: [
+       { url: 'https://picsum.photos/seed/trash/800/600', caption: 'Before' },
+    ],
     location: {
       latitude: 40.7739,
       longitude: -73.965,
       address: '5th Avenue, New York, NY',
     },
-    status: 'Reported',
+    status: 'Resolved',
     category: 'Waste Management',
+    priority: 'Low',
     reportedAt: '2024-07-21T09:00:00Z',
+    resolvedAt: '2024-07-21T15:00:00Z',
     department: 'Sanitation',
-    confidence: 0.92
+    confidence: 0.92,
+     updates: [
+       { timestamp: '2024-07-21T09:00:00Z', status: 'Reported', description: 'Issue submitted by citizen.' },
+       { timestamp: '2024-07-21T15:00:00Z', status: 'Resolved', description: 'Trash has been collected.' },
+    ],
   },
     {
     id: 'IS-5',
@@ -76,6 +114,9 @@ export const issues: Issue[] = [
     description: 'A stop sign at the corner of Liberty St and Nassau St is bent and difficult to see.',
     imageUrl: 'https://picsum.photos/seed/sign/800/600',
     imageHint: 'street sign',
+    images: [
+      { url: 'https://picsum.photos/seed/sign/800/600', caption: 'Before' },
+    ],
     location: {
       latitude: 40.7088,
       longitude: -74.009,
@@ -83,8 +124,14 @@ export const issues: Issue[] = [
     },
     status: 'In Progress',
     category: 'Damaged Sign',
+    priority: 'High',
     reportedAt: '2024-07-18T08:45:00Z',
     department: 'Transportation',
-    confidence: 0.96
+    confidence: 0.96,
+     updates: [
+       { timestamp: '2024-07-18T08:45:00Z', status: 'Reported', description: 'Issue submitted by citizen.' },
+       { timestamp: '2024-07-18T10:00:00Z', status: 'In Progress', description: 'Repair crew has been dispatched for replacement.' },
+    ],
+    eta: '2024-07-19T17:00:00Z',
   },
 ];
