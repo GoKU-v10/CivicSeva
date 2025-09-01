@@ -278,9 +278,33 @@ export function ReportIssueForm() {
                                     </Button>
                                 </div>
                             </div>
-                            <FormControl>
-                                <Textarea placeholder="Describe the issue you see..." rows={6} {...field} maxLength={500} />
-                            </FormControl>
+                            <div className="relative">
+                               <FormControl>
+                                    <Textarea placeholder="Describe the issue you see..." rows={6} {...field} maxLength={500} className="pr-24"/>
+                                </FormControl>
+                                <div className="absolute top-2 right-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="language"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="w-auto text-xs h-7">
+                                                            <SelectValue placeholder="Language" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="en">English</SelectItem>
+                                                        <SelectItem value="hi">Hindi</SelectItem>
+                                                        <SelectItem value="mr">Marathi</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
                             <FormDescription className="flex justify-between">
                                 <span>Provide as much detail as possible.</span>
                                 <span>{descriptionLength} / 500</span>
@@ -313,32 +337,6 @@ export function ReportIssueForm() {
                         )}
                     />
                     
-                    <FormField
-                        control={form.control}
-                        name="language"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>5. Preferred Language</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select language for communication" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="en">English</SelectItem>
-                                    <SelectItem value="hi">Hindi</SelectItem>
-                                    <SelectItem value="mr">Marathi</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormDescription>
-                                We will send updates in this language.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
                     <div className="space-y-4">
                         <Alert>
                             <Info className="h-4 w-4" />
