@@ -200,48 +200,12 @@ export function ReportIssueForm() {
             <CardContent>
                 <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                     <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>1. Category</FormLabel>
-                             {aiSuggestion && (
-                                <Alert>
-                                    <Sparkles className="h-4 w-4" />
-                                    <AlertTitle>AI Suggestion</AlertTitle>
-                                    <AlertDescription>
-                                        We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select an issue category" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="Pothole">Pothole</SelectItem>
-                                <SelectItem value="Graffiti">Graffiti</SelectItem>
-                                <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
-                                <SelectItem value="Waste Management">Waste Management</SelectItem>
-                                <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
-                                <SelectItem value="Water Leak">Water Leak</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
                     <FormField
                         control={form.control}
                         name="photos"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>2. Issue Photos/Videos</FormLabel>
+                            <FormLabel>1. Issue Photos/Videos</FormLabel>
                             <FormControl>
                                 <div>
                                     <Input 
@@ -275,13 +239,13 @@ export function ReportIssueForm() {
                         </FormItem>
                         )}
                     />
-                    
-                     <FormField
+
+                    <FormField
                         control={form.control}
                         name="address"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>3. Location</FormLabel>
+                            <FormLabel>2. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
                                     <Input placeholder={location.error || location.address || "Detecting location..."} {...field} />
@@ -319,6 +283,42 @@ export function ReportIssueForm() {
                                     Lat: {location.latitude.toFixed(5)}, Lon: {location.longitude.toFixed(5)}
                                 </FormDescription>
                              )}
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                     <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>3. Category</FormLabel>
+                             {aiSuggestion && (
+                                <Alert>
+                                    <Sparkles className="h-4 w-4" />
+                                    <AlertTitle>AI Suggestion</AlertTitle>
+                                    <AlertDescription>
+                                        We think this is a <span className="font-semibold">{aiSuggestion.category}</span> issue (Confidence: {Math.round(aiSuggestion.confidence * 100)}%). Feel free to change it if it's incorrect.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select an issue category" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="Pothole">Pothole</SelectItem>
+                                <SelectItem value="Graffiti">Graffiti</SelectItem>
+                                <SelectItem value="Streetlight Outage">Streetlight Outage</SelectItem>
+                                <SelectItem value="Waste Management">Waste Management</SelectItem>
+                                <SelectItem value="Damaged Sign">Damaged Sign</SelectItem>
+                                <SelectItem value="Water Leak">Water Leak</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                         )}
