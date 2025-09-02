@@ -1,7 +1,7 @@
 
 "use client"
 
-import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building } from "lucide-react"
+import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building, Trash2 } from "lucide-react"
 import { Row } from "@tanstack/react-table"
 import Link from "next/link"
 
@@ -43,6 +43,15 @@ export function DataTableRowActions<TData>({
      toast({
       title: "Department Assigned",
       description: `Issue #${(row.original as any).id} assigned to ${department}.`,
+    })
+  }
+
+  const deleteIssue = () => {
+    // In a real app, this would also need to update localStorage on the client
+    toast({
+      variant: 'destructive',
+      title: "Issue Deleted",
+      description: `Issue #${(row.original as any).id} has been deleted.`,
     })
   }
 
@@ -102,6 +111,10 @@ export function DataTableRowActions<TData>({
           <Link href={`/track/${issue.id}`}>
             View Details
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-red-600" onClick={deleteIssue}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete Issue
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
