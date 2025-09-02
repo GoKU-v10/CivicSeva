@@ -78,12 +78,9 @@ export async function createIssueAction(formData: FormData) {
         };
 
         // In a real app, you would save this to a database.
-        // For this demo, we'll prepend it to our in-memory array.
+        // For this demo, we'll prepend it to our in-memory array so the details page works on redirect.
         issues.unshift(newIssue);
         
-        // No need to revalidate since we are managing state on the client for now
-        // revalidatePath('/track');
-
         return { success: true, message: 'Issue reported successfully!', issue: newIssue };
 
     } catch (error) {
