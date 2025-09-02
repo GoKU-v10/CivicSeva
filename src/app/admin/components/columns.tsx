@@ -9,6 +9,7 @@ import { DataTableColumnHeader } from "./data-table-column-header"
 import { DataTableRowActions } from "./data-table-row-actions"
 import { format } from "date-fns"
 import { ArrowDown, ArrowRight, ArrowUp, Circle, CircleHelp, CircleCheck, CircleX } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export const priorities: {
   label: string
@@ -34,6 +35,28 @@ export const priorities: {
 
 
 export const columns: ColumnDef<Issue>[] = [
+    {
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+    },
   {
     accessorKey: "id",
     header: ({ column }) => (
