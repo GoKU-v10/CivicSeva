@@ -13,12 +13,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ShieldCheck, LogIn, User, UserCog, Building } from 'lucide-react';
+import { ShieldCheck, LogIn, User, UserCog, Building, Lock, Fingerprint } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { createIssueAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -67,6 +68,13 @@ export function LoginForm() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (role === 'admin' || role === 'official') {
+        const redirectUrl = '/dashboard/admin'; // Or a specific official dashboard
+        router.push(redirectUrl);
+        return;
+    }
+
     const action = searchParams.get('action');
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
@@ -91,15 +99,13 @@ export function LoginForm() {
                 router.push(redirectUrl);
             } else {
                 toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
-                // Don't remove the data, so they can try again
-                router.push('/report'); // Go back to the report page on failure
+                router.push('/report');
             }
         } else {
              toast({ variant: 'destructive', title: 'Error', description: "Could not find the pending report data. Please try again." });
              router.push('/report');
         }
     } else {
-        // Default login behavior
         router.push(redirectUrl);
     }
   };
@@ -111,8 +117,12 @@ export function LoginForm() {
         <div className="mx-auto mb-4 flex items-center justify-center">
           <ShieldCheck className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle>Welcome to CivicSeva</CardTitle>
-        <CardDescription>Select your role and sign in to continue</CardDescription>
+        <CardTitle>
+            {role === 'citizen' ? 'Welcome to CivicSeva' : 'Official Government Login'}
+        </CardTitle>
+        <CardDescription>
+            {role === 'citizen' ? 'Select your role and sign in to continue' : 'This login is for authorized personnel only.'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
        <form onSubmit={handleSignIn} className="space-y-4">
@@ -152,53 +162,86 @@ export function LoginForm() {
           </RadioGroup>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required defaultValue="citizen@test.com" />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link href="#" className="text-sm text-primary hover:underline" prefetch={false}>
-              Forgot password?
-            </Link>
-          </div>
-          <Input id="password" type="password" required defaultValue="password" />
-        </div>
-        <Button type="submit" className="w-full">
-            <LogIn className="mr-2" />
-            Sign In
-        </Button>
+        {role === 'citizen' ? (
+            <>
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="m@example.com" required defaultValue="citizen@test.com" />
+                </div>
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <Link href="#" className="text-sm text-primary hover:underline" prefetch={false}>
+                        Forgot password?
+                        </Link>
+                    </div>
+                    <Input id="password" type="password" required defaultValue="password" />
+                </div>
+                <Button type="submit" className="w-full">
+                    <LogIn className="mr-2" />
+                    Sign In
+                </Button>
+            </>
+        ) : (
+            <>
+                <div className="space-y-2">
+                    <Label htmlFor="employeeId">Government Employee ID</Label>
+                    <Input id="employeeId" type="text" placeholder="e.g., DPT-12345" required />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="twoFactor">Two-Factor Authentication Code</Label>
+                    <Input id="twoFactor" type="text" placeholder="Enter code from your authenticator app" required />
+                </div>
+                <Button type="submit" className="w-full">
+                    <Fingerprint className="mr-2" />
+                    Sign In Securely
+                </Button>
+                 <Alert variant="destructive" className="mt-4">
+                    <Lock className="h-4 w-4" />
+                    <AlertTitle>Secure & Audited</AlertTitle>
+                    <AlertDescription>
+                        For security reasons, all login attempts are logged and audited. Your IP address is being recorded. Unauthorized access is strictly prohibited.
+                    </AlertDescription>
+                </Alert>
+            </>
+        )}
+
         </form>
 
-        <div className="relative mt-4">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-        </div>
+        {role === 'citizen' && (
+            <>
+                <div className="relative mt-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    </div>
+                </div>
 
-        <div className="grid grid-cols-2 gap-4 pt-4">
-          <Button variant="outline">
-            <GoogleIcon className="mr-2 h-4 w-4" />
-            Google
-          </Button>
-          <Button variant="outline">
-            <FacebookIcon className="mr-2 h-4 w-4" />
-            Facebook
-          </Button>
-        </div>
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                <Button variant="outline">
+                    <GoogleIcon className="mr-2 h-4 w-4" />
+                    Google
+                </Button>
+                <Button variant="outline">
+                    <FacebookIcon className="mr-2 h-4 w-4" />
+                    Facebook
+                </Button>
+                </div>
+            </>
+        )}
       </CardContent>
-      <CardFooter className="text-center text-sm">
-        <p className="w-full">
-            New User?{' '}
-            <Link href="#" className="text-primary hover:underline" prefetch={false}>
-                Sign Up
-            </Link>
-        </p>
-      </CardFooter>
+      {role === 'citizen' && (
+         <CardFooter className="text-center text-sm">
+            <p className="w-full">
+                New User?{' '}
+                <Link href="#" className="text-primary hover:underline" prefetch={false}>
+                    Sign Up
+                </Link>
+            </p>
+        </CardFooter>
+      )}
     </Card>
   );
 }
