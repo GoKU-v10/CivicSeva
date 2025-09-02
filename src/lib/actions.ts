@@ -89,3 +89,58 @@ export async function createIssueAction(formData: FormData) {
         return { success: false, error: errorMessage };
     }
 }
+
+
+const UpdateIssueSchema = z.object({
+    issueId: z.string(),
+    description: z.string().min(10, 'Description must be at least 10 characters.'),
+    photoDataUri: z.string().optional(),
+});
+
+export async function updateIssueAction(formData: FormData) {
+    try {
+        const validatedData = UpdateIssueSchema.parse({
+            issueId: formData.get('issueId'),
+            description: formData.get('description'),
+            photoDataUri: formData.get('photoDataUri'),
+        });
+        
+        // In a real app, this would update a database.
+        // We find the issue in our mock data or local storage.
+        const issueIndex = issues.findIndex(i => i.id === validatedData.issueId);
+        
+        if(issueIndex === -1) {
+            throw new Error("Issue not found");
+        }
+        
+        const issueToUpdate = issues[issueIndex];
+
+        if(issueToUpdate.status !== 'Reported') {
+            throw new Error("Can only edit issues with 'Reported' status.");
+        }
+
+        issueToUpdate.description = validatedData.description;
+        issueToUpdate.title = validatedData.description.substring(0, 50) + (validatedData.description.length > 50 ? '...' : '');
+
+        if(validatedData.photoDataUri) {
+            issueToUpdate.imageUrl = validatedData.photoDataUri;
+            issueToUpdate.images = [{ url: validatedData.photoDataUri, caption: 'Updated user photo' }];
+        }
+        
+        // Add an update to the timeline
+        issueToUpdate.updates.push({
+            timestamp: new Date().toISOString(),
+            status: 'Reported',
+            description: 'Issue details updated by citizen.'
+        });
+
+        issues[issueIndex] = issueToUpdate;
+
+        return { success: true, issue: issueToUpdate };
+
+    } catch (error) {
+        console.error("Update Issue Action Error:", error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during update.';
+        return { success: false, error: errorMessage };
+    }
+}

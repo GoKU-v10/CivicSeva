@@ -13,10 +13,15 @@ import { IssueStatusBadge } from "@/components/issue-status-badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Image from "next/image";
 import { format } from "date-fns";
-import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle } from "lucide-react";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { updateIssueAction } from "@/lib/actions";
 
 function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
     return (
@@ -139,11 +144,111 @@ function IssueDetailSkeleton() {
     );
 }
 
+function EditIssueDialog({ issue, onIssueUpdate }: { issue: Issue, onIssueUpdate: (updatedIssue: Issue) => void }) {
+    const [open, setOpen] = useState(false);
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [newDescription, setNewDescription] = useState(issue.description);
+    const [newPhotoDataUri, setNewPhotoDataUri] = useState<string | null>(null);
+    const [newPhotoPreview, setNewPhotoPreview] = useState<string | null>(null);
+    const photoInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setNewPhotoPreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                setNewPhotoDataUri(loadEvent.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        const formData = new FormData();
+        formData.append('issueId', issue.id);
+        formData.append('description', newDescription);
+        if (newPhotoDataUri) {
+            formData.append('photoDataUri', newPhotoDataUri);
+        }
+
+        const result = await updateIssueAction(formData);
+        
+        if(result.success && result.issue) {
+            onIssueUpdate(result.issue);
+            toast({ title: "Success!", description: "Issue updated successfully." });
+            setOpen(false);
+        } else {
+            toast({ variant: 'destructive', title: 'Update Failed', description: result.error });
+        }
+        setIsSubmitting(false);
+    };
+
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                    <Edit className="mr-2" />
+                    Edit Issue
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <form onSubmit={handleSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>Edit Issue</DialogTitle>
+                        <DialogDescription>
+                            Make changes to your reported issue here. Click save when you're done.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea id="description" value={newDescription} onChange={e => setNewDescription(e.target.value)} className="col-span-3" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="photo">Photo</Label>
+                            <Input id="photo" type="file" accept="image/*" onChange={handlePhotoChange} ref={photoInputRef} className="col-span-3" />
+                            <div className="relative aspect-video mt-2">
+                                <Image 
+                                    src={newPhotoPreview || issue.imageUrl} 
+                                    alt="Issue photo" 
+                                    fill
+                                    className="object-cover rounded-md"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                            Save changes
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 export default function IssueDetailPage() {
     const params = useParams();
     const id = params.id as string;
     const [issue, setIssue] = useState<Issue | null | undefined>(undefined);
+
+    const handleIssueUpdate = (updatedIssue: Issue) => {
+        setIssue(updatedIssue);
+         // Also update localStorage
+        const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
+        const issueIndex = localIssues.findIndex(i => i.id === updatedIssue.id);
+        if(issueIndex > -1) {
+            localIssues[issueIndex] = updatedIssue;
+            localStorage.setItem('civicseva_issues', JSON.stringify(localIssues));
+        }
+    }
 
     useEffect(() => {
         if (!id) return;
@@ -170,9 +275,14 @@ export default function IssueDetailPage() {
 
     return (
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
-             <div>
-                <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
-                <h1 className="text-3xl font-bold">{issue.title}</h1>
+             <div className="flex justify-between items-start">
+                <div>
+                    <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
+                    <h1 className="text-3xl font-bold">{issue.title}</h1>
+                </div>
+                {issue.status === 'Reported' && (
+                    <EditIssueDialog issue={issue} onIssueUpdate={handleIssueUpdate} />
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
