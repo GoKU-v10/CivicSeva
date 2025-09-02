@@ -48,7 +48,7 @@ function ImageGallery({ images }: { images: IssueImage[] }) {
                     <div className="p-1">
                         <Card>
                             <CardContent className="relative aspect-video flex items-center justify-center p-6">
-                                <Image src='https://i.pinimg.com/1200x/07/4e/1a/074e1afeeae49ddb39969fbdba4bd8af.jpg' alt={image.caption} fill className="object-cover rounded-lg" data-ai-hint="issue photo" />
+                                <Image src={image.url} alt={image.caption} fill className="object-cover rounded-lg" data-ai-hint="issue photo" />
                                 <Badge className="absolute bottom-2 left-2">{image.caption}</Badge>
                             </CardContent>
                         </Card>

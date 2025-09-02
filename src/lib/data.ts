@@ -5,12 +5,12 @@ export const issues: Issue[] = [
     id: 'IS-1',
     title: 'Large pothole on main street',
     description: 'A large and dangerous pothole has formed on the corner of Main St and 1st Ave, causing issues for traffic.',
-    imageUrl: 'https://picsum.photos/seed/pothole/800/600',
+    imageUrl: 'https://i.pinimg.com/736x/d0/3f/c2/d03fc2fe363172d449e218a84b557508.jpg',
     imageHint: 'pothole road',
     images: [
-      { url: 'https://picsum.photos/seed/pothole1/800/600', caption: 'Before' },
-      { url: 'https://picsum.photos/seed/pothole2/800/600', caption: 'Work in progress' },
-      { url: 'https://picsum.photos/seed/pothole3/800/600', caption: 'After' },
+      { url: 'https://i.pinimg.com/736x/d0/3f/c2/d03fc2fe363172d449e218a84b557508.jpg', caption: 'Before' },
+      { url: 'https://i.pinimg.com/736x/d0/3f/c2/d03fc2fe363172d449e218a84b557508.jpg', caption: 'Work in progress' },
+      { url: 'https://i.pinimg.com/736x/d0/3f/c2/d03fc2fe363172d449e218a84b557508.jpg', caption: 'After' },
     ],
     location: {
       latitude: 40.7128,
@@ -86,10 +86,10 @@ export const issues: Issue[] = [
     id: 'IS-4',
     title: 'Overflowing trash can',
     description: 'Public trash can on 5th Avenue is overflowing, leading to litter on the sidewalk.',
-    imageUrl: 'https://picsum.photos/seed/trash/800/600',
+    imageUrl: 'https://i.pinimg.com/1200x/07/4e/1a/074e1afeeae49ddb39969fbdba4bd8af.jpg',
     imageHint: 'trash can',
     images: [
-       { url: 'https://picsum.photos/seed/trash/800/600', caption: 'Before' },
+       { url: 'https://i.pinimg.com/1200x/07/4e/1a/074e1afeeae49ddb39969fbdba4bd8af.jpg', caption: 'Before' },
     ],
     location: {
       latitude: 40.7739,
