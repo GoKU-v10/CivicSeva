@@ -47,6 +47,9 @@ export default function LandingPage() {
              <Link href="/login" className="text-sm font-medium hover:text-primary">
               Citizen Login
             </Link>
+             <Button variant="outline" size="sm" asChild>
+                <Link href="/department-update">Department Login</Link>
+            </Button>
           </nav>
           <div className="flex items-center gap-2">
              <Button asChild className="hidden sm:inline-flex">
@@ -76,6 +79,9 @@ export default function LandingPage() {
                      <Button asChild className="w-full">
                         <Link href="/report">Report Issue Now</Link>
                     </Button>
+                     <Button variant="outline" asChild className="w-full">
+                        <Link href="/department-update">Department Login</Link>
+                    </Button>
                 </nav>
             </div>
         )}
@@ -84,12 +90,12 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://thefederal.com/file/2019/07/threedimensional-map-of-india-picture-id157997434.jpg"
-            alt="Map of India"
+            src="https://i.pinimg.com/736x/95/ad/f3/95adf3f009ad55a564dc3990b2ad70bd.jpg"
+            alt="Smart city network"
             fill
             className="object-cover"
             priority
-            data-ai-hint="map india"
+            data-ai-hint="smart city"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
