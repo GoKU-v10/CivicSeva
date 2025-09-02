@@ -50,11 +50,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       badge: "3"
     },
     {
-      href: '/dashboard/map',
-      label: 'Community Map',
-      icon: Map,
-    },
-    {
       href: '/dashboard/community',
       label: 'Community Hub',
       icon: Users,
