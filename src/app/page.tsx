@@ -84,12 +84,12 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://picsum.photos/seed/civic/1920/1080"
-            alt="Citizens collaborating with government officials in a city hall."
+            src="https://thefederal.com/file/2019/07/threedimensional-map-of-india-picture-id157997434.jpg"
+            alt="Map of India"
             fill
             className="object-cover"
             priority
-            data-ai-hint="government citizens"
+            data-ai-hint="map india"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
