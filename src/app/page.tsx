@@ -87,7 +87,7 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://i.pinimg.com/1200x/6f/b6/7c/6fb67c0a7fb9181b245b5c2c44c3725c.jpg"
+            src="https://i.pinimg.com/1200x/ca/fc/01/cafc0140812c6399349c87f72129991e.jpg"
             alt="Modern city landscape"
             fill
             priority
