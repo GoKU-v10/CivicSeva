@@ -28,6 +28,7 @@ import {
   Settings,
   LifeBuoy,
   Target,
+  Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -52,6 +53,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       href: '/dashboard/map',
       label: 'Community Map',
       icon: Map,
+    },
+    {
+      href: '/dashboard/community',
+      label: 'Community Hub',
+      icon: Users,
     },
      {
       href: '/dashboard/notifications',
@@ -105,6 +111,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
+                 <SidebarMenuItem>
+                  <Link href="/report">
+                    <SidebarMenuButton
+                        variant="secondary"
+                        className="w-full justify-center bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                    >
+                      <FilePlus2 />
+                      <span>Report New Issue</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+                <SidebarSeparator />
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <Link href={item.href}>
@@ -148,7 +166,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         >
                         <item.icon />
                         <span>{item.label}</span>
-                        </SidebarMenuButton>
+                        </Button>
                     </Link>
                     </SidebarMenuItem>
                 ))}
@@ -189,3 +207,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
