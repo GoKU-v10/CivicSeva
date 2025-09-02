@@ -49,10 +49,7 @@ export default function LandingPage() {
             </Link>
           </nav>
           <div className="flex items-center gap-2">
-             <Button variant="outline" asChild className="hidden sm:inline-flex">
-                <Link href="/department-update">Department Update</Link>
-            </Button>
-            <Button asChild className="hidden sm:inline-flex">
+             <Button asChild className="hidden sm:inline-flex">
                 <Link href="/report">Report Issue Now</Link>
             </Button>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setShowMobileMenu(!showMobileMenu)}>
@@ -76,9 +73,6 @@ export default function LandingPage() {
                     <Link href="/login" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
                     Citizen Login
                     </Link>
-                     <Button asChild className="w-full" variant="outline">
-                        <Link href="/department-update">Department Update</Link>
-                    </Button>
                      <Button asChild className="w-full">
                         <Link href="/report">Report Issue Now</Link>
                     </Button>
@@ -221,6 +215,22 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section className="py-16 md:py-24 bg-muted">
+          <div className="container mx-auto px-4 md:px-6 text-center">
+              <h2 className="text-3xl font-bold md:text-4xl">Are you a Department Official?</h2>
+              <p className="mt-4 max-w-xl mx-auto text-muted-foreground">
+                  Quickly update the status of an issue without needing to log in. Provide real-time feedback to citizens and help keep your city running smoothly.
+              </p>
+              <div className="mt-8">
+                  <Button size="lg" asChild>
+                      <Link href="/department-update">
+                          Update Issue Status <ArrowRight className="ml-2" />
+                      </Link>
+                  </Button>
+              </div>
+          </div>
+        </section>
+
       </main>
 
       <footer id="contact" className="bg-foreground text-background">
@@ -267,5 +277,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
