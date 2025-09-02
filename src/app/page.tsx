@@ -92,6 +92,8 @@ export default function LandingPage() {
             fill
             className="object-cover"
             priority
+            quality={100}
+            sizes="100vw"
             data-ai-hint="smart city"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
