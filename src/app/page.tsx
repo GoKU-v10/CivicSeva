@@ -45,11 +45,8 @@ export default function LandingPage() {
               Features
             </Link>
              <Link href="/login" className="text-sm font-medium hover:text-primary">
-              Citizen Login
+              Login
             </Link>
-             <Button variant="outline" size="sm" asChild>
-                <Link href="/department-update">Department Login</Link>
-            </Button>
           </nav>
           <div className="flex items-center gap-2">
              <Button asChild className="hidden sm:inline-flex">
@@ -74,7 +71,7 @@ export default function LandingPage() {
                     Features
                     </Link>
                     <Link href="/login" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
-                    Citizen Login
+                    Login
                     </Link>
                      <Button asChild className="w-full">
                         <Link href="/report">Report Issue Now</Link>
@@ -283,3 +280,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
