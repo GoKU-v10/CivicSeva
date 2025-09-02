@@ -96,7 +96,7 @@ export default function IssueDetailPage({ params }: { params: { id: string } }) 
     const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
              <div>
                 <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
                 <h1 className="text-3xl font-bold">{issue.title}</h1>
