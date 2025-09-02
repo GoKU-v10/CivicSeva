@@ -56,7 +56,7 @@ export async function createIssueAction(formData: FormData) {
         const userCategory = validatedData.category as IssueCategory;
 
         const newIssue: Issue = {
-            id: `IS-${Math.floor(Math.random() * 10000)}`,
+            id: `IS-${Math.floor(10000 + Math.random() * 90000)}`,
             title: validatedData.description.substring(0, 50) + (validatedData.description.length > 50 ? '...' : ''),
             description: validatedData.description,
             imageUrl: validatedData.photoDataUri,
@@ -81,6 +81,9 @@ export async function createIssueAction(formData: FormData) {
         // For this demo, we'll prepend it to our in-memory array.
         issues.unshift(newIssue);
         
+        // No need to revalidate since we are managing state on the client for now
+        // revalidatePath('/track');
+
         return { success: true, message: 'Issue reported successfully!', issue: newIssue };
 
     } catch (error) {
