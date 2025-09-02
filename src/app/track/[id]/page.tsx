@@ -174,6 +174,13 @@ function EditIssueDialog({ issue, onIssueUpdate }: { issue: Issue, onIssueUpdate
         if (newPhotoDataUri) {
             formData.append('photoDataUri', newPhotoDataUri);
         }
+        
+        // Pass the localStorage data to the server action
+        const localIssues = localStorage.getItem('civicseva_issues');
+        if (localIssues) {
+            formData.append('localIssues', localIssues);
+        }
+
 
         const result = await updateIssueAction(formData);
         

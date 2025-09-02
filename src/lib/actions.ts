@@ -95,6 +95,8 @@ const UpdateIssueSchema = z.object({
     issueId: z.string(),
     description: z.string().min(10, 'Description must be at least 10 characters.'),
     photoDataUri: z.string().optional(),
+    // We pass the stringified issues from localStorage to the server action
+    localIssues: z.string().optional(), 
 });
 
 export async function updateIssueAction(formData: FormData) {
@@ -103,17 +105,27 @@ export async function updateIssueAction(formData: FormData) {
             issueId: formData.get('issueId'),
             description: formData.get('description'),
             photoDataUri: formData.get('photoDataUri'),
+            localIssues: formData.get('localIssues'),
         });
         
-        // In a real app, this would update a database.
-        // We find the issue in our mock data or local storage.
-        const issueIndex = issues.findIndex(i => i.id === validatedData.issueId);
+        const allIssues = [...issues];
+        if (validatedData.localIssues) {
+            const parsedLocalIssues = JSON.parse(validatedData.localIssues) as Issue[];
+            // Add local issues, avoiding duplicates
+            parsedLocalIssues.forEach(localIssue => {
+                if (!allIssues.some(i => i.id === localIssue.id)) {
+                    allIssues.push(localIssue);
+                }
+            });
+        }
+
+        const issueIndex = allIssues.findIndex(i => i.id === validatedData.issueId);
         
         if(issueIndex === -1) {
             throw new Error("Issue not found");
         }
         
-        const issueToUpdate = issues[issueIndex];
+        const issueToUpdate = allIssues[issueIndex];
 
         if(issueToUpdate.status !== 'Reported') {
             throw new Error("Can only edit issues with 'Reported' status.");
@@ -134,7 +146,9 @@ export async function updateIssueAction(formData: FormData) {
             description: 'Issue details updated by citizen.'
         });
 
-        issues[issueIndex] = issueToUpdate;
+        // This only updates the in-memory array for the current request.
+        // The client-side logic will handle updating localStorage.
+        allIssues[issueIndex] = issueToUpdate;
 
         return { success: true, issue: issueToUpdate };
 
