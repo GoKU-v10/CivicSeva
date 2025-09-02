@@ -1,7 +1,9 @@
 
-import { issues } from "@/lib/data";
+'use client';
+
+import { issues as initialIssues } from "@/lib/data";
 import type { Issue, IssueUpdate, IssueImage } from "@/lib/types";
-import { notFound } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -11,8 +13,10 @@ import { IssueStatusBadge } from "@/components/issue-status-badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Image from "next/image";
 import { format } from "date-fns";
-import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare } from "lucide-react";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
     return (
@@ -35,8 +39,12 @@ function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) 
 function ImageGallery({ images }: { images: IssueImage[] }) {
     if (!images || images.length === 0) {
         return (
-            <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
-                <p className="text-muted-foreground">No images available for this issue.</p>
+            <div className="flex items-center justify-center h-64 bg-muted rounded-lg border-2 border-dashed">
+                <div className="text-center text-muted-foreground">
+                    <AlertTriangle className="mx-auto size-8 mb-2"/>
+                    <p className="font-semibold">No Images Available</p>
+                    <p className="text-xs">No images were provided for this issue.</p>
+                </div>
             </div>
         );
     }
@@ -56,8 +64,8 @@ function ImageGallery({ images }: { images: IssueImage[] }) {
                 </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="md:-left-12" />
-            <CarouselNext className="md:-right-12" />
+            <CarouselPrevious className="-left-4 md:-left-12" />
+            <CarouselNext className="-right-4 md:-right-12" />
         </Carousel>
     )
 }
@@ -85,12 +93,77 @@ function RateService() {
     )
 }
 
+function IssueDetailSkeleton() {
+    return (
+      <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
+        <div>
+            <Skeleton className="h-6 w-1/4 mb-2" />
+            <Skeleton className="h-9 w-3/4" />
+        </div>
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="w-full aspect-video" />
+                    </CardContent>
+                </Card>
+                <Card>
+                     <CardHeader>
+                        <Skeleton className="h-6 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                       <div className="space-y-4">
+                            <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                       </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                         <Skeleton className="h-6 w-1/3" />
+                    </CardHeader>
+                     <CardContent className="space-y-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                     </CardContent>
+                </Card>
+            </div>
+        </div>
+      </div>
+    );
+}
 
-export default function IssueDetailPage({ params }: { params: { id: string } }) {
-    const issue = issues.find(i => i.id === params.id);
 
-    if (!issue) {
-        notFound();
+export default function IssueDetailPage() {
+    const params = useParams();
+    const id = params.id as string;
+    const [issue, setIssue] = useState<Issue | null | undefined>(undefined);
+
+    useEffect(() => {
+        if (!id) return;
+        
+        const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
+        const allIssues = [...localIssues, ...initialIssues];
+        const foundIssue = allIssues.find(i => i.id === id);
+        
+        setIssue(foundIssue || null);
+
+    }, [id]);
+
+    useEffect(() => {
+        if(issue === null) {
+            notFound();
+        }
+    }, [issue]);
+
+    if (issue === undefined) {
+        return <IssueDetailSkeleton />;
     }
 
     const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
