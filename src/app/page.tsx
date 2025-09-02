@@ -44,14 +44,14 @@ export default function LandingPage() {
             <Link href="#features" className="text-sm font-medium hover:text-primary">
               Features
             </Link>
-            <Link href="#contact" className="text-sm font-medium hover:text-primary">
-              Contact
-            </Link>
-            <Link href="/login" className="text-sm font-medium hover:text-primary">
-              Login
+             <Link href="/login" className="text-sm font-medium hover:text-primary">
+              Citizen Login
             </Link>
           </nav>
           <div className="flex items-center gap-2">
+             <Button variant="outline" asChild className="hidden sm:inline-flex">
+                <Link href="/department-update">Department Update</Link>
+            </Button>
             <Button asChild className="hidden sm:inline-flex">
                 <Link href="/report">Report Issue Now</Link>
             </Button>
@@ -73,12 +73,12 @@ export default function LandingPage() {
                     <Link href="#features" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
                     Features
                     </Link>
-                    <Link href="#contact" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
-                    Contact
-                    </Link>
                     <Link href="/login" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>
-                    Login
+                    Citizen Login
                     </Link>
+                     <Button asChild className="w-full" variant="outline">
+                        <Link href="/department-update">Department Update</Link>
+                    </Button>
                      <Button asChild className="w-full">
                         <Link href="/report">Report Issue Now</Link>
                     </Button>
@@ -242,7 +242,6 @@ export default function LandingPage() {
                 <ul className="mt-2 space-y-2">
                   <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary-foreground">Privacy Policy</Link></li>
                   <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary-foreground">Terms of Service</Link></li>
-                  <li><Link href="/department-update" className="text-sm text-muted-foreground hover:text-primary-foreground">Department Login</Link></li>
                 </ul>
               </div>
               <div>
@@ -268,3 +267,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
