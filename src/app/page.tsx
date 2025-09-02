@@ -87,14 +87,14 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://i.pinimg.com/736x/95/ad/f3/95adf3f009ad55a564dc3990b2ad70bd.jpg"
-            alt="Smart city network"
+            src="https://picsum.photos/seed/futurecity/1920/1080"
+            alt="A futuristic modern civilization"
             fill
             className="object-cover"
             priority
             quality={100}
             sizes="100vw"
-            data-ai-hint="smart city"
+            data-ai-hint="futuristic city"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
@@ -282,5 +282,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
