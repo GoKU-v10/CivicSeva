@@ -134,6 +134,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 </SidebarMenuItem>
               ))}
+                <SidebarMenuItem>
+                  <Link href={adminMenuItem.href}>
+                    <SidebarMenuButton
+                      isActive={pathname.startsWith(adminMenuItem.href)}
+                      tooltip={{
+                        children: adminMenuItem.label,
+                      }}
+                    >
+                      <adminMenuItem.icon />
+                      <span>{adminMenuItem.label}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="mt-auto">

@@ -1,12 +1,36 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import type { Issue } from "@/lib/types"
+import type { Issue, IssuePriority } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { IssueStatusBadge } from "@/components/issue-status-badge"
 import { DataTableColumnHeader } from "./data-table-column-header"
 import { DataTableRowActions } from "./data-table-row-actions"
 import { format } from "date-fns"
+import { ArrowDown, ArrowRight, ArrowUp, Circle, CircleHelp, CircleCheck, CircleX } from "lucide-react"
+
+export const priorities: {
+  label: string
+  value: IssuePriority
+  icon: React.ComponentType<{ className?: string }>
+}[] = [
+  {
+    label: "Low",
+    value: "Low",
+    icon: ArrowDown,
+  },
+  {
+    label: "Medium",
+    value: "Medium",
+    icon: ArrowRight,
+  },
+  {
+    label: "High",
+    value: "High",
+    icon: ArrowUp,
+  },
+]
+
 
 export const columns: ColumnDef<Issue>[] = [
   {
@@ -55,6 +79,33 @@ export const columns: ColumnDef<Issue>[] = [
     ),
     cell: ({ row }) => {
         return <IssueStatusBadge status={row.original.status} />
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+  },
+  {
+    accessorKey: "priority",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Priority" />
+    ),
+    cell: ({ row }) => {
+      const priority = priorities.find(
+        (p) => p.value === row.original.priority
+      )
+
+      if (!priority) {
+        return null
+      }
+
+      return (
+        <div className="flex items-center">
+          {priority.icon && (
+            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{priority.label}</span>
+        </div>
+      )
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))

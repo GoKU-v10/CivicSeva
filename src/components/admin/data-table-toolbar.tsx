@@ -2,7 +2,6 @@
 
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
-import { PlusCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +9,7 @@ import { DataTableViewOptions } from "./data-table-view-options"
 
 import { issues } from "@/lib/data"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
+import { priorities } from "./columns"
 
 const statuses = [
     { value: 'Reported', label: 'Reported' },
@@ -52,6 +52,13 @@ export function DataTableToolbar<TData>({
             column={table.getColumn("category")}
             title="Category"
             options={categories}
+          />
+        )}
+        {table.getColumn("priority") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("priority")}
+            title="Priority"
+            options={priorities}
           />
         )}
         {isFiltered && (
