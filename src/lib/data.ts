@@ -112,10 +112,10 @@ export const issues: Issue[] = [
     id: 'IS-5',
     title: 'Damaged Stop Sign',
     description: 'A stop sign at the corner of Liberty St and Nassau St is bent and difficult to see.',
-    imageUrl: 'https://picsum.photos/seed/sign/800/600',
+    imageUrl: 'https://i.pinimg.com/736x/29/70/4c/29704cd0075d0cc865bcda8f3dc3a075.jpg',
     imageHint: 'street sign',
     images: [
-      { url: 'https://picsum.photos/seed/sign/800/600', caption: 'Before' },
+      { url: 'https://i.pinimg.com/736x/29/70/4c/29704cd0075d0cc865bcda8f3dc3a075.jpg', caption: 'Before' },
     ],
     location: {
       latitude: 40.7088,
