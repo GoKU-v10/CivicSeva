@@ -92,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Handle the new /track and /track/[id] routes
     if (pathname.startsWith('/track')) return 'My Issues';
     
-    const currentItem = allItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard' && item.href !== '/track');
+    const currentItem = allItems.find(item => item.href !== '/dashboard' && item.href !== '/track' && pathname.startsWith(item.href));
     if (currentItem) return currentItem.label;
     if(pathname === '/dashboard') return 'Dashboard';
     
@@ -166,7 +166,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         >
                         <item.icon />
                         <span>{item.label}</span>
-                        </Button>
+                        </SidebarMenuButton>
                     </Link>
                     </SidebarMenuItem>
                 ))}
@@ -207,5 +207,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
