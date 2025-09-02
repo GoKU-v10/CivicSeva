@@ -10,6 +10,7 @@ import { DataTableRowActions } from "./data-table-row-actions"
 import { format } from "date-fns"
 import { ArrowDown, ArrowRight, ArrowUp, Circle, CircleHelp, CircleCheck, CircleX } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import React, { useState, useEffect } from "react"
 
 export const priorities: {
   label: string
@@ -32,6 +33,14 @@ export const priorities: {
     icon: ArrowUp,
   },
 ]
+
+const FormattedDate = ({ dateString }: { dateString: string }) => {
+    const [formattedDate, setFormattedDate] = useState("");
+    useEffect(() => {
+        setFormattedDate(format(new Date(dateString), 'MM/dd/yyyy'));
+    }, [dateString]);
+    return <span>{formattedDate || "..."}</span>;
+}
 
 
 export const columns: ColumnDef<Issue>[] = [
@@ -93,7 +102,7 @@ export const columns: ColumnDef<Issue>[] = [
       <DataTableColumnHeader column={column} title="Reported" />
     ),
     cell: ({ row }) => {
-        return <span>{format(new Date(row.original.reportedAt), 'MM/dd/yyyy')}</span>
+        return <FormattedDate dateString={row.original.reportedAt} />
     }
   },
   {
