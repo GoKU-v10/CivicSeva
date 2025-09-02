@@ -75,13 +75,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     },
   ]
   
-  const adminMenuItem = {
-    href: '/dashboard/admin',
-    label: 'Admin',
-    icon: Shield,
-  }
 
-  const allItems = [...menuItems, ...bottomMenuItems, adminMenuItem];
+  const allItems = [...menuItems, ...bottomMenuItems];
 
   const getPageTitle = () => {
     // Handle the new /track and /track/[id] routes
@@ -134,19 +129,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 </SidebarMenuItem>
               ))}
-                <SidebarMenuItem>
-                  <Link href={adminMenuItem.href}>
-                    <SidebarMenuButton
-                      isActive={pathname.startsWith(adminMenuItem.href)}
-                      tooltip={{
-                        children: adminMenuItem.label,
-                      }}
-                    >
-                      <adminMenuItem.icon />
-                      <span>{adminMenuItem.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
-                </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="mt-auto">

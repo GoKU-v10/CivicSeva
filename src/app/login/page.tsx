@@ -70,7 +70,7 @@ export function LoginForm() {
     e.preventDefault();
     
     if (role === 'admin' || role === 'official') {
-        const redirectUrl = '/dashboard/admin'; // Or a specific official dashboard
+        const redirectUrl = '/admin'; // Or a specific official dashboard
         router.push(redirectUrl);
         return;
     }

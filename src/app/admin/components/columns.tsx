@@ -1,0 +1,119 @@
+
+"use client"
+
+import { ColumnDef } from "@tanstack/react-table"
+import type { Issue, IssuePriority } from "@/lib/types"
+import { Badge } from "@/components/ui/badge"
+import { IssueStatusBadge } from "@/components/issue-status-badge"
+import { DataTableColumnHeader } from "./data-table-column-header"
+import { DataTableRowActions } from "./data-table-row-actions"
+import { format } from "date-fns"
+import { ArrowDown, ArrowRight, ArrowUp, Circle, CircleHelp, CircleCheck, CircleX } from "lucide-react"
+
+export const priorities: {
+  label: string
+  value: IssuePriority
+  icon: React.ComponentType<{ className?: string }>
+}[] = [
+  {
+    label: "Low",
+    value: "Low",
+    icon: ArrowDown,
+  },
+  {
+    label: "Medium",
+    value: "Medium",
+    icon: ArrowRight,
+  },
+  {
+    label: "High",
+    value: "High",
+    icon: ArrowUp,
+  },
+]
+
+
+export const columns: ColumnDef<Issue>[] = [
+  {
+    accessorKey: "id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Issue ID" />
+    ),
+  },
+  {
+    accessorKey: "category",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Category" />
+    ),
+    cell: ({ row }) => {
+        return <Badge variant="secondary">{row.original.category}</Badge>
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+  },
+  {
+    accessorKey: "title",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+  },
+  {
+    accessorKey: "department",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Department" />
+    ),
+  },
+  {
+    accessorKey: "reportedAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Reported" />
+    ),
+    cell: ({ row }) => {
+        return <span>{format(new Date(row.original.reportedAt), 'MM/dd/yyyy')}</span>
+    }
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+        return <IssueStatusBadge status={row.original.status} />
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+  },
+  {
+    accessorKey: "priority",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Priority" />
+    ),
+    cell: ({ row }) => {
+      const priority = priorities.find(
+        (p) => p.value === row.original.priority
+      )
+
+      if (!priority) {
+        return null
+      }
+
+      return (
+        <div className="flex items-center">
+          {priority.icon && (
+            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{priority.label}</span>
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <DataTableRowActions row={row} />,
+  },
+]

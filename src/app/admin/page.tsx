@@ -1,4 +1,5 @@
-import { AdminDashboard } from "@/components/admin/admin-dashboard";
+
+import { AdminDashboard } from "@/app/admin/components/admin-dashboard";
 import { issues } from "@/lib/data";
 
 export default function AdminPage() {
