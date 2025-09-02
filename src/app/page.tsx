@@ -87,7 +87,7 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] min-h-[500px]">
           <Image
-            src="https://i.pinimg.com/736x/67/c1/5d/67c15ddd3833acf3b4f7168932d67b43.jpg"
+            src="https://i.pinimg.com/1200x/28/f2/58/28f258b80cfd5c449c472bad28aad106.jpg"
             alt="Modern city landscape"
             fill
             className="object-cover"
