@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -241,7 +242,7 @@ export default function LandingPage() {
                 <ul className="mt-2 space-y-2">
                   <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary-foreground">Privacy Policy</Link></li>
                   <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary-foreground">Terms of Service</Link></li>
-                  <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary-foreground">Contact Us</Link></li>
+                  <li><Link href="/department-update" className="text-sm text-muted-foreground hover:text-primary-foreground">Department Login</Link></li>
                 </ul>
               </div>
               <div>
