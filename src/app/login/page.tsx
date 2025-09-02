@@ -93,8 +93,10 @@ export function LoginForm() {
 
             const result = await createIssueAction(formData);
 
-            if (result.success) {
+            if (result.success && result.issue) {
                 toast({ title: 'Success!', description: 'Issue submitted successfully.' });
+                // Store the new issue to be picked up by the destination page
+                sessionStorage.setItem('newly_submitted_issue', JSON.stringify(result.issue));
                 localStorage.removeItem('pending_issue_report');
                 router.push(redirectUrl);
             } else {

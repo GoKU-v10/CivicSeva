@@ -80,10 +80,8 @@ export async function createIssueAction(formData: FormData) {
         // In a real app, you would save this to a database.
         // For this demo, we'll prepend it to our in-memory array.
         issues.unshift(newIssue);
-
-        revalidatePath('/track');
         
-        return { success: true, message: 'Issue reported successfully!' };
+        return { success: true, message: 'Issue reported successfully!', issue: newIssue };
 
     } catch (error) {
         console.error(error);
