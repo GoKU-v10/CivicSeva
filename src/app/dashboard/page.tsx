@@ -2,16 +2,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { issues } from '@/lib/data';
 import type { Issue } from '@/lib/types';
-import { ArrowRight, Camera, CheckCircle, MapPin, List, Edit } from 'lucide-react';
+import { ArrowRight, Camera, CheckCircle, MapPin, List, Edit, ShieldAlert, Leaf, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { IssueCard } from '@/components/issue-card';
 import Image from 'next/image';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function HomePage() {
   const reportedIssues: Issue[] = issues;
   const activeIssues = reportedIssues.filter(issue => issue.status !== 'Resolved').length;
   const resolvedIssues = reportedIssues.filter(issue => issue.status === 'Resolved').length;
-  const recentIssues = reportedIssues.slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -21,7 +20,7 @@ export default function HomePage() {
             <p className="text-muted-foreground">Here's what's happening in your community.</p>
         </div>
         <Button asChild size="lg">
-            <Link href="/dashboard/report">
+            <Link href="/report">
                 <Camera className="mr-2"/>
                 Report a New Issue
             </Link>
@@ -62,45 +61,54 @@ export default function HomePage() {
         </Card>
          <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Community Map</CardTitle>
+            <CardTitle className="text-sm font-medium">Community Hub</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">View Map</div>
-            <Link href="/dashboard/map" className="text-xs text-muted-foreground hover:underline">
-              See nearby reports
+            <div className="text-2xl font-bold">Explore Now</div>
+            <Link href="/dashboard/community" className="text-xs text-muted-foreground hover:underline">
+              View community map and stats
             </Link>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Recent Issues */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-2xl font-bold">Recent Issues in Your Area</h2>
-          {recentIssues.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2">
-              {recentIssues.map((issue) => (
-                <IssueCard key={issue.id} issue={issue} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-                <h3 className="text-xl font-medium">No recent issues</h3>
-                <p className="text-muted-foreground">Be the first to report one!</p>
-            </div>
-          )}
-           <div className="text-right">
-                <Button variant="link" asChild>
-                    <Link href="/dashboard/my-issues">
-                        View All Issues <ArrowRight className="ml-2" />
-                    </Link>
-                </Button>
-            </div>
+      <div className="grid gap-8 lg:grid-cols-5">
+        <div className="lg:col-span-3 space-y-4">
+            <h2 className="text-2xl font-bold">Your Responsibilities as a Citizen</h2>
+            <Card>
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                    <ShieldAlert className="size-8 text-primary" />
+                    <CardTitle className="text-xl">Precautions & Responsibilities</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <Alert>
+                        <Leaf className="h-4 w-4" />
+                        <AlertTitle>Environmental Responsibility</AlertTitle>
+                        <AlertDescription>
+                            Dispose of waste properly in designated bins. Conserve water and report leaks promptly. Help keep our public spaces clean and green for everyone to enjoy.
+                        </AlertDescription>
+                    </Alert>
+                     <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Reporting Guidelines</AlertTitle>
+                        <AlertDescription>
+                          <ul className="list-disc list-inside">
+                            <li>Provide clear, accurate information. False reports can lead to penalties.</li>
+                            <li>Do not report emergencies here. For urgent situations, call 911.</li>
+                            <li>Respect the privacy of others when taking photos.</li>
+                          </ul>
+                        </AlertDescription>
+                    </Alert>
+                    <p className="text-sm text-muted-foreground">
+                        By working together, we can build a safer, cleaner, and more efficient city. Your active participation makes a real difference.
+                    </p>
+                </CardContent>
+            </Card>
         </div>
         
         {/* Community Map Preview */}
-        <div className="space-y-4">
+        <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-bold">Community Map</h2>
              <Card>
                 <CardContent className="p-0">
@@ -115,7 +123,7 @@ export default function HomePage() {
                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-t-lg" />
                          <div className="absolute bottom-4 left-4">
                             <Button asChild>
-                                <Link href="/dashboard/map">
+                                <Link href="/dashboard/community">
                                     Explore Full Map <ArrowRight className="ml-2" />
                                 </Link>
                             </Button>
