@@ -69,6 +69,9 @@ export function LoginForm() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Simulate setting a session for the citizen
+    sessionStorage.setItem('is_citizen_logged_in', 'true');
+
     if (role === 'admin' || role === 'official') {
         const redirectUrl = '/admin'; // Or a specific official dashboard
         router.push(redirectUrl);

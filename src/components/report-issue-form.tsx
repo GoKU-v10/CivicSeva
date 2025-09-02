@@ -163,23 +163,51 @@ export function ReportIssueForm() {
         });
     };
 
+    const submitIssue = async (values: z.infer<typeof reportIssueSchema>) => {
+        setIsSubmitting(true);
+        const formData = new FormData();
+        formData.append('description', values.description);
+        formData.append('category', values.category);
+        formData.append('address', location.address);
+        formData.append('photoDataUri', photoDataUris[0]); // Assuming one photo for now
+        formData.append('latitude', String(location.latitude));
+        formData.append('longitude', String(location.longitude));
+
+        const result = await createIssueAction(formData);
+
+        if (result.success && result.issue) {
+            appToast({ title: 'Success!', description: 'Issue submitted successfully.' });
+            sessionStorage.setItem('newly_submitted_issue', JSON.stringify(result.issue));
+            localStorage.removeItem('pending_issue_report');
+            router.push('/track');
+        } else {
+            appToast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+        }
+        setIsSubmitting(false);
+    }
+
     const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
-       // Instead of submitting, we now redirect to login
-       // We can store the form data in localStorage to repopulate after login
-       try {
-           const reportData = {
-               ...values,
-               photoDataUris,
-               location,
-           }
-           localStorage.setItem('pending_issue_report', JSON.stringify(reportData));
-       } catch (error) {
-           console.error("Could not save report data to local storage", error);
-       }
-       
-       setIsSubmitting(true);
-       // Redirect to login page, which should then handle the submission after auth
-       router.push('/login?redirect=/track&action=submit_issue');
+        const isLoggedIn = sessionStorage.getItem('is_citizen_logged_in') === 'true';
+
+        if (isLoggedIn) {
+            submitIssue(values);
+        } else {
+            // Store the form data in localStorage to repopulate after login
+            try {
+                const reportData = {
+                    ...values,
+                    photoDataUris,
+                    location,
+                }
+                localStorage.setItem('pending_issue_report', JSON.stringify(reportData));
+            } catch (error) {
+                console.error("Could not save report data to local storage", error);
+            }
+            
+            setIsSubmitting(true);
+            // Redirect to login page, which should then handle the submission after auth
+            router.push('/login?redirect=/track&action=submit_issue');
+        }
     };
     
     const descriptionLength = form.watch('description')?.length || 0;
@@ -188,7 +216,7 @@ export function ReportIssueForm() {
         <Card>
             <CardHeader>
                 <CardTitle>Report a New Civic Issue</CardTitle>
-                <CardDescription>Provide detailed information about the issue. You will be asked to log in to submit.</CardDescription>
+                <CardDescription>Provide detailed information about the issue. You may be asked to log in to submit.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
