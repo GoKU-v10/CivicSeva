@@ -31,17 +31,10 @@ export function IssueCard({ issue }: IssueCardProps) {
     setReportedDate(format(new Date(issue.reportedAt), "PPP"));
   }, [issue.reportedAt]);
 
-  const categoryImage = {
-    'Pothole': { url: 'https://picsum.photos/seed/pothole/800/600', hint: 'pothole road' },
-    'Graffiti': { url: 'https://picsum.photos/seed/graffiti/800/600', hint: 'graffiti wall' },
-    'Streetlight Outage': { url: 'https://picsum.photos/seed/light/800/600', hint: 'streetlight dark' },
-    'Waste Management': { url: 'https://picsum.photos/seed/trash/800/600', hint: 'trash can' },
-    'Damaged Sign': { url: 'https://picsum.photos/seed/sign/800/600', hint: 'street sign' },
-    'Water Leak': { url: 'https://picsum.photos/seed/water/800/600', hint: 'water leak' },
-    'Other': { url: 'https://picsum.photos/seed/other/800/600', hint: 'civic issue' },
+  const displayImage = { 
+    url: 'https://i.pinimg.com/736x/d0/3f/c2/d03fc2fe363172d449e218a84b557508.jpg', 
+    hint: 'issue photo' 
   };
-
-  const displayImage = categoryImage[issue.category] || categoryImage['Other'];
 
   return (
     <Card className="flex flex-col overflow-hidden group">
