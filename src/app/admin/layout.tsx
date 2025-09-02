@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, LogOut, ShieldCheck, UserCog } from "lucide-react";
+import { Bell, LogOut, ShieldCheck, UserCog, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminLayout({
@@ -17,6 +17,21 @@ export default function AdminLayout({
                 <ShieldCheck className="h-8 w-8 text-primary" />
                 <span className="text-xl font-bold text-primary">CivicSeva Admin Panel</span>
             </Link>
+
+            <nav className="flex items-center gap-4 mx-auto">
+                <Button variant="ghost" asChild>
+                    <Link href="/admin">
+                        <List className="mr-2" />
+                        Dashboard
+                    </Link>
+                </Button>
+                 <Button variant="ghost" asChild>
+                    <Link href="/admin/assignment-board">
+                        <LayoutGrid className="mr-2" />
+                        Assignment Board
+                    </Link>
+                </Button>
+            </nav>
 
             <div className="ml-auto flex items-center gap-4">
                 <Button variant="ghost" size="icon">
