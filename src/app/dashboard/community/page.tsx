@@ -109,7 +109,7 @@ export default function CommunityHubPage() {
           <div className="absolute top-1/4 left-1/4 w-80">
             <Card className="shadow-2xl">
               <CardHeader className="p-0">
-                <Image src="https://picsum.photos/seed/pothole/320/180" width={320} height={180} alt="Pothole" className="rounded-t-lg" data-ai-hint="pothole road" />
+                <Image src="https://i.pinimg.com/1200x/07/4e/1a/074e1afeeae49ddb39969fbdba4bd8af.jpg" width={320} height={180} alt="Pothole" className="rounded-t-lg" data-ai-hint="trash can" />
                 <div className="absolute top-2 right-2 flex gap-1">
                     <Badge variant="destructive"><AlertTriangle className="mr-1" />High Priority</Badge>
                     <Badge className="bg-yellow-500 hover:bg-yellow-500 text-white"><Wrench className="mr-1" />In Progress</Badge>
