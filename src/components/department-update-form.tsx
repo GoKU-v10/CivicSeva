@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 const updateStatusSchema = z.object({
   issueId: z.string().regex(/^IS-\d+$/, { message: "Invalid Issue ID format. Must be 'IS-' followed by numbers." }),
+  departmentPin: z.string().length(4, { message: "PIN must be exactly 4 digits." }).regex(/^\d{4}$/, { message: "PIN must only contain numbers." }),
   status: z.string().min(1, 'Please select a status.'),
   comments: z.string().optional(),
 });
@@ -35,6 +36,7 @@ export function DepartmentUpdateForm() {
         resolver: zodResolver(updateStatusSchema),
         defaultValues: {
             issueId: '',
+            departmentPin: '',
             status: '',
             comments: '',
         },
@@ -43,12 +45,12 @@ export function DepartmentUpdateForm() {
     const onSubmit = (values: z.infer<typeof updateStatusSchema>) => {
        setIsSubmitting(true);
        
-       // Simulate API call
+       // Simulate API call and PIN validation
        setTimeout(() => {
         console.log("Form submitted:", values);
         
-        // In a real app, you would have a server action here to update the database
-        // For this prototype, we'll just show a success message.
+        // In a real app, you would have a server action here to validate the PIN
+        // against the issue's assigned department and then update the database.
         
         toast({
             title: "Update Successful!",
@@ -83,6 +85,21 @@ export function DepartmentUpdateForm() {
 
                     <FormField
                         control={form.control}
+                        name="departmentPin"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Department PIN</FormLabel>
+                            <FormControl>
+                                <Input type="password" placeholder="Enter your 4-digit department PIN" {...field} />
+                            </FormControl>
+                             <FormDescription>This PIN was provided in your assignment notification.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
                         name="status"
                         render={({ field }) => (
                         <FormItem>
@@ -95,7 +112,7 @@ export function DepartmentUpdateForm() {
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="In Progress">In Progress</SelectItem>
-                                <SelectItem value="Completed">Completed</SelectItem>
+                                <SelectItem value="Resolved">Resolved</SelectItem>
                                 <SelectItem value="Cannot Fix">Cannot Fix</SelectItem>
                             </SelectContent>
                             </Select>

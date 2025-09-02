@@ -11,7 +11,7 @@ export default function DepartmentUpdatePage() {
                 <ShieldCheck className="h-12 w-12 text-primary" />
             </div>
             <h1 className="text-3xl font-bold">Department Status Update</h1>
-            <p className="text-muted-foreground">Update civic issue status - No login required.</p>
+            <p className="text-muted-foreground">Enter the Issue ID and your unique Department PIN to update an issue.</p>
         </div>
         <DepartmentUpdateForm />
       </div>
