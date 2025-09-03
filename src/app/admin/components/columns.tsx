@@ -37,7 +37,9 @@ export const priorities: {
 const FormattedDate = ({ dateString }: { dateString: string }) => {
     const [formattedDate, setFormattedDate] = useState("");
     useEffect(() => {
-        setFormattedDate(format(new Date(dateString), 'MM/dd/yyyy'));
+        if (dateString) {
+          setFormattedDate(format(new Date(dateString), 'MM/dd/yyyy'));
+        }
     }, [dateString]);
     return <span>{formattedDate || "..."}</span>;
 }
@@ -149,3 +151,5 @@ export const columns: ColumnDef<Issue>[] = [
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ]
+
+    

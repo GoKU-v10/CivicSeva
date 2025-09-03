@@ -83,7 +83,7 @@ export function ReportIssueForm() {
     });
 
     const photoInputRef = useRef<HTMLInputElement>(null);
-
+    
     useEffect(() => {
         const getPreciseLocation = () => {
             return new Promise<GeolocationPosition>((resolve, reject) => {
@@ -98,17 +98,17 @@ export function ReportIssueForm() {
                 }
             });
         };
-
+    
         const getFallbackLocation = async () => {
             let res = await fetch("https://ipapi.co/json/");
             if (!res.ok) throw new Error("IP API failed");
             return res.json();
         };
-
+    
         const detectLocation = async () => {
             setIsFetchingLocation(true);
             form.setValue('address', 'Detecting location...');
-
+    
             try {
                 const pos = await getPreciseLocation();
                 const { latitude, longitude, accuracy } = pos.coords;
@@ -132,10 +132,10 @@ export function ReportIssueForm() {
                     form.setError('address', { type: 'manual', message: errorMsg });
                 }
             } finally {
-               setIsFetchingLocation(false);
+                setIsFetchingLocation(false);
             }
         };
-
+    
         detectLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -224,7 +224,6 @@ export function ReportIssueForm() {
 
         recognition.start();
     };
-
 
     const submitIssue = async (values: z.infer<typeof reportIssueSchema>>) => {
         setIsSubmitting(true);
