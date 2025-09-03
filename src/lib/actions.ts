@@ -65,7 +65,7 @@ export async function createIssueAction(formData: FormData) {
             location: {
                 latitude: validatedData.latitude,
                 longitude: validatedData.longitude,
-                address: validatedData.address || 'Address not provided',
+                address: validatedData.address || `Lat: ${validatedData.latitude}, Lon: ${validatedData.longitude}`,
             },
             status: 'Reported',
             category: userCategory,

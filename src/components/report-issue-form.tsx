@@ -17,7 +17,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
 import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
@@ -43,7 +42,6 @@ const reportIssueSchema = z.object({
 type LocationState = {
   latitude: number | null;
   longitude: number | null;
-  address: string;
   error: string | null;
 };
 
@@ -58,7 +56,6 @@ export function ReportIssueForm() {
     const [location, setLocation] = useState<LocationState>({
         latitude: null,
         longitude: null,
-        address: '',
         error: null,
     });
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -80,51 +77,20 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchAddress = async (latitude: number, longitude: number) => {
-        const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-        if (!accessToken) {
-            const errorMessage = "Mapbox access token is not configured. Please contact support.";
-            setLocation(prev => ({...prev, error: errorMessage}));
-            return;
-        }
-
-        try {
-            const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${accessToken}`);
-            if (!response.ok) throw new Error("Failed to fetch address.");
-
-            const data = await response.json();
-            if (data.features && data.features.length > 0) {
-                const fullAddress = data.features[0].place_name;
-                setLocation({ latitude, longitude, address: fullAddress, error: null });
-                form.setValue('address', fullAddress);
-            } else {
-                throw new Error("No address found for these coordinates.");
-            }
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "An error occurred while fetching the address.";
-            setLocation(prev => ({...prev, error: errorMessage}));
-            appToast({
-                variant: 'destructive',
-                title: 'Geocoding Error',
-                description: errorMessage,
-            });
-        }
-    }
-
-
     const fetchLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    fetchAddress(latitude, longitude);
+                    setLocation({ latitude, longitude, error: null });
+                    form.setValue('address', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
                 },
                 (error) => {
                     let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
                     if(error.code === error.PERMISSION_DENIED) {
                         errorMessage = 'Location permission denied. Please enable it in your browser settings.';
                     }
-                    setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+                    setLocation({ latitude: null, longitude: null, error: errorMessage });
                     appToast({
                         variant: 'destructive',
                         title: 'Location Error',
@@ -139,7 +105,7 @@ export function ReportIssueForm() {
             );
         } else {
             const errorMessage = 'Geolocation is not supported by this browser.';
-            setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+            setLocation({ latitude: null, longitude: null, error: errorMessage });
              appToast({
                 variant: 'destructive',
                 title: 'Location Error',
@@ -206,7 +172,7 @@ export function ReportIssueForm() {
         const formData = new FormData();
         formData.append('description', values.description);
         formData.append('category', values.category);
-        formData.append('address', location.address);
+        formData.append('address', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
         formData.append('photoDataUri', photoDataUris[0]); // Assuming one photo for now
         formData.append('latitude', String(location.latitude));
         formData.append('longitude', String(location.longitude));
@@ -344,7 +310,7 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder={location.error || location.address || "Detecting location..."} {...field} disabled />
+                                    <Input placeholder={location.error || (location.latitude ? `Lat: ${location.latitude.toFixed(4)}, Lon: ${location.longitude?.toFixed(4)}` : "Detecting location...")} {...field} disabled />
                                 </FormControl>
                                 <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
                                     <MapPin className="size-4" />
