@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from './ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { useToast as useAppToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const reportIssueSchema = z.object({
     category: z.string().min(1, 'Please select a category.'),
@@ -62,6 +63,10 @@ export function ReportIssueForm() {
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const [photoDataUris, setPhotoDataUris] = useState<string[]>([]);
     const [aiSuggestion, setAiSuggestion] = useState<{ category: string, confidence: number} | null>(null);
+
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef<any>(null);
+
 
     const form = useForm<z.infer<typeof reportIssueSchema>>({
         resolver: zodResolver(reportIssueSchema),
@@ -181,6 +186,55 @@ export function ReportIssueForm() {
             }
         });
     };
+
+    const handleVoiceToText = () => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+            setIsListening(false);
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            appToast({ variant: 'destructive', title: 'Error', description: 'Speech recognition is not supported in this browser.' });
+            return;
+        }
+
+        recognitionRef.current = new SpeechRecognition();
+        const recognition = recognitionRef.current;
+        recognition.lang = form.getValues('language') || 'en-US';
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+            appToast({ title: 'Listening...', description: 'Start speaking to dictate the description.' });
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+            appToast({ title: 'Stopped listening.' });
+        };
+
+
+        recognition.onerror = (event: any) => {
+            appToast({ variant: 'destructive', title: 'Voice Error', description: event.error });
+            setIsListening(false);
+        };
+
+        recognition.onresult = (event: any) => {
+            const transcript = Array.from(event.results)
+                .map((result: any) => result[0])
+                .map((result) => result.transcript)
+                .join('');
+            
+            const currentDescription = form.getValues('description');
+            form.setValue('description', currentDescription ? `${currentDescription} ${transcript}` : transcript);
+        };
+
+        recognition.start();
+    };
+
 
     const submitIssue = async (values: z.infer<typeof reportIssueSchema>) => {
         setIsSubmitting(true);
@@ -353,7 +407,7 @@ export function ReportIssueForm() {
                             <div className="flex justify-between items-center">
                                 <FormLabel>4. Description</FormLabel>
                                 <div className="flex items-center gap-2">
-                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => appToast({title: 'Voice-to-text coming soon!'})}>
+                                    <Button type="button" variant="ghost" size="icon" className={cn("h-8 w-8", isListening && "bg-red-500/20 text-red-500")} onClick={handleVoiceToText}>
                                         <Mic className="size-4" />
                                     </Button>
                                     <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}>
@@ -450,7 +504,5 @@ export function ReportIssueForm() {
         </Card>
     );
 }
-
-    
 
     
