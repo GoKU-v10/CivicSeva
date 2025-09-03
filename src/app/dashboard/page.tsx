@@ -6,6 +6,13 @@ import { ArrowRight, Camera, CheckCircle, MapPin, List, Edit, ShieldAlert, Leaf,
 import Link from 'next/link';
 import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import dynamic from 'next/dynamic';
+
+const CommunityMapPreview = dynamic(() => import('@/app/dashboard/community/components/community-map').then(mod => mod.CommunityMap), { 
+    ssr: false,
+    loading: () => <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>
+});
+
 
 export default function HomePage() {
   const reportedIssues: Issue[] = issues;
@@ -113,14 +120,8 @@ export default function HomePage() {
              <Card>
                 <CardContent className="p-0">
                     <div className="relative aspect-video w-full">
-                        <Image 
-                            src="https://picsum.photos/seed/map-preview/600/400"
-                            alt="Preview of community map"
-                            fill
-                            className="rounded-t-lg object-cover"
-                            data-ai-hint="map city"
-                         />
-                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-t-lg" />
+                         <CommunityMapPreview />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-t-lg pointer-events-none" />
                          <div className="absolute bottom-4 left-4">
                             <Button asChild>
                                 <Link href="/dashboard/community">

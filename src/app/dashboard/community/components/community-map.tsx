@@ -3,11 +3,12 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { issues } from '@/lib/data';
+import type { Issue } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { IssueStatusBadge } from '@/components/issue-status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { issues as initialIssues } from '@/lib/data';
 
 // Fix for default icon issue with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,18 +27,26 @@ const UserLocationMarker = () => {
         map.locate().on("locationfound", function (e) {
             setPosition(e.latlng);
             map.flyTo(e.latlng, 15);
+             const marker = L.marker(e.latlng).addTo(map);
+             marker.bindPopup("You are here!").openPopup();
         });
     }, [map]);
 
-    return position === null ? null : (
-        <Marker position={position}>
-            <Popup>You are here!</Popup>
-        </Marker>
-    );
+    return null; // The marker is added directly to the map
 };
 
 
 export function CommunityMap() {
+  const [allIssues, setAllIssues] = useState<Issue[]>([]);
+
+  useEffect(() => {
+      const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
+      const combinedIssues = [...localIssues, ...initialIssues];
+      const uniqueIssues = combinedIssues.filter((issue, index, self) =>
+          index === self.findIndex((t) => (t.id === issue.id))
+      );
+      setAllIssues(uniqueIssues);
+  }, []);
 
   return (
       <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: '100%', width: '100%' }} className="rounded-lg">
@@ -46,7 +55,7 @@ export function CommunityMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <UserLocationMarker />
-        {issues.map(issue => (
+        {allIssues.map(issue => (
             <Marker key={issue.id} position={[issue.location.latitude, issue.location.longitude]}>
                 <Popup>
                    <div className="space-y-2">

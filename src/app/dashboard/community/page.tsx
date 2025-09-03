@@ -29,6 +29,7 @@ import {
 import { format } from "date-fns";
 import dynamic from 'next/dynamic';
 import { useMemo } from "react";
+import { issues } from "@/lib/data";
 
 const recentActivities = [
     { user: 'Anonymous', action: 'supported', issue: 'Large pothole on main street', time: '5m ago', avatar: 'https://picsum.photos/seed/user1/40/40' },
@@ -123,32 +124,32 @@ export default function CommunityHubPage() {
               <div>
                   <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium">Potholes</span>
-                      <span className="text-muted-foreground">34% (128)</span>
+                      <span className="text-muted-foreground">34% ({issues.filter(i => i.category === 'Pothole').length})</span>
                   </div>
                   <Progress value={34} />
               </div>
               <div>
                   <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium">Waste Management</span>
-                      <span className="text-muted-foreground">25% (94)</span>
+                      <span className="text-muted-foreground">25% ({issues.filter(i => i.category === 'Waste Management').length})</span>
                   </div>
                   <Progress value={25} />
               </div>
               <div>
                   <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium">Graffiti</span>
-                      <span className="text-muted-foreground">18% (68)</span>
+                      <span className="text-muted-foreground">18% ({issues.filter(i => i.category === 'Graffiti').length})</span>
                   </div>
                   <Progress value={18} />
               </div>
               <Separator />
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                    <p className="font-bold text-lg">376</p>
+                    <p className="font-bold text-lg">{issues.filter(i => i.status !== 'Resolved').length}</p>
                     <p className="text-xs text-muted-foreground">Total Open</p>
                 </div>
                  <div>
-                    <p className="font-bold text-lg text-green-600">89%</p>
+                    <p className="font-bold text-lg text-green-600">{Math.round((issues.filter(i => i.status === 'Resolved').length / issues.length) * 100)}%</p>
                     <p className="text-xs text-muted-foreground">Resolution Rate</p>
                 </div>
                  <div>
