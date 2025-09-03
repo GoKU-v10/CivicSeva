@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { suggestIssueDescription, createIssueAction } from '@/lib/actions';
+import { suggestIssueDescription } from '@/lib/actions';
 import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -26,6 +26,8 @@ import { Checkbox } from './ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { useToast as useAppToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { createIssueAction } from '@/lib/actions';
+
 
 const reportIssueSchema = z.object({
     category: z.string().min(1, 'Please select a category.'),
@@ -169,7 +171,7 @@ export function ReportIssueForm() {
             formData.append('photoDataUri', photoDataUris[0]);
             formData.append('locationData', JSON.stringify({ lat: location.latitude, lon: location.longitude }));
             
-            const result = await suggestDescriptionAction(formData);
+            const result = await suggestIssueDescription(formData);
 
             if (result.success && result.description) {
                 form.setValue('description', result.description);
@@ -209,7 +211,6 @@ export function ReportIssueForm() {
             appToast({ title: 'Stopped listening.' });
         };
 
-
         recognition.onerror = (event: any) => {
             appToast({ variant: 'destructive', title: 'Voice Error', description: event.error });
             setIsListening(false);
@@ -217,7 +218,6 @@ export function ReportIssueForm() {
 
         recognition.onresult = (event: any) => {
             const transcript = event.results[0][0].transcript;
-            
             const currentDescription = form.getValues('description');
             form.setValue('description', currentDescription ? `${currentDescription} ${transcript}` : transcript);
         };
@@ -233,8 +233,8 @@ export function ReportIssueForm() {
         formData.append('category', values.category);
         formData.append('address', location.address);
         formData.append('photoDataUri', photoDataUris[0]); // Assuming one photo for now
-        formData.append('latitude', String(location.latitude));
-        formData.append('longitude', String(location.longitude));
+        if (location.latitude) formData.append('latitude', String(location.latitude));
+        if (location.longitude) formData.append('longitude', String(location.longitude));
 
         const result = await createIssueAction(formData);
 
