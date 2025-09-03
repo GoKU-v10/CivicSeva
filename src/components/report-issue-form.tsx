@@ -89,6 +89,10 @@ export function ReportIssueForm() {
                     let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
                     if(error.code === error.PERMISSION_DENIED) {
                         errorMessage = 'Location permission denied. Please enable it in your browser settings.';
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        errorMessage = "Your location information is unavailable.";
+                    } else if (error.code === error.TIMEOUT) {
+                        errorMessage = "The request to get your location timed out.";
                     }
                     setLocation({ latitude: null, longitude: null, error: errorMessage });
                     appToast({
@@ -100,7 +104,6 @@ export function ReportIssueForm() {
                 {
                     enableHighAccuracy: true,
                     timeout: 10000,
-                    maximumAge: 0
                 }
             );
         } else {
