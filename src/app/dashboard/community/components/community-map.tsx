@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Issue } from '@/lib/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { IssueStatusBadge } from '@/components/issue-status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -38,6 +38,7 @@ const UserLocationMarker = () => {
 
 export function CommunityMap() {
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
       const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
@@ -49,7 +50,13 @@ export function CommunityMap() {
   }, []);
 
   return (
-      <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: '100%', width: '100%' }} className="rounded-lg">
+      <MapContainer
+        center={[20.5937, 78.9629]}
+        zoom={5}
+        style={{ height: '100%', width: '100%' }}
+        className="rounded-lg"
+        whenCreated={map => { mapRef.current = map }}
+      >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
