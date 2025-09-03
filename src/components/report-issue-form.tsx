@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
+import { suggestIssueDescription, createIssueAction } from '@/lib/actions';
 import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -80,16 +80,44 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
+    const fetchAddress = async (latitude: number, longitude: number) => {
+        const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+        if (!accessToken) {
+            const errorMessage = "Mapbox access token is not configured. Please contact support.";
+            setLocation(prev => ({...prev, error: errorMessage}));
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${accessToken}`);
+            if (!response.ok) throw new Error("Failed to fetch address.");
+
+            const data = await response.json();
+            if (data.features && data.features.length > 0) {
+                const fullAddress = data.features[0].place_name;
+                setLocation({ latitude, longitude, address: fullAddress, error: null });
+                form.setValue('address', fullAddress);
+            } else {
+                throw new Error("No address found for these coordinates.");
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "An error occurred while fetching the address.";
+            setLocation(prev => ({...prev, error: errorMessage}));
+            appToast({
+                variant: 'destructive',
+                title: 'Geocoding Error',
+                description: errorMessage,
+            });
+        }
+    }
+
+
     const fetchLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    // In a real app, you'd use a geocoding service here.
-                    // For now, we'll just show the coordinates and a placeholder address.
-                    const mockAddress = `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-                    setLocation({ latitude, longitude, address: mockAddress, error: null });
-                    form.setValue('address', mockAddress);
+                    fetchAddress(latitude, longitude);
                 },
                 (error) => {
                     let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
@@ -311,7 +339,7 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder={location.error || location.address || "Detecting location..."} {...field} />
+                                    <Input placeholder={location.error || location.address || "Detecting location..."} {...field} disabled />
                                 </FormControl>
                                 <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
                                     <MapPin className="size-4" />
@@ -321,7 +349,7 @@ export function ReportIssueForm() {
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
                              {!location.error && location.latitude && location.longitude && (
                                 <FormDescription>
-                                    Lat: {location.latitude.toFixed(5)}, Lon: {location.longitude.toFixed(5)}
+                                    Your location will be submitted with the report.
                                 </FormDescription>
                              )}
                             <FormMessage />
