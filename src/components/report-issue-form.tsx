@@ -33,7 +33,7 @@ const reportIssueSchema = z.object({
         .min(10, { message: 'Description must be at least 10 characters long.' })
         .max(500, { message: 'Description must not exceed 500 characters.' }),
     photos: z.any().refine((files) => files?.length >= 1, 'At least one photo is required.'),
-    address: z.string().min(1, 'Please detect or enter your location.'),
+    address: z.string().min(1, 'Location could not be determined. Please try again or enter manually.'),
     terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions.'),
     language: z.string().optional(),
 });
@@ -42,6 +42,7 @@ const reportIssueSchema = z.object({
 type LocationState = {
   latitude: number | null;
   longitude: number | null;
+  address: string;
   error: string | null;
 };
 
@@ -50,15 +51,14 @@ export function ReportIssueForm() {
     const router = useRouter();
     const [isSuggesting, startSuggestionTransition] = useTransition();
     
-    // This state is just to show a loading spinner, not for triggering actions
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [location, setLocation] = useState<LocationState>({
         latitude: null,
         longitude: null,
+        address: '',
         error: null,
     });
-    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(true);
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const [photoDataUris, setPhotoDataUris] = useState<string[]>([]);
     const [aiSuggestion, setAiSuggestion] = useState<{ category: string, confidence: number} | null>(null);
@@ -77,64 +77,62 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchLocation = () => {
-        if (!navigator.geolocation) {
-            const errorMessage = 'Geolocation is not supported by your browser.';
-            setLocation({ latitude: null, longitude: null, error: errorMessage });
-            appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
-            return;
-        }
-
-        setIsFetchingLocation(true);
-        setLocation({ latitude: null, longitude: null, error: null });
-        form.setValue('address', 'Fetching location...');
-
-        // 1. Try for a high accuracy position
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setLocation({ latitude, longitude, error: null });
-                const latLonString = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`;
-                form.setValue('address', latLonString, { shouldValidate: true });
-                setIsFetchingLocation(false);
-                appToast({ title: 'Success', description: 'High accuracy location captured!' });
-            },
-            () => {
-                // If high accuracy fails, immediately try low accuracy
-                appToast({ title: 'Notice', description: 'High accuracy failed. Trying a faster location method.' });
-                
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        setLocation({ latitude, longitude, error: null });
-                        const latLonString = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)} (Standard Accuracy)`;
-                        form.setValue('address', latLonString, { shouldValidate: true });
-                        setIsFetchingLocation(false);
-                        appToast({ title: 'Success', description: 'Location captured with standard accuracy.' });
-                    },
-                    (err) => {
-                         let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
-                         if (err.code === err.PERMISSION_DENIED) {
-                             errorMessage = 'Location permission denied. Please enable it in your browser settings.';
-                         } else if (err.code === err.POSITION_UNAVAILABLE) {
-                             errorMessage = "Your location information is unavailable. Try moving to an area with a clearer signal.";
-                         } else if (err.code === err.TIMEOUT) {
-                             errorMessage = "The request to get your location timed out.";
-                         }
-                        setLocation({ latitude: null, longitude: null, error: errorMessage });
-                        form.setValue('address', '', { shouldValidate: true });
-                        appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
-                        setIsFetchingLocation(false);
-                    },
-                    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 } // Low accuracy settings
-                );
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // High accuracy settings
-        );
-    };
-
     useEffect(() => {
-        fetchLocation();
+        const getAccurateLocation = () => new Promise((resolve, reject) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 0
+                });
+            } else {
+                reject(new Error("Geolocation not supported."));
+            }
+        });
+
+        const getFallbackLocation = async () => {
+            try {
+                const response = await fetch("https://ipapi.co/json/");
+                if (!response.ok) throw new Error('IP API failed');
+                return response.json();
+            } catch (error) {
+                console.error("IP-based fallback failed:", error);
+                throw new Error("Could not fetch location from IP.");
+            }
+        };
+
+        const detectLocation = async () => {
+            setIsFetchingLocation(true);
+            form.setValue('address', 'Detecting...');
+            try {
+                const pos = await getAccurateLocation() as GeolocationPosition;
+                const { latitude, longitude } = pos.coords;
+                const address = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`;
+                setLocation({ latitude, longitude, address, error: null });
+                form.setValue('address', address, { shouldValidate: true });
+                appToast({ title: 'Success', description: 'High accuracy location captured!' });
+            } catch (err) {
+                console.warn("High accuracy location failed, falling back to IP.", err);
+                appToast({ title: 'Notice', description: 'Could not get precise location. Using an approximation.' });
+                try {
+                    const data = await getFallbackLocation();
+                    const { latitude, longitude, city, region } = data;
+                    const address = `Approx. ${city}, ${region}`;
+                    setLocation({ latitude, longitude, address, error: null });
+                    form.setValue('address', address, { shouldValidate: true });
+                } catch (fallbackErr) {
+                    const errorMessage = "Could not detect your location. Please enter it manually.";
+                    setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+                    form.setValue('address', '', { shouldValidate: true });
+                    form.setError('address', { message: errorMessage });
+                    appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
+                }
+            } finally {
+                setIsFetchingLocation(false);
+            }
+        };
+
+        detectLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -192,7 +190,7 @@ export function ReportIssueForm() {
         const formData = new FormData();
         formData.append('description', values.description);
         formData.append('category', values.category);
-        formData.append('address', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
+        formData.append('address', location.address);
         formData.append('photoDataUri', photoDataUris[0]); // Assuming one photo for now
         formData.append('latitude', String(location.latitude));
         formData.append('longitude', String(location.longitude));
@@ -212,7 +210,7 @@ export function ReportIssueForm() {
 
     const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
         if (!location.latitude || !location.longitude) {
-            form.setError('address', { type: 'manual', message: 'Location is required. Please click "Detect Location".' });
+            form.setError('address', { type: 'manual', message: 'Location is required. Please try again or enter manually.' });
             return;
         }
         const isLoggedIn = sessionStorage.getItem('is_citizen_logged_in') === 'true';
@@ -220,7 +218,6 @@ export function ReportIssueForm() {
         if (isLoggedIn) {
             submitIssue(values);
         } else {
-            // Store the form data in localStorage to repopulate after login
             try {
                 const reportData = {
                     ...values,
@@ -233,7 +230,6 @@ export function ReportIssueForm() {
             }
             
             setIsSubmitting(true);
-            // Redirect to login page, which should then handle the submission after auth
             router.push('/login?redirect=/track&action=submit_issue');
         }
     };
@@ -334,12 +330,11 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder="Detecting location automatically..." {...field} readOnly />
+                                    <Input 
+                                        placeholder={isFetchingLocation ? 'Detecting location...' : 'Location'} 
+                                        {...field} 
+                                    />
                                 </FormControl>
-                                <Button type="button" variant="outline" onClick={fetchLocation} disabled={isFetchingLocation}>
-                                    {isFetchingLocation ? <Loader2 className="mr-2 size-4 animate-spin" /> : <MapPin className="mr-2 size-4" />}
-                                    {isFetchingLocation ? 'Detecting...' : 'Detect Again'}
-                                </Button>
                              </div>
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
                              {!location.error && location.latitude && location.longitude && (
@@ -447,9 +442,9 @@ export function ReportIssueForm() {
                         )}
                     />
 
-                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-                        Review & Submit Issue
+                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting || isFetchingLocation}>
+                        {(isSubmitting || isFetchingLocation) && <Loader2 className="mr-2 size-4 animate-spin" />}
+                        {isFetchingLocation ? 'Getting Location...' : 'Review & Submit Issue'}
                     </Button>
                 </form>
                 </Form>
