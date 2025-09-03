@@ -77,62 +77,45 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        const getAccurateLocation = () => new Promise((resolve, reject) => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 8000,
-                    maximumAge: 0
-                });
-            } else {
-                reject(new Error("Geolocation not supported."));
-            }
-        });
-
-        const getFallbackLocation = async () => {
-            try {
-                const response = await fetch("https://ipapi.co/json/");
-                if (!response.ok) throw new Error('IP API failed');
-                return response.json();
-            } catch (error) {
-                console.error("IP-based fallback failed:", error);
-                throw new Error("Could not fetch location from IP.");
-            }
-        };
-
-        const detectLocation = async () => {
+     useEffect(() => {
+        const detectPreciseLocation = () => {
             setIsFetchingLocation(true);
-            form.setValue('address', 'Detecting...');
-            try {
-                const pos = await getAccurateLocation() as GeolocationPosition;
-                const { latitude, longitude } = pos.coords;
-                const address = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`;
-                setLocation({ latitude, longitude, address, error: null });
-                form.setValue('address', address, { shouldValidate: true });
-                appToast({ title: 'Success', description: 'High accuracy location captured!' });
-            } catch (err) {
-                console.warn("High accuracy location failed, falling back to IP.", err);
-                appToast({ title: 'Notice', description: 'Could not get precise location. Using an approximation.' });
-                try {
-                    const data = await getFallbackLocation();
-                    const { latitude, longitude, city, region } = data;
-                    const address = `Approx. ${city}, ${region}`;
-                    setLocation({ latitude, longitude, address, error: null });
-                    form.setValue('address', address, { shouldValidate: true });
-                } catch (fallbackErr) {
-                    const errorMessage = "Could not detect your location. Please enter it manually.";
-                    setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
-                    form.setValue('address', '', { shouldValidate: true });
-                    form.setError('address', { message: errorMessage });
-                    appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
-                }
-            } finally {
+            form.setValue('address', 'Detecting precise location...');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const { latitude, longitude } = pos.coords;
+                        const address = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`;
+                        setLocation({ latitude, longitude, address, error: null });
+                        form.setValue('address', address, { shouldValidate: true });
+                        appToast({ title: 'Success', description: 'Precise location captured!' });
+                        setIsFetchingLocation(false);
+                    },
+                    (err) => {
+                        const errorMessage = `Location error: ${err.message}. Please enter your location manually.`;
+                        setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+                        form.setValue('address', '', { shouldValidate: true });
+                        form.setError('address', { type: 'manual', message: errorMessage });
+                        appToast({ variant: 'destructive', title: 'Location Failed', description: err.message });
+                        setIsFetchingLocation(false);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                const errorMessage = "Geolocation is not supported by your browser. Please enter your location manually.";
+                setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+                form.setValue('address', '', { shouldValidate: true });
+                form.setError('address', { type: 'manual', message: errorMessage });
+                appToast({ variant: 'destructive', title: 'Unsupported', description: errorMessage });
                 setIsFetchingLocation(false);
             }
         };
 
-        detectLocation();
+        detectPreciseLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
