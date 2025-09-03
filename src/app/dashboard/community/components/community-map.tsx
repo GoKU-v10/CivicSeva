@@ -24,7 +24,6 @@ const UserLocationMarker = () => {
     const map = useMap();
 
     useEffect(() => {
-        // locate() can be called multiple times, so we use a flag
         let located = false;
         map.locate().on("locationfound", function (e) {
             if (!located) {
@@ -44,6 +43,7 @@ const UserLocationMarker = () => {
 export function CommunityMap() {
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
       setIsClient(true);
@@ -53,6 +53,14 @@ export function CommunityMap() {
           index === self.findIndex((t) => (t.id === issue.id))
       );
       setAllIssues(uniqueIssues);
+
+      // Cleanup function to remove the map instance
+      return () => {
+        if (mapRef.current) {
+            mapRef.current.remove();
+            mapRef.current = null;
+        }
+      };
   }, []);
 
   if (!isClient) {
@@ -65,6 +73,7 @@ export function CommunityMap() {
         zoom={5}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
+        whenCreated={map => { mapRef.current = map; }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
