@@ -1,3 +1,4 @@
+
 'use client';
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
@@ -20,27 +21,32 @@ L.Icon.Default.mergeOptions({
 });
 
 const UserLocationMarker = () => {
-    const [position, setPosition] = useState<L.LatLng | null>(null);
     const map = useMap();
 
     useEffect(() => {
+        // locate() can be called multiple times, so we use a flag
+        let located = false;
         map.locate().on("locationfound", function (e) {
-            setPosition(e.latlng);
-            map.flyTo(e.latlng, 15);
-             const marker = L.marker(e.latlng).addTo(map);
-             marker.bindPopup("You are here!").openPopup();
+            if (!located) {
+                map.flyTo(e.latlng, 15);
+                const marker = L.marker(e.latlng).addTo(map);
+                marker.bindPopup("You are here!").openPopup();
+                located = true;
+            }
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map]);
 
-    return null; // The marker is added directly to the map
+    return null;
 };
 
 
 export function CommunityMap() {
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
-  const mapRef = useRef<L.Map | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+      setIsClient(true);
       const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
       const combinedIssues = [...localIssues, ...initialIssues];
       const uniqueIssues = combinedIssues.filter((issue, index, self) =>
@@ -49,13 +55,16 @@ export function CommunityMap() {
       setAllIssues(uniqueIssues);
   }, []);
 
+  if (!isClient) {
+      return <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>;
+  }
+
   return (
       <MapContainer
         center={[20.5937, 78.9629]}
         zoom={5}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
-        whenCreated={map => { mapRef.current = map }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
