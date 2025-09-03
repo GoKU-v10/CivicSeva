@@ -126,12 +126,18 @@ export function ReportIssueForm() {
                         appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
                         setIsFetchingLocation(false);
                     },
-                    { enableHighAccuracy: false, timeout: 10000 } // Low accuracy settings
+                    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 } // Low accuracy settings
                 );
             },
-            { enableHighAccuracy: true, timeout: 10000 } // High accuracy settings
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // High accuracy settings
         );
     };
+
+    useEffect(() => {
+        fetchLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
 
     const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -328,11 +334,11 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder="Click 'Detect Location' button" {...field} readOnly />
+                                    <Input placeholder="Detecting location automatically..." {...field} readOnly />
                                 </FormControl>
                                 <Button type="button" variant="outline" onClick={fetchLocation} disabled={isFetchingLocation}>
                                     {isFetchingLocation ? <Loader2 className="mr-2 size-4 animate-spin" /> : <MapPin className="mr-2 size-4" />}
-                                    {isFetchingLocation ? 'Detecting...' : 'Detect Location'}
+                                    {isFetchingLocation ? 'Detecting...' : 'Detect Again'}
                                 </Button>
                              </div>
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
@@ -451,7 +457,5 @@ export function ReportIssueForm() {
         </Card>
     );
 }
-
-    
 
     
