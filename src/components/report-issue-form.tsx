@@ -167,17 +167,16 @@ export function ReportIssueForm() {
         }
 
         startSuggestionTransition(async () => {
-            const formData = new FormData();
-            formData.append('photoDataUri', photoDataUris[0]);
-            formData.append('locationData', JSON.stringify({ lat: location.latitude, lon: location.longitude }));
-            
-            const result = await suggestIssueDescription(formData);
+            const result = await suggestIssueDescription({
+                photoDataUri: photoDataUris[0],
+                locationData: JSON.stringify({ lat: location.latitude, lon: location.longitude }),
+            });
 
-            if (result.success && result.description) {
-                form.setValue('description', result.description);
+            if (result.suggestedDescription) {
+                form.setValue('description', result.suggestedDescription);
                 toast({ title: 'Success', description: 'AI has generated a description for you.' });
             } else {
-                toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: result.error });
+                toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: 'Could not generate a suggestion.' });
             }
         });
     };
@@ -208,7 +207,6 @@ export function ReportIssueForm() {
 
         recognition.onend = () => {
             setIsListening(false);
-            toast({ title: 'Stopped listening.' });
         };
 
         recognition.onerror = (event: any) => {
@@ -220,6 +218,7 @@ export function ReportIssueForm() {
             const transcript = event.results[0][0].transcript;
             const currentDescription = form.getValues('description');
             form.setValue('description', currentDescription ? `${currentDescription} ${transcript}` : transcript);
+            toast({ title: 'Success', description: 'Text successfully added from voice.'});
         };
 
         recognition.start();
@@ -493,3 +492,4 @@ export function ReportIssueForm() {
         </Card>
     );
 }
+    
