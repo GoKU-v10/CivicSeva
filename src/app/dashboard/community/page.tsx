@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import dynamic from 'next/dynamic';
-import { useMemo } from "react";
 import { issues } from "@/lib/data";
 
 const recentActivities = [
@@ -44,11 +43,12 @@ const leaderboard = [
     { rank: 3, area: 'West Side', score: 92.1, avatar: 'https://picsum.photos/seed/area3/40/40' },
 ]
 
+const CommunityMap = dynamic(() => import('@/app/dashboard/community/components/community-map').then(mod => mod.CommunityMap), { 
+  ssr: false,
+  loading: () => <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>
+});
+
 export default function CommunityHubPage() {
-  const CommunityMap = useMemo(() => dynamic(() => import('@/app/dashboard/community/components/community-map').then(mod => mod.CommunityMap), { 
-    ssr: false,
-    loading: () => <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>
-  }), []);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-120px)]">
