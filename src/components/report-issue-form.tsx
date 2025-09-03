@@ -120,6 +120,7 @@ export function ReportIssueForm() {
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
+                maximumAge: 0,
             }
         );
     };
@@ -442,3 +443,5 @@ export function ReportIssueForm() {
         </Card>
     );
 }
+
+    
