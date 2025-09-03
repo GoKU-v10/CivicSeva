@@ -79,49 +79,57 @@ export function ReportIssueForm() {
 
     const fetchLocation = () => {
         if (!navigator.geolocation) {
-             const errorMessage = 'Geolocation is not supported by this browser.';
+            const errorMessage = 'Geolocation is not supported by your browser.';
             setLocation({ latitude: null, longitude: null, error: errorMessage });
-             appToast({
-                variant: 'destructive',
-                title: 'Location Error',
-                description: errorMessage,
-            });
+            appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
             return;
         }
 
         setIsFetchingLocation(true);
-        setLocation({ ...location, error: null });
+        setLocation({ latitude: null, longitude: null, error: null });
+        form.setValue('address', 'Fetching location...');
 
+        // 1. Try for a high accuracy position
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 setLocation({ latitude, longitude, error: null });
-                const latLonString = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+                const latLonString = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`;
                 form.setValue('address', latLonString, { shouldValidate: true });
                 setIsFetchingLocation(false);
+                appToast({ title: 'Success', description: 'High accuracy location captured!' });
             },
-            (error) => {
-                let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
-                if(error.code === error.PERMISSION_DENIED) {
-                    errorMessage = 'Location permission denied. Please enable it in your browser settings.';
-                } else if (error.code === error.POSITION_UNAVAILABLE) {
-                    errorMessage = "Your location information is unavailable.";
-                } else if (error.code === error.TIMEOUT) {
-                    errorMessage = "The request to get your location timed out.";
-                }
-                setLocation({ latitude: null, longitude: null, error: errorMessage });
-                appToast({
-                    variant: 'destructive',
-                    title: 'Location Error',
-                    description: errorMessage,
-                });
-                setIsFetchingLocation(false);
+            () => {
+                // If high accuracy fails, immediately try low accuracy
+                appToast({ title: 'Notice', description: 'High accuracy failed. Trying a faster location method.' });
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        setLocation({ latitude, longitude, error: null });
+                        const latLonString = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)} (Standard Accuracy)`;
+                        form.setValue('address', latLonString, { shouldValidate: true });
+                        setIsFetchingLocation(false);
+                        appToast({ title: 'Success', description: 'Location captured with standard accuracy.' });
+                    },
+                    (err) => {
+                         let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
+                         if (err.code === err.PERMISSION_DENIED) {
+                             errorMessage = 'Location permission denied. Please enable it in your browser settings.';
+                         } else if (err.code === err.POSITION_UNAVAILABLE) {
+                             errorMessage = "Your location information is unavailable. Try moving to an area with a clearer signal.";
+                         } else if (err.code === err.TIMEOUT) {
+                             errorMessage = "The request to get your location timed out.";
+                         }
+                        setLocation({ latitude: null, longitude: null, error: errorMessage });
+                        form.setValue('address', '', { shouldValidate: true });
+                        appToast({ variant: 'destructive', title: 'Location Error', description: errorMessage });
+                        setIsFetchingLocation(false);
+                    },
+                    { enableHighAccuracy: false, timeout: 10000 } // Low accuracy settings
+                );
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-            }
+            { enableHighAccuracy: true, timeout: 10000 } // High accuracy settings
         );
     };
 
@@ -320,11 +328,11 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder="Click detect button to get location" {...field} readOnly />
+                                    <Input placeholder="Click 'Detect Location' button" {...field} readOnly />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation} disabled={isFetchingLocation}>
-                                    {isFetchingLocation ? <Loader2 className="size-4 animate-spin" /> : <MapPin className="size-4" />}
-                                    <span className="sr-only">Detect Location</span>
+                                <Button type="button" variant="outline" onClick={fetchLocation} disabled={isFetchingLocation}>
+                                    {isFetchingLocation ? <Loader2 className="mr-2 size-4 animate-spin" /> : <MapPin className="mr-2 size-4" />}
+                                    {isFetchingLocation ? 'Detecting...' : 'Detect Location'}
                                 </Button>
                              </div>
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
@@ -443,5 +451,7 @@ export function ReportIssueForm() {
         </Card>
     );
 }
+
+    
 
     
