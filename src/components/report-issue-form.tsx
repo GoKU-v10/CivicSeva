@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { suggestDescriptionAction, createIssueAction } from '@/lib/actions';
+import { suggestIssueDescription, createIssueAction } from '@/lib/actions';
 import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -82,7 +82,7 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-     useEffect(() => {
+    useEffect(() => {
         const getPreciseLocation = () => {
             return new Promise<GeolocationPosition>((resolve, reject) => {
                 if (navigator.geolocation) {
