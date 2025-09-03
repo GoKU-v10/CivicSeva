@@ -33,7 +33,7 @@ const reportIssueSchema = z.object({
         .min(10, { message: 'Description must be at least 10 characters long.' })
         .max(500, { message: 'Description must not exceed 500 characters.' }),
     photos: z.any().refine((files) => files?.length >= 1, 'At least one photo is required.'),
-    address: z.string().optional(),
+    address: z.string().min(1, 'Please detect or enter your location.'),
     terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions.'),
     language: z.string().optional(),
 });
@@ -58,7 +58,7 @@ export function ReportIssueForm() {
         longitude: null,
         error: null,
     });
-    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const [photoDataUris, setPhotoDataUris] = useState<string[]>([]);
     const [aiSuggestion, setAiSuggestion] = useState<{ category: string, confidence: number} | null>(null);
@@ -78,49 +78,51 @@ export function ReportIssueForm() {
     const photoInputRef = useRef<HTMLInputElement>(null);
 
     const fetchLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setLocation({ latitude, longitude, error: null });
-                    form.setValue('address', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
-                },
-                (error) => {
-                    let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
-                    if(error.code === error.PERMISSION_DENIED) {
-                        errorMessage = 'Location permission denied. Please enable it in your browser settings.';
-                    } else if (error.code === error.POSITION_UNAVAILABLE) {
-                        errorMessage = "Your location information is unavailable.";
-                    } else if (error.code === error.TIMEOUT) {
-                        errorMessage = "The request to get your location timed out.";
-                    }
-                    setLocation({ latitude: null, longitude: null, error: errorMessage });
-                    appToast({
-                        variant: 'destructive',
-                        title: 'Location Error',
-                        description: errorMessage,
-                    });
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                }
-            );
-        } else {
-            const errorMessage = 'Geolocation is not supported by this browser.';
+        if (!navigator.geolocation) {
+             const errorMessage = 'Geolocation is not supported by this browser.';
             setLocation({ latitude: null, longitude: null, error: errorMessage });
              appToast({
                 variant: 'destructive',
                 title: 'Location Error',
                 description: errorMessage,
             });
+            return;
         }
-    };
 
-    useEffect(() => {
-        fetchLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        setIsFetchingLocation(true);
+        setLocation({ ...location, error: null });
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setLocation({ latitude, longitude, error: null });
+                const latLonString = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+                form.setValue('address', latLonString, { shouldValidate: true });
+                setIsFetchingLocation(false);
+            },
+            (error) => {
+                let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
+                if(error.code === error.PERMISSION_DENIED) {
+                    errorMessage = 'Location permission denied. Please enable it in your browser settings.';
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    errorMessage = "Your location information is unavailable.";
+                } else if (error.code === error.TIMEOUT) {
+                    errorMessage = "The request to get your location timed out.";
+                }
+                setLocation({ latitude: null, longitude: null, error: errorMessage });
+                appToast({
+                    variant: 'destructive',
+                    title: 'Location Error',
+                    description: errorMessage,
+                });
+                setIsFetchingLocation(false);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+            }
+        );
+    };
 
     const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -194,6 +196,10 @@ export function ReportIssueForm() {
     }
 
     const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
+        if (!location.latitude || !location.longitude) {
+            form.setError('address', { type: 'manual', message: 'Location is required. Please click "Detect Location".' });
+            return;
+        }
         const isLoggedIn = sessionStorage.getItem('is_citizen_logged_in') === 'true';
 
         if (isLoggedIn) {
@@ -313,10 +319,10 @@ export function ReportIssueForm() {
                             <FormLabel>3. Location</FormLabel>
                              <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder={location.error || (location.latitude ? `Lat: ${location.latitude.toFixed(4)}, Lon: ${location.longitude?.toFixed(4)}` : "Detecting location...")} {...field} disabled />
+                                    <Input placeholder="Click detect button to get location" {...field} readOnly />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
-                                    <MapPin className="size-4" />
+                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation} disabled={isFetchingLocation}>
+                                    {isFetchingLocation ? <Loader2 className="size-4 animate-spin" /> : <MapPin className="size-4" />}
                                     <span className="sr-only">Detect Location</span>
                                 </Button>
                              </div>
