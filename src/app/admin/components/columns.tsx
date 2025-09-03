@@ -38,7 +38,12 @@ const FormattedDate = ({ dateString }: { dateString: string }) => {
     const [formattedDate, setFormattedDate] = useState("");
     useEffect(() => {
         if (dateString) {
-          setFormattedDate(format(new Date(dateString), 'MM/dd/yyyy'));
+          try {
+            setFormattedDate(format(new Date(dateString), 'MM/dd/yyyy'));
+          } catch (e) {
+            console.error("Invalid date format for", dateString);
+            setFormattedDate("Invalid Date");
+          }
         }
     }, [dateString]);
     return <span>{formattedDate || "..."}</span>;
@@ -151,5 +156,3 @@ export const columns: ColumnDef<Issue>[] = [
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ]
-
-    

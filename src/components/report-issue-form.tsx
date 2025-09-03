@@ -17,14 +17,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { suggestIssueDescription } from '@/lib/actions';
-import { Image as ImageIcon, Sparkles, MapPin, Loader2, Mic,Languages, Info, AlertTriangle } from 'lucide-react';
+import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description';
+import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { useToast as useAppToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { createIssueAction } from '@/lib/actions';
 
@@ -50,7 +50,7 @@ type LocationState = {
 };
 
 export function ReportIssueForm() {
-    const { toast: appToast } = useAppToast();
+    const { toast } = useToast();
     const router = useRouter();
     const [isSuggesting, startSuggestionTransition] = useTransition();
     
@@ -115,10 +115,10 @@ export function ReportIssueForm() {
                 const address = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)} (GPS, ~${accuracy.toFixed(0)}m accuracy)`;
                 setLocation({ latitude, longitude, address, error: null });
                 form.setValue('address', address, { shouldValidate: true });
-                appToast({ title: 'Success', description: 'Precise location captured!' });
+                toast({ title: 'Success', description: 'Precise location captured!' });
             } catch (err) {
                 console.warn("GPS failed, falling back to IP:", err);
-                appToast({ variant: 'default', title: 'GPS failed', description: 'Using approximate location from IP address.' });
+                toast({ variant: 'default', title: 'GPS failed', description: 'Using approximate location from IP address.' });
                 try {
                     const data = await getFallbackLocation();
                     const address = `${data.city}, ${data.region}`;
@@ -162,7 +162,7 @@ export function ReportIssueForm() {
     
     const handleSuggestDescription = () => {
         if (photoDataUris.length === 0 || !location.latitude) {
-            appToast({ variant: 'destructive', title: 'Error', description: 'Please upload a photo and ensure location is set before using AI Suggest.' });
+            toast({ variant: 'destructive', title: 'Error', description: 'Please upload a photo and ensure location is set before using AI Suggest.' });
             return;
         }
 
@@ -175,9 +175,9 @@ export function ReportIssueForm() {
 
             if (result.success && result.description) {
                 form.setValue('description', result.description);
-                appToast({ title: 'Success', description: 'AI has generated a description for you.' });
+                toast({ title: 'Success', description: 'AI has generated a description for you.' });
             } else {
-                appToast({ variant: 'destructive', title: 'AI Suggestion Failed', description: result.error });
+                toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: result.error });
             }
         });
     };
@@ -191,7 +191,7 @@ export function ReportIssueForm() {
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            appToast({ variant: 'destructive', title: 'Error', description: 'Speech recognition is not supported in this browser.' });
+            toast({ variant: 'destructive', title: 'Error', description: 'Speech recognition is not supported in this browser.' });
             return;
         }
 
@@ -203,16 +203,16 @@ export function ReportIssueForm() {
 
         recognition.onstart = () => {
             setIsListening(true);
-            appToast({ title: 'Listening...', description: 'Start speaking to dictate the description.' });
+            toast({ title: 'Listening...', description: 'Start speaking to dictate the description.' });
         };
 
         recognition.onend = () => {
             setIsListening(false);
-            appToast({ title: 'Stopped listening.' });
+            toast({ title: 'Stopped listening.' });
         };
 
         recognition.onerror = (event: any) => {
-            appToast({ variant: 'destructive', title: 'Voice Error', description: event.error });
+            toast({ variant: 'destructive', title: 'Voice Error', description: event.error });
             setIsListening(false);
         };
 
@@ -238,12 +238,12 @@ export function ReportIssueForm() {
         const result = await createIssueAction(formData);
 
         if (result.success && result.issue) {
-            appToast({ title: 'Success!', description: 'Issue submitted successfully.' });
+            toast({ title: 'Success!', description: 'Issue submitted successfully.' });
             sessionStorage.setItem('newly_submitted_issue', JSON.stringify(result.issue));
             localStorage.removeItem('pending_issue_report');
             router.push('/track');
         } else {
-            appToast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+            toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
         }
         setIsSubmitting(false);
     }
