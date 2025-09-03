@@ -80,38 +80,43 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        const getLocation = () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        // In a real app, you'd use a geocoding service here.
-                        // For now, we'll just show the coordinates and a placeholder address.
-                        const mockAddress = `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-                        setLocation({ latitude, longitude, address: mockAddress, error: null });
-                        form.setValue('address', mockAddress);
-                    },
-                    (error) => {
-                        setLocation({ latitude: null, longitude: null, address: '', error: 'Could not fetch your location. Please enable location services and try again.' });
-                        appToast({
-                            variant: 'destructive',
-                            title: 'Location Error',
-                            description: 'Please enable location services to automatically detect your location.',
-                        });
+    const fetchLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    // In a real app, you'd use a geocoding service here.
+                    // For now, we'll just show the coordinates and a placeholder address.
+                    const mockAddress = `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                    setLocation({ latitude, longitude, address: mockAddress, error: null });
+                    form.setValue('address', mockAddress);
+                },
+                (error) => {
+                    let errorMessage = 'Could not fetch your location. Please enable location services and try again.';
+                    if(error.code === error.PERMISSION_DENIED) {
+                        errorMessage = 'Location permission denied. Please enable it in your browser settings.';
                     }
-                );
-            } else {
-                setLocation({ latitude: null, longitude: null, address: '', error: 'Geolocation is not supported by this browser.' });
-                 appToast({
-                    variant: 'destructive',
-                    title: 'Location Error',
-                    description: 'Geolocation is not supported by your browser.',
-                });
-            }
-        };
+                    setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+                    appToast({
+                        variant: 'destructive',
+                        title: 'Location Error',
+                        description: errorMessage,
+                    });
+                }
+            );
+        } else {
+            const errorMessage = 'Geolocation is not supported by this browser.';
+            setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
+             appToast({
+                variant: 'destructive',
+                title: 'Location Error',
+                description: errorMessage,
+            });
+        }
+    };
 
-        getLocation();
+    useEffect(() => {
+        fetchLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -308,29 +313,7 @@ export function ReportIssueForm() {
                                 <FormControl>
                                     <Input placeholder={location.error || location.address || "Detecting location..."} {...field} />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={() => {
-                                     const getLocation = () => {
-                                        if (navigator.geolocation) {
-                                            navigator.geolocation.getCurrentPosition(
-                                                (position) => {
-                                                    const { latitude, longitude } = position.coords;
-                                                    const mockAddress = `Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-                                                    setLocation({ latitude, longitude, address: mockAddress, error: null });
-                                                    form.setValue('address', mockAddress);
-                                                },
-                                                (error) => {
-                                                    setLocation({ latitude: null, longitude: null, address: '', error: 'Could not fetch your location. Please enable location services and try again.' });
-                                                    appToast({
-                                                        variant: 'destructive',
-                                                        title: 'Location Error',
-                                                        description: 'Please enable location services to automatically detect your location.',
-                                                    });
-                                                }
-                                            );
-                                        }
-                                    };
-                                    getLocation();
-                                }}>
+                                <Button type="button" variant="outline" size="icon" onClick={fetchLocation}>
                                     <MapPin className="size-4" />
                                     <span className="sr-only">Detect Location</span>
                                 </Button>
