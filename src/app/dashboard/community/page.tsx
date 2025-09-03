@@ -1,4 +1,5 @@
 
+'use client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +27,8 @@ import {
   Info
 } from "lucide-react";
 import { format } from "date-fns";
+import dynamic from 'next/dynamic';
+import { useMemo } from "react";
 
 const recentActivities = [
     { user: 'Anonymous', action: 'supported', issue: 'Large pothole on main street', time: '5m ago', avatar: 'https://picsum.photos/seed/user1/40/40' },
@@ -41,6 +44,11 @@ const leaderboard = [
 ]
 
 export default function CommunityHubPage() {
+  const CommunityMap = useMemo(() => dynamic(() => import('@/app/dashboard/community/components/community-map').then(mod => mod.CommunityMap), { 
+    ssr: false,
+    loading: () => <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>
+  }), []);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-120px)]">
       {/* Map Section */}
@@ -98,47 +106,7 @@ export default function CommunityHubPage() {
           </CardContent>
         </Card>
         <div className="relative flex-grow rounded-lg overflow-hidden">
-          <Image
-            src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/geojson(%7B%22type%22%3A%22FeatureCollection%22%2C%22features%22%3A%5B%7B%22type%22%3A%22Feature%22%2C%22geometry%22%3A%7B%22type%22%3A%22Point%22%2C%22coordinates%22%3A%5B-74.0060%2C40.7128%5D%7D%2C%22properties%22%3A%7B%22marker-symbol%22%3A%22roadblock%22%2C%22marker-color%22%3A%22%23F5A623%22%7D%7D%2C%7B%22type%22%3A%22Feature%22%2C%22geometry%22%3A%7B%22type%22%3A%22Point%22%2C%22coordinates%22%3A%5B-73.9960%2C40.7228%5D%7D%2C%22properties%22%3A%7B%22marker-symbol%22%3A%22art-gallery%22%2C%22marker-color%22%3A%22%239B9B9B%22%7D%7D%2C%7B%22type%22%3A%22Feature%22%2C%22geometry%22%3A%7B%22type%22%3A%22Point%22%2C%22coordinates%22%3A%5B-74.0100%2C40.7060%5D%7D%2C%22properties%2_A%7B%22marker-symbol%22%3A%22circle%22%2C%22marker-color%22%3A%22%234A90E2%22%7D%7D%5D%7D)/-74.00,40.71,13,0/1200x800?access_token=pk.eyJ1IjoiZmVybmJ1ZGR5IiwiYSI6ImNseGo5eG53czAxemUybHFuMWE5enJpeDAifQ.e5jF13sAl5N3sM61s-b6Gw"
-            fill
-            alt="Interactive map showing community issues"
-            className="object-cover"
-            data-ai-hint="interactive map"
-          />
-          {/* Issue Popup Example */}
-          <div className="absolute top-1/4 left-1/4 w-80">
-            <Card className="shadow-2xl">
-              <CardHeader className="p-0">
-                <Image src="https://i.pinimg.com/1200x/07/4e/1a/074e1afeeae49ddb39969fbdba4bd8af.jpg" width={320} height={180} alt="Pothole" className="rounded-t-lg" data-ai-hint="trash can" />
-                <div className="absolute top-2 right-2 flex gap-1">
-                    <Badge variant="destructive"><AlertTriangle className="mr-1" />High Priority</Badge>
-                    <Badge className="bg-yellow-500 hover:bg-yellow-500 text-white"><Wrench className="mr-1" />In Progress</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <h3 className="font-bold">Large pothole on main street</h3>
-                <p className="text-xs text-muted-foreground mt-1">Updated {format(new Date(), "PPP")}</p>
-                <div className="flex justify-between items-center mt-3">
-                    <Button>
-                        <ThumbsUp className="mr-2" />
-                        Support (127)
-                    </Button>
-                    <div className="text-right">
-                        <p className="text-sm font-semibold">Public Works Dept.</p>
-                        <p className="text-xs text-muted-foreground">Category: Pothole</p>
-                    </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-background/90 to-transparent text-center">
-             <div className="inline-block p-2 rounded-lg bg-background/80 backdrop-blur-sm shadow-lg">
-                <div className="flex items-center gap-2">
-                    <Info className="text-primary size-5" />
-                    <p className="font-semibold text-sm">Interactive Map Coming Soon</p>
-                </div>
-             </div>
-           </div>
+          <CommunityMap />
         </div>
       </div>
 
