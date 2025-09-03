@@ -1,4 +1,3 @@
-
 'use client';
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
@@ -43,24 +42,17 @@ const UserLocationMarker = () => {
 export function CommunityMap() {
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [isClient, setIsClient] = useState(false);
-  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
+      // This ensures the component only renders on the client side
       setIsClient(true);
+      
       const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
       const combinedIssues = [...localIssues, ...initialIssues];
       const uniqueIssues = combinedIssues.filter((issue, index, self) =>
           index === self.findIndex((t) => (t.id === issue.id))
       );
       setAllIssues(uniqueIssues);
-
-      // Cleanup function to remove the map instance
-      return () => {
-        if (mapRef.current) {
-            mapRef.current.remove();
-            mapRef.current = null;
-        }
-      };
   }, []);
 
   if (!isClient) {
@@ -73,7 +65,6 @@ export function CommunityMap() {
         zoom={5}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
-        whenCreated={map => { mapRef.current = map; }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
