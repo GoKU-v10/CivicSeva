@@ -123,14 +123,14 @@ export function ReportIssueForm() {
                     setLocation({ latitude: data.latitude, longitude: data.longitude, address, error: null });
                     form.setValue('address', address, { shouldValidate: true });
                 } catch (fallbackErr) {
-                    const errorMessage = "Could not detect location. Please enter manually.";
-                    setLocation({ latitude: null, longitude: null, address: '', error: errorMessage });
-                    form.setValue('address', '', { shouldValidate: true });
-                    form.setError('address', { type: 'manual', message: errorMessage });
-                    appToast({ variant: 'destructive', title: 'Location Failed', description: errorMessage });
+                    console.error("IP fallback also failed:", fallbackErr);
+                    const errorMsg = "Could not detect location automatically. Please enter manually.";
+                    setLocation(prev => ({ ...prev, error: errorMsg }));
+                    form.setValue('address', '');
+                    form.setError('address', { type: 'manual', message: errorMsg });
                 }
             } finally {
-                setIsFetchingLocation(false);
+               setIsFetchingLocation(false);
             }
         };
 
@@ -138,51 +138,44 @@ export function ReportIssueForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const files = Array.from(e.target.files);
+            const previewUrls = files.map(file => URL.createObjectURL(file));
+            setPhotoPreviews(previewUrls);
 
-    const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (files && files.length > 0) {
-            const newPreviews: string[] = [];
-            const newDataUris: string[] = [];
-            const fileArray = Array.from(files);
-
-            fileArray.forEach(file => {
-                newPreviews.push(URL.createObjectURL(file));
-                const reader = new FileReader();
-                reader.onload = (loadEvent) => {
-                    newDataUris.push(loadEvent.target?.result as string);
-                    if(newDataUris.length === fileArray.length) {
-                       setPhotoDataUris(uris => [...uris, ...newDataUris]);
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
-            setPhotoPreviews(previews => [...previews, ...newPreviews]);
+            const dataUris = await Promise.all(
+                files.map(file => {
+                    return new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                })
+            );
+            setPhotoDataUris(dataUris);
         }
     };
-  
+    
     const handleSuggestDescription = () => {
-        if (photoDataUris.length === 0) {
-            appToast({ variant: 'destructive', title: 'Please upload a photo first.' });
-            return;
-        }
-        if (!location.latitude || !location.longitude) {
-            appToast({ variant: 'destructive', title: 'Waiting for location data.' });
+        if (photoDataUris.length === 0 || !location.latitude) {
+            appToast({ variant: 'destructive', title: 'Error', description: 'Please upload a photo and ensure location is set before using AI Suggest.' });
             return;
         }
 
         startSuggestionTransition(async () => {
             const formData = new FormData();
-            formData.append('photoDataUri', photoDataUris[0]); // Suggest based on the first photo
-            formData.append('locationData', `Lat: ${location.latitude}, Lon: ${location.longitude}`);
+            formData.append('photoDataUri', photoDataUris[0]);
+            formData.append('locationData', JSON.stringify({ lat: location.latitude, lon: location.longitude }));
             
             const result = await suggestDescriptionAction(formData);
 
             if (result.success && result.description) {
                 form.setValue('description', result.description);
-                appToast({ title: 'Description suggested by AI!' });
+                appToast({ title: 'Success', description: 'AI has generated a description for you.' });
             } else {
-                appToast({ variant: 'destructive', title: 'Error', description: result.error });
+                appToast({ variant: 'destructive', title: 'AI Suggestion Failed', description: result.error });
             }
         });
     };
@@ -203,8 +196,8 @@ export function ReportIssueForm() {
         recognitionRef.current = new SpeechRecognition();
         const recognition = recognitionRef.current;
         recognition.lang = form.getValues('language') || 'en-US';
-        recognition.interimResults = true;
-        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.continuous = false;
 
         recognition.onstart = () => {
             setIsListening(true);
@@ -223,10 +216,7 @@ export function ReportIssueForm() {
         };
 
         recognition.onresult = (event: any) => {
-            const transcript = Array.from(event.results)
-                .map((result: any) => result[0])
-                .map((result) => result.transcript)
-                .join('');
+            const transcript = event.results[0][0].transcript;
             
             const currentDescription = form.getValues('description');
             form.setValue('description', currentDescription ? `${currentDescription} ${transcript}` : transcript);
@@ -236,7 +226,7 @@ export function ReportIssueForm() {
     };
 
 
-    const submitIssue = async (values: z.infer<typeof reportIssueSchema>) => {
+    const submitIssue = async (values: z.infer<typeof reportIssueSchema>>) => {
         setIsSubmitting(true);
         const formData = new FormData();
         formData.append('description', values.description);
@@ -259,7 +249,7 @@ export function ReportIssueForm() {
         setIsSubmitting(false);
     }
 
-    const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
+    const onSubmit = (values: z.infer<typeof reportIssueSchema>>) => {
         if (!location.latitude || !location.longitude) {
             form.setError('address', { type: 'manual', message: 'Location is required. Please try again or enter manually.' });
             return;
@@ -504,5 +494,3 @@ export function ReportIssueForm() {
         </Card>
     );
 }
-
-    
