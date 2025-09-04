@@ -247,7 +247,7 @@ export function ReportIssueForm() {
         setIsSubmitting(false);
     }
 
-    const onSubmit = (values: z.infer<typeof reportIssueSchema>>) => {
+    const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
         if (!location.latitude || !location.longitude) {
             form.setError('address', { type: 'manual', message: 'Location is required. Please try again or enter manually.' });
             return;
