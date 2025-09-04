@@ -27,8 +27,8 @@ import {
   Info
 } from "lucide-react";
 import { format } from "date-fns";
-import dynamic from 'next/dynamic';
 import { issues } from "@/lib/data";
+import { CommunityMap } from "./components/community-map";
 
 const recentActivities = [
     { user: 'Anonymous', action: 'supported', issue: 'Large pothole on main street', time: '5m ago', avatar: 'https://picsum.photos/seed/user1/40/40' },
@@ -43,10 +43,6 @@ const leaderboard = [
     { rank: 3, area: 'West Side', score: 92.1, avatar: 'https://picsum.photos/seed/area3/40/40' },
 ]
 
-const CommunityMap = dynamic(() => import('@/app/dashboard/community/components/community-map').then(mod => mod.CommunityMap), { 
-  ssr: false,
-  loading: () => <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>
-});
 
 export default function CommunityHubPage() {
 
