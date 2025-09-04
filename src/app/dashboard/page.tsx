@@ -9,8 +9,6 @@ import { ArrowRight, Camera, CheckCircle, MapPin, List, Edit, ShieldAlert, Leaf,
 import Link from 'next/link';
 import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CommunityMap } from './community/components/community-map';
-
 
 export default function HomePage() {
   const reportedIssues: Issue[] = issues;
@@ -118,7 +116,13 @@ export default function HomePage() {
              <Card>
                 <CardContent className="p-0">
                     <div className="relative aspect-video w-full">
-                         <CommunityMap />
+                         <Image 
+                            src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+29abe2(-74.0060,40.7128),pin-s+29abe2(-73.9650,40.7739),pin-s+29abe2(-74.0090,40.7088)/-73.98,40.75,12/1000x600?access_token=pk.eyJ1IjoiZ29vZ2xlLWZpcmViYXNlIiwiYSI6ImNsc3ZlZ3AwbjB2dG4yanA2bXR4d3kya3QifQ.5h3L2H-p2bW40h2cM5y4fA"
+                            alt="Map of community issues"
+                            fill
+                            className="object-cover rounded-t-lg"
+                            data-ai-hint="map issues"
+                         />
                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-t-lg pointer-events-none" />
                          <div className="absolute bottom-4 left-4">
                             <Button asChild>
