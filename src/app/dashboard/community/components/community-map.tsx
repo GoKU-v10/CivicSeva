@@ -94,7 +94,14 @@ export default function CommunityMap() {
     return <Skeleton className="w-full h-full rounded-lg" />;
   }
   
-  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}`;
+  const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  const mapboxUrl = mapboxAccessToken 
+    ? `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`
+    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+  const mapboxAttribution = mapboxAccessToken 
+    ? '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    : '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
     <div className="w-full h-full rounded-lg overflow-hidden shadow-lg">
@@ -105,7 +112,7 @@ export default function CommunityMap() {
       >
         <TileLayer
           url={mapboxUrl}
-          attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution={mapboxAttribution}
         />
         {userLocation && <RecenterMap lat={userLocation[0]} lng={userLocation[1]} />}
         {/* User marker */}
