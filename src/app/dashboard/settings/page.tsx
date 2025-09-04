@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -7,15 +8,53 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSaveChanges = () => {
     toast({
         title: "Settings Saved",
         description: "Your profile information has been updated.",
     });
+  }
+
+  const handleClearLocalStorage = () => {
+    try {
+        localStorage.removeItem('civicseva_issues');
+        toast({
+            title: "Local Data Cleared",
+            description: "Your locally stored issue reports have been deleted. The page will now refresh.",
+        });
+        // Reload the page to reflect the changes
+        setTimeout(() => {
+            router.refresh();
+            window.location.reload();
+        }, 1500);
+
+    } catch (error) {
+         toast({
+            variant: 'destructive',
+            title: "Error",
+            description: "Could not clear local data.",
+        });
+    }
   }
 
   return (
@@ -85,6 +124,47 @@ export default function SettingsPage() {
         <CardFooter className="border-t px-6 py-4">
             <Button onClick={handleSaveChanges}>Save Changes</Button>
         </CardFooter>
+      </Card>
+
+       <Card>
+        <CardHeader>
+          <CardTitle>Data Management</CardTitle>
+          <CardDescription>Manage your locally stored application data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                    <h4 className="font-medium">Clear Local Issue Data</h4>
+                    <p className="text-sm text-muted-foreground">
+                        This will remove all issues you have reported that are stored on this device.
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                            <Trash2 className="mr-2" />
+                            Clear Data
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete all locally stored issue data from your browser.
+                            This action cannot be undone.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearLocalStorage}>
+                            Yes, delete my data
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        </CardContent>
       </Card>
 
     </div>
