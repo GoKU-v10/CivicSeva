@@ -6,6 +6,7 @@ import { Issue } from "@/lib/types";
 import { useEffect, useState } from "react";
 
 const LOCAL_STORAGE_KEY = 'civicseva_issues';
+const ISSUES_TO_DELETE = ['IS-11404', 'IS-17905'];
 
 export default function TrackIssuesPage() {
     const [issues, setIssues] = useState<Issue[]>(() => {
@@ -15,7 +16,16 @@ export default function TrackIssuesPage() {
 
     useEffect(() => {
         // This effect runs once on the client-side after the component mounts
-        const storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        let storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        
+        // --- FIX: Explicitly remove specified issues from local storage ---
+        const initialCount = storedIssues.length;
+        storedIssues = storedIssues.filter(issue => !ISSUES_TO_DELETE.includes(issue.id));
+        if (storedIssues.length < initialCount) {
+             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(storedIssues));
+        }
+        // --- END FIX ---
+
         const newIssueJSON = sessionStorage.getItem('newly_submitted_issue');
         
         let allIssues = [...storedIssues, ...initialIssuesData];
