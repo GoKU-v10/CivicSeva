@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { db } from "@/firebase";
@@ -18,6 +18,14 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
 });
+
+function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lng], map.getZoom());
+  }, [lat, lng, map]);
+  return null;
+}
 
 
 export default function CommunityMap() {
@@ -90,16 +98,16 @@ export default function CommunityMap() {
 
   return (
     <div className="w-full h-full">
-      {userLocation ? (
-        <MapContainer center={userLocation} zoom={14} className="w-full h-full">
+        <MapContainer center={userLocation ?? [20.5937, 78.9629]} zoom={14} className="w-full h-full">
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+           {userLocation && <RecenterMap lat={userLocation[0]} lng={userLocation[1]} />}
           {/* User marker */}
-          <Marker position={userLocation}>
+          {userLocation && <Marker position={userLocation}>
             <Popup>You are here</Popup>
-          </Marker>
+          </Marker>}
           {/* Community issues */}
           {issues.map((issue) => (
             <Marker key={issue.id} position={[issue.location.latitude, issue.location.longitude]}>
@@ -109,11 +117,6 @@ export default function CommunityMap() {
             </Marker>
           ))}
         </MapContainer>
-      ) : (
-        <div className="flex items-center justify-center w-full h-full">
-            <p>Fetching your location...</p>
-        </div>
-      )}
     </div>
   );
 }
