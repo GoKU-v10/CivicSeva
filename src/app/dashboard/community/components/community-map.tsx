@@ -1,22 +1,21 @@
 
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { db } from "@/firebase";
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
-import type { Issue } from "@/lib/types";
-import { Skeleton } from "@/components/ui/skeleton";
-
+import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { db } from '@/firebase';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import type { Issue } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Fix default Leaflet marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
+  iconRetinaUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
 });
 
 function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
@@ -26,7 +25,6 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
   }, [lat, lng, map]);
   return null;
 }
-
 
 export default function CommunityMap() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -45,47 +43,47 @@ export default function CommunityMap() {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
         (err) => {
-            console.error("Location error:", err)
-            // Fallback location if user denies permission
-            setUserLocation([20.5937, 78.9629]); 
+          console.error('Location error:', err);
+          // Fallback location if user denies permission
+          setUserLocation([20.5937, 78.9629]);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-        // Fallback location if geolocation is not supported
-        setUserLocation([20.5937, 78.9629]);
+      // Fallback location if geolocation is not supported
+      setUserLocation([20.5937, 78.9629]);
     }
 
     // Fetch issues from Firestore
     const fetchIssues = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "issues"));
+        const snapshot = await getDocs(collection(db, 'issues'));
         const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
-            const docData = doc.data();
-            // Adapt the fetched data to the app's Issue type
-            return {
-                id: doc.id,
-                title: docData.title || "No title",
-                description: docData.description || "",
-                imageUrl: docData.imageUrl || "",
-                imageHint: "",
-                images: docData.imageUrl ? [{ url: docData.imageUrl, caption: 'Issue Photo' }] : [],
-                location: {
-                    latitude: docData.lat || docData.latitude || 0,
-                    longitude: docData.lng || docData.longitude || 0,
-                    address: docData.address || "No address provided",
-                },
-                status: docData.status || "Reported",
-                category: docData.category || "Other",
-                reportedAt: docData.reportedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                department: docData.department || "Pending Assignment",
-                updates: docData.updates || [],
-            } as Issue
+          const docData = doc.data();
+          // Adapt the fetched data to the app's Issue type
+          return {
+            id: doc.id,
+            title: docData.title || 'No title',
+            description: docData.description || '',
+            imageUrl: docData.imageUrl || '',
+            imageHint: '',
+            images: docData.imageUrl ? [{ url: docData.imageUrl, caption: 'Issue Photo' }] : [],
+            location: {
+              latitude: docData.lat || docData.latitude || 0,
+              longitude: docData.lng || docData.longitude || 0,
+              address: docData.address || 'No address provided',
+            },
+            status: docData.status || 'Reported',
+            category: docData.category || 'Other',
+            reportedAt: docData.reportedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+            department: docData.department || 'Pending Assignment',
+            updates: docData.updates || [],
+          } as Issue;
         });
         setIssues(data);
       } catch (error) {
-          console.error("Failed to fetch issues from Firestore:", error);
-          // You might want to show a toast notification to the user here
+        console.error('Failed to fetch issues from Firestore:', error);
+        // You might want to show a toast notification to the user here
       }
     };
 
@@ -93,30 +91,47 @@ export default function CommunityMap() {
   }, [isClient]);
 
   if (!isClient) {
-    return <Skeleton className="w-full h-full" />;
+    return <Skeleton className="w-full h-full rounded-lg" />;
   }
+  
+  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}`;
 
   return (
-    <div className="w-full h-full">
-        <MapContainer center={userLocation ?? [20.5937, 78.9629]} zoom={14} className="w-full h-full">
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-           {userLocation && <RecenterMap lat={userLocation[0]} lng={userLocation[1]} />}
-          {/* User marker */}
-          {userLocation && <Marker position={userLocation}>
+    <div className="w-full h-full rounded-lg overflow-hidden shadow-lg">
+      <MapContainer
+        center={userLocation ?? [20.5937, 78.9629]}
+        zoom={14}
+        className="w-full h-full"
+      >
+        <TileLayer
+          url={mapboxUrl}
+          attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        />
+        {userLocation && <RecenterMap lat={userLocation[0]} lng={userLocation[1]} />}
+        {/* User marker */}
+        {userLocation && (
+          <Marker position={userLocation}>
             <Popup>You are here</Popup>
-          </Marker>}
-          {/* Community issues */}
-          {issues.map((issue) => (
-            <Marker key={issue.id} position={[issue.location.latitude, issue.location.longitude]}>
-              <Popup>
-                <strong>{issue.category}:</strong> {issue.title}
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+          </Marker>
+        )}
+        {/* Community issues */}
+        {issues.map((issue) => (
+          <Marker
+            key={issue.id}
+            position={[issue.location.latitude, issue.location.longitude]}
+          >
+            <Popup>
+              <div className="font-sans">
+                <h3 className="font-bold text-base mb-1">{issue.category}</h3>
+                <p className="text-sm">{issue.title}</p>
+                <a href={`/track/${issue.id}`} target="_blank" rel="noopener noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">
+                  View Details
+                </a>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
     </div>
   );
 }
