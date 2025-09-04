@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { issues } from "@/lib/data";
-import { CommunityMap } from "./components/community-map";
 
 const recentActivities = [
     { user: 'Anonymous', action: 'supported', issue: 'Large pothole on main street', time: '5m ago', avatar: 'https://picsum.photos/seed/user1/40/40' },
@@ -103,7 +102,13 @@ export default function CommunityHubPage() {
           </CardContent>
         </Card>
         <div className="relative flex-grow rounded-lg overflow-hidden">
-          <CommunityMap />
+          <Image 
+            src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+29abe2(-74.0060,40.7128),pin-s+29abe2(-73.9650,40.7739),pin-s+29abe2(-74.0090,40.7088)/-73.98,40.75,12/1000x600?access_token=pk.eyJ1IjoiZ29vZ2xlLWZpcmViYXNlIiwiYSI6ImNsc3ZlZ3AwbjB2dG4yanA2bXR4d3kya3QifQ.5h3L2H-p2bW40h2cM5y4fA"
+            alt="Map of community issues"
+            fill
+            className="object-cover"
+            data-ai-hint="map issues"
+            />
         </div>
       </div>
 
