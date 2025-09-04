@@ -15,7 +15,7 @@ const CommunityMap = dynamic(
 
 export default function MapViewPage() {
   return (
-    <div className="h-[calc(100vh-84px)] w-full -m-4 md:h-[calc(100vh-96px)] md:w-full md:-m-6 lg:h-[calc(100vh-112px)] lg:w-full lg:-m-8">
+    <div className="h-[calc(100vh-120px)] w-[60%] mx-auto">
         <CommunityMap />
     </div>
   );
