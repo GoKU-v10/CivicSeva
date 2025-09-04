@@ -21,6 +21,8 @@ import {
   Trophy,
 } from "lucide-react";
 import { issues } from "@/lib/data";
+import dynamic from "next/dynamic";
+import { useMemo } from "react";
 
 
 const recentActivities = [
@@ -38,6 +40,11 @@ const leaderboard = [
 
 
 export default function CommunityHubPage() {
+    
+  const CommunityMap = useMemo(() => dynamic(() => import('./components/community-map'), {
+    loading: () => <p>A map is loading...</p>,
+    ssr: false
+  }), [])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-120px)]">
@@ -96,13 +103,7 @@ export default function CommunityHubPage() {
           </CardContent>
         </Card>
         <div className="relative flex-grow rounded-lg overflow-hidden">
-          <Image 
-              src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+29abe2(-74.0060,40.7128),pin-s+29abe2(-73.9650,40.7739),pin-s+29abe2(-74.0090,40.7088)/-73.98,40.75,12/1000x600?access_token=pk.eyJ1IjoiZ29vZ2xlLWZpcmViYXNlIiwiYSI6ImNsc3ZlZ3AwbjB2dG4yanA2bXR4d3kya3QifQ.5h3L2H-p2bW40h2cM5y4fA"
-              alt="Map of community issues"
-              fill
-              className="object-cover"
-              data-ai-hint="map issues"
-          />
+            <CommunityMap />
         </div>
       </div>
 
