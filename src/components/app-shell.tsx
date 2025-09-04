@@ -49,6 +49,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: Target,
       badge: "3"
     },
+     {
+      href: '/dashboard/map-view',
+      label: 'Interactive Map',
+      icon: Map,
+    },
     {
       href: '/dashboard/community',
       label: 'Community Hub',
@@ -81,6 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const getPageTitle = () => {
     // Handle the new /track and /track/[id] routes
     if (pathname.startsWith('/track')) return 'My Issues';
+    if (pathname.startsWith('/dashboard/map-view')) return 'Interactive Map';
     
     const currentItem = allItems.find(item => item.href !== '/dashboard' && item.href !== '/track' && pathname.startsWith(item.href));
     if (currentItem) return currentItem.label;
