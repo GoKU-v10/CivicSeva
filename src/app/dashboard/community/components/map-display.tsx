@@ -10,6 +10,7 @@ import { IssueStatusBadge } from '@/components/issue-status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { issues as initialIssues } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Fix for default icon issue with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -41,18 +42,25 @@ const UserLocationMarker = () => {
 
 export function MapDisplay() {
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   useEffect(() => {
-    const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
-    const combinedIssues = [...localIssues, ...initialIssues];
-    const uniqueIssues = combinedIssues.filter((issue, index, self) =>
-      index === self.findIndex((t) => (t.id === issue.id))
-    );
-    setAllIssues(uniqueIssues);
-  }, []);
+    if (isClient) {
+      const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
+      const combinedIssues = [...localIssues, ...initialIssues];
+      const uniqueIssues = combinedIssues.filter((issue, index, self) =>
+        index === self.findIndex((t) => (t.id === issue.id))
+      );
+      setAllIssues(uniqueIssues);
+    }
+  }, [isClient]);
 
-  if (typeof window === 'undefined') {
-    return null;
+  if (!isClient) {
+    return <Skeleton className="w-full h-full" />;
   }
 
   return (
