@@ -154,11 +154,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <div className="p-2 flex items-center gap-2 rounded-lg bg-sidebar-accent">
                         <Avatar className="h-9 w-9">
                             <AvatarImage src="https://picsum.photos/seed/user/80/80" />
-                            <AvatarFallback>U</AvatarFallback>
+                            <AvatarFallback>SN</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-sidebar-accent-foreground">John Doe</span>
-                            <span className="text-xs text-muted-foreground">john.doe@email.com</span>
+                            <span className="text-sm font-semibold text-sidebar-accent-foreground">Samarth Narayankar</span>
+                            <span className="text-xs text-muted-foreground">samarth.narayankar@email.com</span>
                         </div>
                     </div>
                 </div>
