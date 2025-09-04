@@ -22,6 +22,16 @@ import {
 } from "lucide-react";
 import { issues } from "@/lib/data";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const CommunityMap = dynamic(
+  () => import('./components/community-map'),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-full h-[600px]" />
+  }
+);
 
 
 const recentActivities = [
@@ -97,23 +107,7 @@ export default function CommunityHubPage() {
           </CardContent>
         </Card>
         <Card className="relative flex-grow rounded-lg overflow-hidden h-[600px]">
-             <div className="relative aspect-video w-full h-full">
-                <Image 
-                    src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+29abe2(-74.0060,40.7128),pin-s+29abe2(-73.9650,40.7739),pin-s+29abe2(-74.0090,40.7088)/-73.98,40.75,12/1000x600?access_token=pk.eyJ1IjoiZ29vZ2xlLWZpcmViYXNlIiwiYSI6ImNsc3ZlZ3AwbjB2dG4yanA2bXR4d3kya3QifQ.5h3L2H-p2bW40h2cM5y4fA"
-                    alt="Map of community issues"
-                    fill
-                    className="object-cover"
-                    data-ai-hint="map issues"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                <div className="absolute bottom-4 left-4">
-                    <Button asChild>
-                        <Link href="/dashboard/map-view">
-                            Explore Interactive Map <ArrowRight className="ml-2" />
-                        </Link>
-                    </Button>
-                </div>
-            </div>
+             <CommunityMap />
         </Card>
       </div>
 
