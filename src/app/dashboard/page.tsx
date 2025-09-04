@@ -64,13 +64,13 @@ export default function HomePage() {
         </Card>
          <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Community Map</CardTitle>
+            <CardTitle className="text-sm font-medium">Community Hub</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Explore Now</div>
-            <Link href="/dashboard/map-view" className="text-xs text-muted-foreground hover:underline">
-              View interactive map
+            <Link href="/dashboard/community" className="text-xs text-muted-foreground hover:underline">
+              View interactive map & stats
             </Link>
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export default function HomePage() {
                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-t-lg pointer-events-none" />
                          <div className="absolute bottom-4 left-4">
                             <Button asChild>
-                                <Link href="/dashboard/map-view">
+                                <Link href="/dashboard/community">
                                     Explore Full Map <ArrowRight className="ml-2" />
                                 </Link>
                             </Button>
