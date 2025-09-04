@@ -224,7 +224,7 @@ export function ReportIssueForm() {
         recognition.start();
     };
 
-    const submitIssue = async (values: z.infer<typeof reportIssueSchema>>) => {
+    const submitIssue = async (values: z.infer<typeof reportIssueSchema>) => {
         setIsSubmitting(true);
         const formData = new FormData();
         formData.append('description', values.description);

@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
+import { Separator }d from "@/components/ui/separator";
 import Image from "next/image";
 import {
   MapPin,

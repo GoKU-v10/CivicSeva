@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Issue } from '@/lib/types';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { IssueStatusBadge } from '@/components/issue-status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -42,12 +42,8 @@ const UserLocationMarker = () => {
 
 export function CommunityMap() {
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
-  const [isClient, setIsClient] = useState(false);
-
+  
   useEffect(() => {
-      // This ensures the component only renders on the client side
-      setIsClient(true);
-      
       const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
       const combinedIssues = [...localIssues, ...initialIssues];
       const uniqueIssues = combinedIssues.filter((issue, index, self) =>
@@ -55,10 +51,6 @@ export function CommunityMap() {
       );
       setAllIssues(uniqueIssues);
   }, []);
-
-  if (!isClient) {
-      return <div className="bg-muted w-full h-full flex items-center justify-center rounded-lg"><p>Loading map...</p></div>;
-  }
 
   return (
       <MapContainer
