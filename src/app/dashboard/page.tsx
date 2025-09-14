@@ -12,7 +12,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentIssueTimeline } from '@/components/recent-issue-timeline';
-import { AchievementsWall } from '@/components/achievements-wall';
 
 const CommunityMap = dynamic(
   () => import('./community/components/community-map'),
@@ -96,7 +95,6 @@ export default function HomePage() {
               )}
             </div>
 
-            <AchievementsWall />
         </div>
         
         {/* Community Map Preview */}
@@ -116,7 +114,7 @@ export default function HomePage() {
             <Card>
                 <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                     <ShieldAlert className="size-8 text-primary" />
-                    <CardTitle className="text-xl">Precautions & Guidelines</CardTitle>
+                    <CardTitle className="text-xl">Precautions &amp; Guidelines</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                      <Alert>
