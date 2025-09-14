@@ -55,7 +55,7 @@ export default function CommunityMap() {
           console.warn(`Location error: ${err.message} (code: ${err.code})`);
           setLocationError(message);
           toast({
-            variant: "default",
+            variant: "destructive",
             title: "Location Access Denied",
             description: "The map will show a default area. You can change this in your browser settings.",
           });
@@ -67,6 +67,11 @@ export default function CommunityMap() {
     } else {
       const message = "Geolocation is not supported by your browser. Showing default location.";
       setLocationError(message);
+      toast({
+            variant: "destructive",
+            title: "Geolocation Not Supported",
+            description: message,
+      });
       // Fallback location if geolocation is not supported
       setUserLocation([20.5937, 78.9629]);
     }
