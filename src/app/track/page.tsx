@@ -6,7 +6,7 @@ import { Issue } from "@/lib/types";
 import { useEffect, useState } from "react";
 
 const LOCAL_STORAGE_KEY = 'civicseva_issues';
-const ISSUES_TO_DELETE = ['IS-11404', 'IS-17905', 'IS-86772'];
+const ISSUES_TO_DELETE = ['IS-11404', 'IS-17905', 'IS-86772', 'IS-18069'];
 
 export default function TrackIssuesPage() {
     const [issues, setIssues] = useState<Issue[]>(() => {
