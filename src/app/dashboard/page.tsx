@@ -96,18 +96,17 @@ export default function HomePage() {
         
         {/* Community Map Preview */}
         <div className="space-y-4">
-             <h2 className="text-2xl font-bold mb-4">Community Hub</h2>
+             <h2 className="text-2xl font-bold mb-4">Community Map</h2>
              <Card className="overflow-hidden">
                 <div className="relative aspect-video w-full">
-                    <Image src="https://i.pinimg.com/originals/a2/73/45/a2734524458f260b4c2b50937a0a0342.png" alt="Map preview" fill className="object-cover" data-ai-hint="map screenshot" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <CommunityMap />
                 </div>
                 <CardContent className="p-4">
                     <h3 className="text-lg font-semibold">Explore the Community Map</h3>
                     <p className="text-sm text-muted-foreground mt-1 mb-4">View interactive maps, see area statistics, and check out the community leaderboard.</p>
                     <Button asChild className="w-full">
                         <Link href="/dashboard/community">
-                            Explore Now <ArrowRight className="ml-2"/>
+                            Explore Full Map <ArrowRight className="ml-2"/>
                         </Link>
                     </Button>
                 </CardContent>
