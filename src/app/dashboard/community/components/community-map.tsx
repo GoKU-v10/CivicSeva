@@ -9,6 +9,9 @@ import { db } from '@/firebase';
 import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { Issue } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 // Fix default Leaflet marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -30,6 +33,8 @@ export default function CommunityMap() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -41,15 +46,27 @@ export default function CommunityMap() {
     // Get user location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+        (pos) => {
+            setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+            setLocationError(null);
+        },
         (err) => {
-          console.error(`Location error: ${err.message} (code: ${err.code})`);
+          const message = "Location access denied. Showing map for default area.";
+          console.warn(`Location error: ${err.message} (code: ${err.code})`);
+          setLocationError(message);
+          toast({
+            variant: "default",
+            title: "Location Access Denied",
+            description: "You've denied location access. The map will show a default area. You can change this in your browser settings.",
+          });
           // Fallback location if user denies permission
           setUserLocation([20.5937, 78.9629]);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
+      const message = "Geolocation is not supported by your browser. Showing default location.";
+      setLocationError(message);
       // Fallback location if geolocation is not supported
       setUserLocation([20.5937, 78.9629]);
     }
@@ -83,12 +100,16 @@ export default function CommunityMap() {
         setIssues(data);
       } catch (error) {
         console.error('Failed to fetch issues from Firestore:', error);
-        // You might want to show a toast notification to the user here
+        toast({
+            variant: 'destructive',
+            title: 'Error Fetching Issues',
+            description: 'Could not load community issues from the database.',
+        });
       }
     };
 
     fetchIssues();
-  }, [isClient]);
+  }, [isClient, toast]);
 
   if (!isClient) {
     return <Skeleton className="w-full h-full rounded-lg" />;
@@ -104,7 +125,7 @@ export default function CommunityMap() {
     : '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
-    <div className="w-full h-full rounded-lg overflow-hidden shadow-lg">
+    <div className="relative w-full h-full rounded-lg overflow-hidden shadow-lg">
       <MapContainer
         center={userLocation ?? [20.5937, 78.9629]}
         zoom={14}
@@ -116,7 +137,7 @@ export default function CommunityMap() {
         />
         {userLocation && <RecenterMap lat={userLocation[0]} lng={userLocation[1]} />}
         {/* User marker */}
-        {userLocation && (
+        {userLocation && !locationError && (
           <Marker position={userLocation}>
             <Popup>You are here</Popup>
           </Marker>
@@ -139,6 +160,17 @@ export default function CommunityMap() {
           </Marker>
         ))}
       </MapContainer>
+      {locationError && (
+        <div className="absolute top-4 left-4 z-[1000] w-full max-w-sm">
+            <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Location Access Denied</AlertTitle>
+                <AlertDescription>
+                   {locationError} Please enable location in your browser settings for a personalized view.
+                </AlertDescription>
+            </Alert>
+        </div>
+      )}
     </div>
   );
 }
