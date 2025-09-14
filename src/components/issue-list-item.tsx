@@ -17,7 +17,12 @@ export function IssueListItem({ issue }: IssueListItemProps) {
     const [reportedAt, setReportedAt] = useState('');
 
     useEffect(() => {
-        setReportedAt(formatDistanceToNow(new Date(issue.reportedAt), { addSuffix: true }));
+        // This code runs only on the client, after hydration
+        try {
+            setReportedAt(formatDistanceToNow(new Date(issue.reportedAt), { addSuffix: true }));
+        } catch (e) {
+            setReportedAt('Invalid date');
+        }
     }, [issue.reportedAt]);
 
 

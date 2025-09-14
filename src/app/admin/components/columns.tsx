@@ -37,6 +37,7 @@ export const priorities: {
 const FormattedDate = ({ dateString }: { dateString: string }) => {
     const [formattedDate, setFormattedDate] = useState("");
     useEffect(() => {
+        // This code runs only on the client, after hydration
         if (dateString) {
           try {
             setFormattedDate(format(new Date(dateString), 'MM/dd/yyyy'));

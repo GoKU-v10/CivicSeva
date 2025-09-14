@@ -43,8 +43,14 @@ export function IssueCard({ issue }: IssueCardProps) {
   const [reportedDate, setReportedDate] = useState('');
 
   useEffect(() => {
-    setReportedDate(format(new Date(issue.reportedAt), "PPP"));
-  }, [issue.reportedAt]);
+    // This code runs only on the client, after hydration
+    try {
+      setReportedDate(format(new Date(issue.reportedAt), "PPP"));
+    } catch (e) {
+      console.error("Invalid date for issue", issue.id);
+      setReportedDate("Invalid date");
+    }
+  }, [issue.reportedAt, issue.id]);
   
   const beforeImage = issue.images.find(img => img.caption.toLowerCase().includes('before'));
   const afterImage = issue.images.find(img => img.caption.toLowerCase().includes('after'));

@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
+
 
 const statusIcons = {
     Reported: CircleAlert,
@@ -24,6 +26,12 @@ const statusColors = {
 function TimelineNode({ item, isFirst, isLast }: { item: IssueUpdate, isFirst: boolean, isLast: boolean }) {
     const Icon = statusIcons[item.status] || CheckCircle;
     const color = statusColors[item.status] || "text-muted-foreground";
+    const [formattedTimestamp, setFormattedTimestamp] = useState('');
+
+    useEffect(() => {
+        setFormattedTimestamp(format(new Date(item.timestamp), "PPP p"));
+    }, [item.timestamp]);
+
 
     return (
         <div className="flex gap-4">
@@ -42,23 +50,43 @@ function TimelineNode({ item, isFirst, isLast }: { item: IssueUpdate, isFirst: b
             <div className={cn("pb-8 -mt-1", isLast ? 'font-bold' : '')}>
                 <p className="text-sm">{item.status}</p>
                 <p className={cn("text-xs", isLast ? 'text-foreground' : 'text-muted-foreground')}>{item.description}</p>
-                <p className="text-xs text-muted-foreground mt-1">{format(new Date(item.timestamp), "PPP p")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{formattedTimestamp || '...'}</p>
             </div>
         </div>
     )
 }
 
 export function RecentIssueTimeline({ issue }: { issue: Issue }) {
+    const [latestStatus, setLatestStatus] = useState<IssueUpdate | null>(null);
+    const [formattedDate, setFormattedDate] = useState('');
 
-    // Get the latest status
-    const latestStatus = issue.updates[issue.updates.length - 1];
+    useEffect(() => {
+        if (issue) {
+            const status = issue.updates[issue.updates.length - 1];
+            setLatestStatus(status);
+            setFormattedDate(format(new Date(status.timestamp), 'PP'));
+        }
+    }, [issue]);
+
+    if (!latestStatus) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle>{issue.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>Loading timeline...</p>
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>{issue.title}</CardTitle>
                 <CardDescription>
-                    Status: <span className={cn("font-semibold", statusColors[latestStatus.status])}>{latestStatus.status}</span> as of {format(new Date(latestStatus.timestamp), 'PP')}
+                    Status: <span className={cn("font-semibold", statusColors[latestStatus.status])}>{latestStatus.status}</span> as of {formattedDate}
                 </CardDescription>
             </CardHeader>
             <CardContent>

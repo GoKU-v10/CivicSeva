@@ -25,6 +25,12 @@ import { useToast } from "@/hooks/use-toast";
 import { updateIssueAction } from "@/lib/actions";
 
 function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
+    const [formattedTimestamp, setFormattedTimestamp] = useState('');
+
+    useEffect(() => {
+        setFormattedTimestamp(format(new Date(item.timestamp), "PPP p"));
+    }, [item.timestamp]);
+    
     return (
         <div className="flex gap-4">
             <div className="flex flex-col items-center">
@@ -36,7 +42,7 @@ function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) 
             <div className="pb-8">
                 <p className="font-semibold">{item.status}</p>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
-                <p className="text-xs text-muted-foreground mt-1">{format(new Date(item.timestamp), "PPP p")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{formattedTimestamp || '...'}</p>
             </div>
         </div>
     )
@@ -242,6 +248,21 @@ function EditIssueDialog({ issue, onIssueUpdate }: { issue: Issue, onIssueUpdate
     )
 }
 
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+    useEffect(() => {
+        if (dateString) {
+          try {
+            setFormattedDate(format(new Date(dateString), 'PPP'));
+          } catch (e) {
+            console.error("Invalid date format for", dateString);
+            setFormattedDate("Invalid Date");
+          }
+        }
+    }, [dateString]);
+    return <span>{formattedDate || "..."}</span>;
+}
+
 export default function IssueDetailPage() {
     const params = useParams();
     const id = params.id as string;
@@ -373,7 +394,9 @@ export default function IssueDetailPage() {
                                 <Calendar className="size-4 text-muted-foreground mt-1" />
                                 <div>
                                     <h4 className="font-semibold">Reported On</h4>
-                                    <p className="text-muted-foreground">{format(new Date(issue.reportedAt), "PPP")}</p>
+                                    <p className="text-muted-foreground">
+                                        <FormattedDate dateString={issue.reportedAt} />
+                                    </p>
                                 </div>
                             </div>
                             {issue.eta && (
@@ -381,7 +404,9 @@ export default function IssueDetailPage() {
                                     <Clock className="size-4 text-muted-foreground mt-1" />
                                     <div>
                                         <h4 className="font-semibold">Est. Completion</h4>
-                                        <p className="text-muted-foreground">{format(new Date(issue.eta), "PPP")}</p>
+                                        <p className="text-muted-foreground">
+                                            <FormattedDate dateString={issue.eta} />
+                                        </p>
                                     </div>
                                 </div>
                             )}
@@ -402,4 +427,3 @@ export default function IssueDetailPage() {
         </div>
     )
 }
-
