@@ -11,7 +11,7 @@ import type { Issue } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, WifiOff } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
 
 // Fix default Leaflet marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -32,10 +32,10 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 export default function CommunityMap() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]);
   const [isClient, setIsClient] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const { toast } = useToast();
-  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]);
 
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function CommunityMap() {
                   maximumAge: 0
               });
           } else {
-              reject(new Error("Geolocation not supported."));
+              reject(new Error("Geolocation is not supported by this browser."));
           }
       });
     };
