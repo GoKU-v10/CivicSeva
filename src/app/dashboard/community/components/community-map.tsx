@@ -24,7 +24,7 @@ L.Icon.Default.mergeOptions({
 function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], map.getZoom());
+    map.setView([lat, lng], 14);
   }, [lat, lng, map]);
   return null;
 }
@@ -35,6 +35,8 @@ export default function CommunityMap() {
   const [isClient, setIsClient] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]);
+
 
   useEffect(() => {
     setIsClient(true);
@@ -67,7 +69,9 @@ export default function CommunityMap() {
         try {
             const pos = await getPreciseLocation();
             const { latitude, longitude } = pos.coords;
-            setUserLocation([latitude, longitude]);
+            const newLocation: [number, number] = [latitude, longitude];
+            setUserLocation(newLocation);
+            setMapCenter(newLocation);
             setLocationError(null);
             toast({ title: 'Success', description: 'Precise location captured!' });
         } catch (err: any) {
@@ -75,7 +79,9 @@ export default function CommunityMap() {
             toast({ variant: 'default', title: 'Using approximate location', description: 'Could not get a precise GPS signal. Your location is based on your network and may be less accurate.' });
             try {
                 const data = await getFallbackLocation();
-                setUserLocation([data.latitude, data.longitude]);
+                const newLocation: [number, number] = [data.latitude, data.longitude];
+                setUserLocation(newLocation);
+                setMapCenter(newLocation);
                 setLocationError(null);
             } catch (fallbackErr) {
                 const message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
@@ -86,7 +92,8 @@ export default function CommunityMap() {
                     title: "Location Access Denied",
                     description: "The map will show a default area. You can change this in your browser settings.",
                 });
-                setUserLocation([20.5937, 78.9629]);
+                setUserLocation(null);
+                setMapCenter([20.5937, 78.9629]); // Fallback to default
             }
         }
     };
@@ -149,7 +156,7 @@ export default function CommunityMap() {
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden shadow-lg">
       <MapContainer
-        center={userLocation ?? [20.5937, 78.9629]}
+        center={mapCenter}
         zoom={14}
         className="w-full h-full"
       >
@@ -157,7 +164,7 @@ export default function CommunityMap() {
           url={mapboxUrl}
           attribution={mapboxAttribution}
         />
-        {userLocation && <RecenterMap lat={userLocation[0]} lng={userLocation[1]} />}
+        <RecenterMap lat={mapCenter[0]} lng={mapCenter[1]} />
         {/* User marker */}
         {userLocation && !locationError && (
           <Marker position={userLocation}>
