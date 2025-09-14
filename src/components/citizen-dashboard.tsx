@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { List, LayoutGrid, Calendar as CalendarIcon, X } from 'lucide-react';
+import { List, LayoutGrid, Calendar as CalendarIcon, X, AlertTriangle, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { IssueListItem } from './issue-list-item';
@@ -19,6 +19,8 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface CitizenDashboardProps {
   initialIssues: Issue[];
@@ -101,144 +103,134 @@ export function CitizenDashboard({ initialIssues }: CitizenDashboardProps) {
     return filtered;
   }, [issues, searchTerm, statusFilter, categoryFilter, priorityFilter, dateRange, sortOption]);
 
+  const activeIssues = useMemo(() => issues.filter(i => i.status !== 'Resolved'), [issues]);
+  const resolvedIssues = useMemo(() => issues.filter(i => i.status === 'Resolved'), [issues]);
+  const highPriorityIssues = useMemo(() => issues.filter(i => i.priority === 'High' && i.status !== 'Resolved'), [issues]);
+
+
   const clearDateFilter = () => {
     setDateRange(undefined);
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-          <Input
-            placeholder="Search by Issue ID or title..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[140px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {allStatuses.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full md:w-[140px]">
-                  <SelectValue placeholder="Filter by category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {allCategories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-               <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date"
-                    variant={"outline"}
-                    className={cn(
-                      "w-[240px] justify-start text-left font-normal",
-                      !dateRange && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y")} -{" "}
-                          {format(dateRange.to, "LLL dd, y")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      <span>Pick a date range</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                  />
-                </PopoverContent>
-              </Popover>
-              {dateRange && (
-                 <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-9 w-9">
-                    <X className="h-4 w-4" />
-                 </Button>
-              )}
+  const renderIssueList = (issueList: Issue[]) => {
+      if (issueList.length === 0) {
+           return (
+            <div className="text-center py-12">
+                <h3 className="text-xl font-medium">No issues found</h3>
+                <p className="text-muted-foreground">There are no issues matching the current criteria.</p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="reportedAt-desc">Date (Newest)</SelectItem>
-                  <SelectItem value="reportedAt-asc">Date (Oldest)</SelectItem>
-                  <SelectItem value="priority-desc">Priority (High to Low)</SelectItem>
-                  <SelectItem value="priority-asc">Priority (Low to High)</SelectItem>
-                   <SelectItem value="status-asc">Status (A-Z)</SelectItem>
-                   <SelectItem value="status-desc">Status (Z-A)</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center rounded-md bg-muted p-1">
-                  <Button
-                    variant={view === 'grid' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    onClick={() => setView('grid')}
-                    className="h-8 w-8"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={view === 'list' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    onClick={() => setView('list')}
-                    className="h-8 w-8"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-            </div>
-        </div>
-      </div>
-      {filteredAndSortedIssues.length > 0 ? (
-        view === 'grid' ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredAndSortedIssues.map((issue) => (
+           )
+      }
+
+      return view === 'grid' ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {issueList.map((issue) => (
                 <IssueCard key={issue.id} issue={issue} />
             ))}
-            </div>
+        </div>
         ) : (
             <div className="border rounded-lg">
-                {filteredAndSortedIssues.map((issue) => (
+                {issueList.map((issue) => (
                     <IssueListItem key={issue.id} issue={issue} />
                 ))}
             </div>
         )
-      ) : (
-        <div className="text-center py-12">
-            <h3 className="text-xl font-medium">No issues found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Issues</CardTitle>
+            <List className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{issues.length}</div>
+            <p className="text-xs text-muted-foreground">Total reports submitted by you</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Issues</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeIssues.length}</div>
+            <p className="text-xs text-muted-foreground">Currently open and in progress</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Urgent Issues</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{highPriorityIssues.length}</div>
+            <p className="text-xs text-muted-foreground">High-priority active issues</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Resolved</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">{resolvedIssues.length}</div>
+            <p className="text-xs text-muted-foreground">Successfully fixed and closed</p>
+          </CardContent>
+        </Card>
+      </div>
+
+       <Tabs defaultValue="all">
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="all">All Issues</TabsTrigger>
+            <TabsTrigger value="attention" className="text-destructive">Needs Attention</TabsTrigger>
+            <TabsTrigger value="resolved" className="text-green-600">Resolved</TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2">
+            <Input
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm h-9"
+            />
+            <div className="flex items-center rounded-md bg-muted p-1">
+                <Button
+                variant={view === 'grid' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => setView('grid')}
+                className="h-8 w-8"
+                >
+                <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                variant={view === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => setView('list')}
+                className="h-8 w-8"
+                >
+                <List className="h-4 w-4" />
+                </Button>
+            </div>
+          </div>
         </div>
-      )}
+
+        <TabsContent value="all">
+          {renderIssueList(filteredAndSortedIssues)}
+        </TabsContent>
+        <TabsContent value="attention">
+          {renderIssueList(highPriorityIssues.filter(issue => issue.title.toLowerCase().includes(searchTerm.toLowerCase())))}
+        </TabsContent>
+        <TabsContent value="resolved">
+          {renderIssueList(resolvedIssues.filter(issue => issue.title.toLowerCase().includes(searchTerm.toLowerCase())))}
+        </TabsContent>
+      </Tabs>
+
+      {/* Kept filters for "all" tab, can be moved or duplicated if needed for others */}
+      {/* <div className="flex flex-col gap-4"> ... </div> */}
+      
     </div>
   );
 }
