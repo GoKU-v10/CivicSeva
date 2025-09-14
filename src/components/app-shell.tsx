@@ -54,12 +54,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       label: 'Community Hub',
       icon: Users,
     },
-     {
-      href: '/dashboard/notifications',
-      label: 'Notifications',
-      icon: Bell,
-      badge: "2"
-    },
   ];
   
   const bottomMenuItems = [
