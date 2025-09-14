@@ -51,13 +51,13 @@ export default function CommunityMap() {
             setLocationError(null);
         },
         (err) => {
-          const message = "Location access denied. Showing map for default area.";
+          const message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
           console.warn(`Location error: ${err.message} (code: ${err.code})`);
           setLocationError(message);
           toast({
             variant: "default",
             title: "Location Access Denied",
-            description: "You've denied location access. The map will show a default area. You can change this in your browser settings.",
+            description: "The map will show a default area. You can change this in your browser settings.",
           });
           // Fallback location if user denies permission
           setUserLocation([20.5937, 78.9629]);
@@ -164,9 +164,9 @@ export default function CommunityMap() {
         <div className="absolute top-4 left-4 z-[1000] w-full max-w-sm">
             <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Location Access Denied</AlertTitle>
+                <AlertTitle>Location Access Is Blocked</AlertTitle>
                 <AlertDescription>
-                   {locationError} Please enable location in your browser settings for a personalized view.
+                   {locationError}
                 </AlertDescription>
             </Alert>
         </div>
