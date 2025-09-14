@@ -39,18 +39,18 @@ export function IssueCarousel({
 
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-bold px-1 mb-4">{title}</h2>
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
       <Carousel
         opts={{
           align: 'start',
           loop: false,
         }}
-        className="w-full px-12"
+        className="w-full"
       >
-        <CarouselContent className="-ml-4">
+        <CarouselContent>
           {issues.map((issue) => (
-            <CarouselItem key={issue.id} className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-              <div className="h-full">
+            <CarouselItem key={issue.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+              <div className="h-full p-1">
                 <IssueCard issue={issue} />
               </div>
             </CarouselItem>
