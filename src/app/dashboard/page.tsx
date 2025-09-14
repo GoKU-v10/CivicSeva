@@ -126,17 +126,23 @@ export default function HomePage() {
                         <Leaf className="h-4 w-4" />
                         <AlertTitle>Environmental Responsibility</AlertTitle>
                         <AlertDescription>
-                            Dispose of waste properly. Conserve water and report leaks promptly. Help keep public spaces clean.
+                            <ul className="list-disc list-inside text-xs space-y-1">
+                                <li>Dispose of all waste in designated bins. Avoid littering in public spaces.</li>
+                                <li>Report any water leaks or wastage promptly to conserve this valuable resource.</li>
+                                <li>Participate in community clean-up drives to help keep our public spaces beautiful.</li>
+                                <li>Conserve electricity by reporting malfunctioning streetlights.</li>
+                            </ul>
                         </AlertDescription>
                     </Alert>
                      <Alert variant="destructive">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Reporting Guidelines</AlertTitle>
                         <AlertDescription>
-                          <ul className="list-disc list-inside text-xs">
-                            <li>Provide clear, accurate information. False reports can lead to penalties.</li>
-                            <li>Do not report emergencies here. For urgent situations, call 911.</li>
-                            <li>Respect the privacy of others when taking photos.</li>
+                          <ul className="list-disc list-inside text-xs space-y-1">
+                            <li>Provide clear, concise, and accurate information. False reports may lead to penalties.</li>
+                            <li>Do not report emergencies on this platform. For any urgent situation (fire, medical, etc.), please call 911 immediately.</li>
+                            <li>Respect the privacy and property of others when taking photos for your report.</li>
+                            <li>Do not submit duplicate reports for the same issue. Check the community map first.</li>
                           </ul>
                         </AlertDescription>
                     </Alert>
