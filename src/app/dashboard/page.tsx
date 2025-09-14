@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentIssueTimeline } from '@/components/recent-issue-timeline';
+import { AchievementsWall } from '@/components/achievements-wall';
 
 const CommunityMap = dynamic(
   () => import('./community/components/community-map'),
@@ -81,48 +82,21 @@ export default function HomePage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-5">
-        <div className="lg:col-span-3 space-y-4">
-            <h2 className="text-2xl font-bold">Latest Issue Progress</h2>
-            {latestIssue ? (
-              <RecentIssueTimeline issue={latestIssue} />
-            ) : (
-              <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
-                  You haven't reported any issues yet.
-                </CardContent>
-              </Card>
-            )}
+        <div className="lg:col-span-3 space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold">Latest Issue Progress</h2>
+              {latestIssue ? (
+                <RecentIssueTimeline issue={latestIssue} />
+              ) : (
+                <Card>
+                  <CardContent className="p-6 text-center text-muted-foreground">
+                    You haven't reported any issues yet.
+                  </CardContent>
+                </Card>
+              )}
+            </div>
 
-            <h2 className="text-2xl font-bold pt-4">Your Responsibilities as a Citizen</h2>
-            <Card>
-                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                    <ShieldAlert className="size-8 text-primary" />
-                    <CardTitle className="text-xl">Precautions & Responsibilities</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <Alert>
-                        <Leaf className="h-4 w-4" />
-                        <AlertTitle>Environmental Responsibility</AlertTitle>
-                        <AlertDescription>
-                            Dispose of waste properly in designated bins. Conserve water and report leaks promptly. Help keep our public spaces clean and green for everyone to enjoy.
-                        </AlertDescription>
-                    </Alert>
-                     <Alert variant="destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Reporting Guidelines</AlertTitle>
-                        <AlertDescription>
-                          <ul className="list-disc list-inside">
-                            <li>Provide clear, accurate information. False reports can lead to penalties.</li>
-                            <li>Do not report emergencies here. For urgent situations, call 911.</li>
-                            <li>Respect the privacy of others when taking photos.</li>
-                          </ul>
-                        </AlertDescription>
-                    </Alert>
-                    <p className="text-sm text-muted-foreground">
-                        By working together, we can build a safer, cleaner, and more efficient city. Your active participation makes a real difference.
-                    </p>
-                </CardContent>
-            </Card>
+            <AchievementsWall />
         </div>
         
         {/* Community Map Preview */}
@@ -145,6 +119,34 @@ export default function HomePage() {
                     </div>
                 </CardContent>
              </Card>
+             
+            <h2 className="text-2xl font-bold pt-4">Citizen Responsibilities</h2>
+            <Card>
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                    <ShieldAlert className="size-8 text-primary" />
+                    <CardTitle className="text-xl">Precautions & Guidelines</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <Alert>
+                        <Leaf className="h-4 w-4" />
+                        <AlertTitle>Environmental Responsibility</AlertTitle>
+                        <AlertDescription>
+                            Dispose of waste properly. Conserve water and report leaks promptly. Help keep public spaces clean.
+                        </AlertDescription>
+                    </Alert>
+                     <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Reporting Guidelines</AlertTitle>
+                        <AlertDescription>
+                          <ul className="list-disc list-inside text-xs">
+                            <li>Provide clear, accurate information. False reports can lead to penalties.</li>
+                            <li>Do not report emergencies here. For urgent situations, call 911.</li>
+                            <li>Respect the privacy of others when taking photos.</li>
+                          </ul>
+                        </AlertDescription>
+                    </Alert>
+                </CardContent>
+            </Card>
         </div>
       </div>
     </div>
