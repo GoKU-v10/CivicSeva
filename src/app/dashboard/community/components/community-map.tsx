@@ -117,7 +117,7 @@ export default function CommunityMap() {
   
   const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const mapboxUrl = mapboxAccessToken 
-    ? `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`
+    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`
     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   const mapboxAttribution = mapboxAccessToken 
