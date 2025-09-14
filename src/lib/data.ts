@@ -65,7 +65,7 @@ export const issues: Issue[] = [
     imageHint: 'street sign',
     images: [
       { url: 'https://i.pinimg.com/736x/29/70/4c/29704cd0075d0cc865bcda8f3dc3a075.jpg', caption: 'Before' },
-      { url: 'https://i.pinimg.com/originals/9d/28/50/9d28509c629479905263638402f17042.jpg', caption: 'After' },
+      { url: 'https://i.pinimg.com/1200x/29/22/6a/29226adc9367dbb940c6b3d2296efd7f.jpg', caption: 'After' },
     ],
     location: {
       latitude: 40.7088,
