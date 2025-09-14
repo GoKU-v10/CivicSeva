@@ -48,7 +48,7 @@ export default function CommunityMap() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
-                    timeout: 12000, 
+                    timeout: 20000, 
                     maximumAge: 0
                 });
             } else {
@@ -72,7 +72,7 @@ export default function CommunityMap() {
             toast({ title: 'Success', description: 'Precise location captured!' });
         } catch (err: any) {
             console.warn(`GPS failed (${err.message}), falling back to IP.`);
-            toast({ variant: 'default', title: 'Using approximate location', description: 'Could not get a precise GPS signal. Your location may be less accurate.' });
+            toast({ variant: 'default', title: 'Using approximate location', description: 'Could not get a precise GPS signal. Your location is based on your network and may be less accurate.' });
             try {
                 const data = await getFallbackLocation();
                 setUserLocation([data.latitude, data.longitude]);
