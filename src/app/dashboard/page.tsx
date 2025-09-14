@@ -80,43 +80,49 @@ export default function HomePage() {
         </Card>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-5">
-        <div className="lg:col-span-3 space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold">Latest Issue Progress</h2>
-              {latestIssue ? (
-                <RecentIssueTimeline issue={latestIssue} />
-              ) : (
-                <Card>
-                  <CardContent className="p-6 text-center text-muted-foreground">
-                    You haven't reported any issues yet.
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div>
+            <h2 className="text-2xl font-bold mb-4">Latest Issue Progress</h2>
+            {latestIssue ? (
+            <RecentIssueTimeline issue={latestIssue} />
+            ) : (
+            <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                You haven't reported any issues yet.
+                </CardContent>
+            </Card>
+            )}
         </div>
         
         {/* Community Map Preview */}
-        <div className="lg-col-span-2 space-y-4 lg:col-span-2">
-             <Card>
-                <CardHeader>
-                  <h2 className="text-2xl font-bold">Community Map</h2>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="relative aspect-video w-full rounded-t-lg overflow-hidden">
-                         <CommunityMap />
-                    </div>
+        <div className="space-y-4">
+             <h2 className="text-2xl font-bold mb-4">Community Hub</h2>
+             <Card className="overflow-hidden">
+                <div className="relative aspect-video w-full">
+                    <Image src="https://i.pinimg.com/originals/a2/73/45/a2734524458f260b4c2b50937a0a0342.png" alt="Map preview" fill className="object-cover" data-ai-hint="map screenshot" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                </div>
+                <CardContent className="p-4">
+                    <h3 className="text-lg font-semibold">Explore the Community Map</h3>
+                    <p className="text-sm text-muted-foreground mt-1 mb-4">View interactive maps, see area statistics, and check out the community leaderboard.</p>
+                    <Button asChild className="w-full">
+                        <Link href="/dashboard/community">
+                            Explore Now <ArrowRight className="ml-2"/>
+                        </Link>
+                    </Button>
                 </CardContent>
              </Card>
-             
+        </div>
+      </div>
+
+        <div className="space-y-4">
             <h2 className="text-2xl font-bold pt-4">Citizen Responsibilities</h2>
             <Card>
                 <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                     <ShieldAlert className="size-8 text-primary" />
                     <CardTitle className="text-xl">Precautions &amp; Guidelines</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="grid md:grid-cols-2 gap-4">
                      <Alert>
                         <Leaf className="h-4 w-4" />
                         <AlertTitle>Environmental Responsibility</AlertTitle>
@@ -138,7 +144,7 @@ export default function HomePage() {
                 </CardContent>
             </Card>
         </div>
-      </div>
+
     </div>
   );
 }
