@@ -43,7 +43,7 @@ export default function CommunityMap() {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
         (err) => {
-          console.error('Location error:', err);
+          console.error(`Location error: ${err.message} (code: ${err.code})`);
           // Fallback location if user denies permission
           setUserLocation([20.5937, 78.9629]);
         },
