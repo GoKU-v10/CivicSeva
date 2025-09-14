@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RecentIssueTimeline } from '@/components/recent-issue-timeline';
 
 const CommunityMap = dynamic(
   () => import('./community/components/community-map'),
@@ -25,6 +26,10 @@ export default function HomePage() {
   const reportedIssues: Issue[] = issues;
   const activeIssues = reportedIssues.filter(issue => issue.status !== 'Resolved').length;
   const resolvedIssues = reportedIssues.filter(issue => issue.status === 'Resolved').length;
+  
+  // Find the most recently reported issue to display in the timeline
+  const latestIssue = reportedIssues.sort((a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime())[0];
+
 
   return (
     <div className="space-y-8">
@@ -77,7 +82,18 @@ export default function HomePage() {
 
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3 space-y-4">
-            <h2 className="text-2xl font-bold">Your Responsibilities as a Citizen</h2>
+            <h2 className="text-2xl font-bold">Latest Issue Progress</h2>
+            {latestIssue ? (
+              <RecentIssueTimeline issue={latestIssue} />
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  You haven't reported any issues yet.
+                </CardContent>
+              </Card>
+            )}
+
+            <h2 className="text-2xl font-bold pt-4">Your Responsibilities as a Citizen</h2>
             <Card>
                 <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                     <ShieldAlert className="size-8 text-primary" />
@@ -110,7 +126,7 @@ export default function HomePage() {
         </div>
         
         {/* Community Map Preview */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg-col-span-2 space-y-4 lg:col-span-2">
             <h2 className="text-2xl font-bold">Community Map</h2>
              <Card>
                 <CardContent className="p-0">
