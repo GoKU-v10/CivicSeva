@@ -7,7 +7,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, ArrowRight, Camera, Pothole, SprayCan, LightbulbOff, Trash2, Signpost, Droplets, HelpCircleIcon } from 'lucide-react';
+import { MapPin, Calendar, ArrowRight, Camera, AlertTriangle, SprayCan, LightbulbOff, Trash2, Signpost, Droplets, HelpCircleIcon } from 'lucide-react';
 import type { Issue, IssueCategory } from '@/lib/types';
 import { IssueStatusBadge } from './issue-status-badge';
 import Image from 'next/image';
@@ -30,7 +30,7 @@ interface IssueCardProps {
 }
 
 const categoryIcons: Record<IssueCategory, React.ElementType> = {
-    'Pothole': Pothole,
+    'Pothole': AlertTriangle,
     'Graffiti': SprayCan,
     'Streetlight Outage': LightbulbOff,
     'Waste Management': Trash2,
