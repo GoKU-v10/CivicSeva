@@ -102,11 +102,11 @@ export default function HomePage() {
                     <CommunityMap />
                 </div>
                 <CardContent className="p-4">
-                    <h3 className="text-lg font-semibold">Explore the Community Map</h3>
+                    <h3 className="text-lg font-semibold">Explore the Community Hub</h3>
                     <p className="text-sm text-muted-foreground mt-1 mb-4">View interactive maps, see area statistics, and check out the community leaderboard.</p>
                     <Button asChild className="w-full">
                         <Link href="/dashboard/community">
-                            Explore Full Map <ArrowRight className="ml-2"/>
+                            Explore Hub <ArrowRight className="ml-2"/>
                         </Link>
                     </Button>
                 </CardContent>
