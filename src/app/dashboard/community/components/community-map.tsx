@@ -147,7 +147,7 @@ export default function CommunityMap() {
       <MapContainer
         center={mapCenter}
         zoom={14}
-        className="w-full h-full"
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           url={mapboxUrl}
