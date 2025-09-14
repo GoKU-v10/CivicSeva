@@ -24,6 +24,7 @@ import { issues } from "@/lib/data";
 import Link from "next/link";
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import 'leaflet/dist/leaflet.css';
 
 const CommunityMap = dynamic(
   () => import('./components/community-map'),

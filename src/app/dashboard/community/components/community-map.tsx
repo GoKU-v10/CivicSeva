@@ -122,7 +122,7 @@ export default function CommunityMap() {
 
   const mapboxAttribution = mapboxAccessToken 
     ? '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    : '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden shadow-lg">
