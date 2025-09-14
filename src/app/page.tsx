@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { ParallaxCityscape } from '@/components/parallax-cityscape';
 
 export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -85,22 +86,13 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative h-[80vh] min-h-[500px]">
-          <Image
-            src="https://i.pinimg.com/1200x/ca/fc/01/cafc0140812c6399349c87f72129991e.jpg"
-            alt="Modern city landscape"
-            fill
-            priority
-            quality={100}
-            sizes="100vw"
-            data-ai-hint="modern cityscape"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
-          <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
-            <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl">
+        <section className="relative h-[150vh] w-full overflow-hidden">
+          <ParallaxCityscape />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10 flex h-full flex-col items-center text-center text-white p-4">
+            <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
             </h1>
-            <p className="mt-4 max-w-3xl text-lg md:text-xl text-primary-foreground/80">
+            <p className="mt-4 max-w-3xl text-lg md:text-xl text-primary-foreground/80 text-shadow">
               An AI-powered platform connecting citizens with municipal services for faster issue resolution.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -116,6 +108,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
 
         <section id="how-it-works" className="py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-6">
