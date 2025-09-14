@@ -45,9 +45,9 @@ export function IssueCarousel({
           align: 'start',
           loop: false,
         }}
-        className="w-full"
+        className="w-full px-12"
       >
-        <CarouselContent className="-ml-2">
+        <CarouselContent className="-ml-4">
           {issues.map((issue) => (
             <CarouselItem key={issue.id} className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
               <div className="h-full">
@@ -56,8 +56,8 @@ export function IssueCarousel({
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="ml-14" />
-        <CarouselNext className="mr-14" />
+        <CarouselPrevious />
+        <CarouselNext />
       </Carousel>
     </div>
   );
