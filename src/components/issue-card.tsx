@@ -5,14 +5,12 @@ import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, ArrowRight, Camera } from 'lucide-react';
-import type { Issue } from '@/lib/types';
+import { MapPin, Calendar, ArrowRight, Camera, Pothole, SprayCan, LightbulbOff, Trash2, Signpost, Droplets, HelpCircleIcon } from 'lucide-react';
+import type { Issue, IssueCategory } from '@/lib/types';
 import { IssueStatusBadge } from './issue-status-badge';
 import Image from 'next/image';
-import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -27,14 +25,21 @@ import {
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import { cn } from '@/lib/utils';
 
-
 interface IssueCardProps {
   issue: Issue;
 }
 
+const categoryIcons: Record<IssueCategory, React.ElementType> = {
+    'Pothole': Pothole,
+    'Graffiti': SprayCan,
+    'Streetlight Outage': LightbulbOff,
+    'Waste Management': Trash2,
+    'Damaged Sign': Signpost,
+    'Water Leak': Droplets,
+    'Other': HelpCircleIcon
+}
+
 export function IssueCard({ issue }: IssueCardProps) {
-  const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
-  
   const [reportedDate, setReportedDate] = useState('');
 
   useEffect(() => {
@@ -43,36 +48,48 @@ export function IssueCard({ issue }: IssueCardProps) {
   
   const beforeImage = issue.images.find(img => img.caption.toLowerCase().includes('before'));
   const afterImage = issue.images.find(img => img.caption.toLowerCase().includes('after'));
-
+  const CategoryIcon = categoryIcons[issue.category] || HelpCircleIcon;
 
   return (
-    <Card className={cn("flex flex-col overflow-hidden group", issue.priority === 'High' && issue.status !== 'Resolved' && "border-destructive border-2")}>
-      <CardContent className="p-4 flex-grow">
-        <div className="flex justify-between items-start">
-            <Badge variant="secondary">{issue.category}</Badge>
-            <IssueStatusBadge status={issue.status} />
-        </div>
-        <p className="text-xs text-muted-foreground font-mono mt-2">{issue.id}</p>
-        <h3 className="text-base font-semibold leading-tight mt-1">{issue.title}</h3>
-        <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+    <Card className={cn(
+        "flex flex-col overflow-hidden group/card shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1", 
+        issue.priority === 'High' && issue.status !== 'Resolved' && "border-destructive border-2 shadow-destructive/20"
+    )}>
+        <CardContent className="p-0 relative">
+            <div className="absolute top-3 right-3 z-10">
+                <IssueStatusBadge status={issue.status} />
+            </div>
+            <div className="absolute top-3 left-3 z-10 size-10 rounded-full bg-background/80 flex items-center justify-center backdrop-blur-sm shadow-lg">
+                <CategoryIcon className="size-5 text-primary" />
+            </div>
+            <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
+                <Image 
+                    src={issue.imageUrl}
+                    alt={issue.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover/card:scale-105"
+                    data-ai-hint={issue.imageHint}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            </div>
+            <div className="absolute bottom-0 p-4 text-white">
+                <h3 className="text-lg font-bold leading-tight drop-shadow-md">{issue.title}</h3>
+            </div>
+        </CardContent>
+      <CardFooter className="p-4 flex-col items-start gap-3 bg-muted/30">
+        <div className="w-full space-y-1 text-xs text-muted-foreground">
              <div className="flex items-center gap-2">
-                <MapPin className="size-3" />
-                <span>{issue.location.address}</span>
+                <MapPin className="size-3 flex-shrink-0" />
+                <span className="truncate">{issue.location.address}</span>
             </div>
             <div className="flex items-center gap-2">
                 <Calendar className="size-3" />
                 <span>{reportedDate ? `Reported on ${reportedDate}` : 'Loading date...'}</span>
             </div>
         </div>
-      </CardContent>
-      <CardFooter className="p-4 pt-0 flex-col items-start gap-3">
-        <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">Progress</p>
-            <Progress value={progress} className="h-2" />
-        </div>
 
         <div className="w-full flex gap-2">
-            <Button asChild className="flex-1" variant="outline">
+            <Button asChild className="flex-1" variant="default" size="sm">
                 <Link href={`/track/${issue.id}`}>
                     View Details <ArrowRight className="ml-2" />
                 </Link>
@@ -80,7 +97,7 @@ export function IssueCard({ issue }: IssueCardProps) {
             {issue.status === 'Resolved' && beforeImage && afterImage && (
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="secondary">
+                        <Button variant="secondary" size="sm">
                             <Camera className="mr-2" />
                             Before & After
                         </Button>
