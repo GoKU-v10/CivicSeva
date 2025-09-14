@@ -11,7 +11,7 @@ import type { Issue } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, WifiOff } from 'lucide-react';
 
 // Fix default Leaflet marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -46,23 +46,17 @@ export default function CommunityMap() {
     if (!isClient) return;
 
     const getPreciseLocation = () => {
-        return new Promise<GeolocationPosition>((resolve, reject) => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 20000, 
-                    maximumAge: 0
-                });
-            } else {
-                reject(new Error("Geolocation not supported."));
-            }
-        });
-    };
-
-    const getFallbackLocation = async () => {
-        let res = await fetch("https://ipapi.co/json/");
-        if (!res.ok) throw new Error("IP API failed");
-        return res.json();
+      return new Promise<GeolocationPosition>((resolve, reject) => {
+          if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  enableHighAccuracy: true,
+                  timeout: 20000, 
+                  maximumAge: 0
+              });
+          } else {
+              reject(new Error("Geolocation not supported."));
+          }
+      });
     };
 
     const detectLocation = async () => {
@@ -72,29 +66,25 @@ export default function CommunityMap() {
             const newLocation: [number, number] = [latitude, longitude];
             setUserLocation(newLocation);
             setMapCenter(newLocation);
-            setLocationError(null);
-            toast({ title: 'Success', description: 'Precise location captured!' });
+            setLocationError(null); // Clear any previous errors
+            toast({ title: 'Success', description: 'Precise GPS location acquired!' });
         } catch (err: any) {
-            console.warn(`GPS failed (${err.message}), falling back to IP.`);
-            toast({ variant: 'default', title: 'Using approximate location', description: 'Could not get a precise GPS signal. Your location is based on your network and may be less accurate.' });
-            try {
-                const data = await getFallbackLocation();
-                const newLocation: [number, number] = [data.latitude, data.longitude];
-                setUserLocation(newLocation);
-                setMapCenter(newLocation);
-                setLocationError(null);
-            } catch (fallbackErr) {
-                const message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
-                console.error("IP fallback also failed:", fallbackErr);
-                setLocationError(message);
-                 toast({
-                    variant: "destructive",
-                    title: "Location Access Denied",
-                    description: "The map will show a default area. You can change this in your browser settings.",
-                });
-                setUserLocation(null);
-                setMapCenter([20.5937, 78.9629]); // Fallback to default
-            }
+             let message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
+             if (err.code === 1) { // PERMISSION_DENIED
+                message = "You have denied location access. Please enable it in your browser's site settings to use this feature.";
+             } else if (err.code === 2 || err.code === 3) { // POSITION_UNAVAILABLE or TIMEOUT
+                message = "Could not get a precise location. Please try moving to an area with a clearer view of the sky (e.g., near a window or outdoors).";
+             }
+            
+             console.error("Geolocation Error:", err.message);
+             setLocationError(message);
+             toast({
+                variant: "destructive",
+                title: "Could Not Get Precise Location",
+                description: "The map will show a default area. See the on-map alert for more details.",
+            });
+            setUserLocation(null);
+            setMapCenter([20.5937, 78.9629]); // Fallback to default
         }
     };
 
@@ -168,7 +158,7 @@ export default function CommunityMap() {
         {/* User marker */}
         {userLocation && !locationError && (
           <Marker position={userLocation}>
-            <Popup>You are here</Popup>
+            <Popup>You are here (Precise Location)</Popup>
           </Marker>
         )}
         {/* Community issues */}
@@ -192,8 +182,8 @@ export default function CommunityMap() {
       {locationError && (
         <div className="absolute top-4 left-4 z-[1000] w-full max-w-sm">
             <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Location Access Is Blocked</AlertTitle>
+                <WifiOff className="h-4 w-4" />
+                <AlertTitle>Precise Location Unavailable</AlertTitle>
                 <AlertDescription>
                    {locationError}
                 </AlertDescription>
