@@ -13,7 +13,6 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentIssueTimeline } from '@/components/recent-issue-timeline';
 import { AchievementsWall } from '@/components/achievements-wall';
-import { NotificationsFeed } from '@/components/notifications-feed';
 
 const CommunityMap = dynamic(
   () => import('./community/components/community-map'),
@@ -102,7 +101,6 @@ export default function HomePage() {
         
         {/* Community Map Preview */}
         <div className="lg-col-span-2 space-y-4 lg:col-span-2">
-            <NotificationsFeed />
              <Card>
                 <CardHeader>
                   <h2 className="text-2xl font-bold">Community Map</h2>
@@ -110,16 +108,6 @@ export default function HomePage() {
                 <CardContent className="p-0">
                     <div className="relative aspect-video w-full rounded-t-lg overflow-hidden">
                          <CommunityMap />
-                    </div>
-                    <div className="p-4">
-                        <p className="text-sm text-muted-foreground">
-                            See what's being reported in your neighborhood and stay up-to-date on local civic action.
-                        </p>
-                         <Button asChild className="mt-2 w-full">
-                            <Link href="/dashboard/community">
-                                Explore Full Hub <ArrowRight className="ml-2" />
-                            </Link>
-                        </Button>
                     </div>
                 </CardContent>
              </Card>

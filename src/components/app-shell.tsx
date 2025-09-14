@@ -33,9 +33,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { toast } = useToast();
 
   const menuItems = [
     {
@@ -53,6 +55,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       href: '/dashboard/community',
       label: 'Community Hub',
       icon: Users,
+    },
+     {
+      href: '/dashboard/notifications',
+      label: 'Notifications',
+      icon: Bell,
     },
   ];
   
@@ -81,6 +88,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if(pathname === '/dashboard') return 'Dashboard';
     
     return 'CivicSeva';
+  }
+
+  const showNotification = () => {
+    toast({
+        title: "New Status Update!",
+        description: "Your report for 'Large pothole on main street' is now In Progress.",
+    })
   }
 
   return (
@@ -167,7 +181,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         {getPageTitle()}
                     </h1>
                 </div>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={showNotification}>
                     <Bell />
                     <span className="sr-only">Notifications</span>
                 </Button>
