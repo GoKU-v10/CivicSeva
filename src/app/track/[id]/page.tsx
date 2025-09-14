@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { issues as initialIssues } from "@/lib/data";
@@ -401,3 +402,4 @@ export default function IssueDetailPage() {
         </div>
     )
 }
+
