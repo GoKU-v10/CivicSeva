@@ -43,38 +43,55 @@ export default function CommunityMap() {
   useEffect(() => {
     if (!isClient) return;
 
-    // Get user location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+    const getPreciseLocation = () => {
+        return new Promise<GeolocationPosition>((resolve, reject) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 12000, 
+                    maximumAge: 0
+                });
+            } else {
+                reject(new Error("Geolocation not supported."));
+            }
+        });
+    };
+
+    const getFallbackLocation = async () => {
+        let res = await fetch("https://ipapi.co/json/");
+        if (!res.ok) throw new Error("IP API failed");
+        return res.json();
+    };
+
+    const detectLocation = async () => {
+        try {
+            const pos = await getPreciseLocation();
+            const { latitude, longitude } = pos.coords;
+            setUserLocation([latitude, longitude]);
             setLocationError(null);
-        },
-        (err) => {
-          const message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
-          console.warn(`Location error: ${err.message} (code: ${err.code})`);
-          setLocationError(message);
-          toast({
-            variant: "destructive",
-            title: "Location Access Denied",
-            description: "The map will show a default area. You can change this in your browser settings.",
-          });
-          // Fallback location if user denies permission
-          setUserLocation([20.5937, 78.9629]);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      const message = "Geolocation is not supported by your browser. Showing default location.";
-      setLocationError(message);
-      toast({
-            variant: "destructive",
-            title: "Geolocation Not Supported",
-            description: message,
-      });
-      // Fallback location if geolocation is not supported
-      setUserLocation([20.5937, 78.9629]);
-    }
+            toast({ title: 'Success', description: 'Precise location captured!' });
+        } catch (err: any) {
+            console.warn(`GPS failed (${err.message}), falling back to IP.`);
+            toast({ variant: 'default', title: 'Using approximate location', description: 'Could not get a precise GPS signal. Your location may be less accurate.' });
+            try {
+                const data = await getFallbackLocation();
+                setUserLocation([data.latitude, data.longitude]);
+                setLocationError(null);
+            } catch (fallbackErr) {
+                const message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
+                console.error("IP fallback also failed:", fallbackErr);
+                setLocationError(message);
+                 toast({
+                    variant: "destructive",
+                    title: "Location Access Denied",
+                    description: "The map will show a default area. You can change this in your browser settings.",
+                });
+                setUserLocation([20.5937, 78.9629]);
+            }
+        }
+    };
+
+    detectLocation();
 
     // Fetch issues from Firestore
     const fetchIssues = async () => {
