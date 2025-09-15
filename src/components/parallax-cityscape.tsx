@@ -12,11 +12,11 @@ const createBuildingTexture = () => {
     const context = canvas.getContext('2d');
   
     if (!context) {
-      return new THREE.MeshLambertMaterial({ color: '#C0C0C0' });
+      return new THREE.MeshLambertMaterial({ color: '#D2B48C' });
     }
   
     // Building Color
-    context.fillStyle = '#C0C0C0';
+    context.fillStyle = '#D2B48C';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     // Single Modern Window
@@ -52,7 +52,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         const mainDepth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
         
         const roofColor = '#696969';
-        const buildingColor = isHospital ? '#FFFFFF' : '#C0C0C0';
+        const buildingColor = isHospital ? '#FFFFFF' : '#D2B48C';
         const windowTexture = createBuildingTexture();
 
 
@@ -159,6 +159,31 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
     );
 };
 
+const Cloud = ({ position }: { position: [number, number, number] }) => {
+    const ref = useRef<THREE.Mesh>(null!);
+  
+    useFrame((state) => {
+      // Move clouds slowly from right to left
+      ref.current.position.x -= 0.01;
+      // If cloud moves off screen, reset its position to the right
+      if (ref.current.position.x < -30) {
+        ref.current.position.x = 30;
+      }
+    });
+  
+    return (
+      <mesh ref={ref} position={position}>
+        <planeGeometry args={[5 + Math.random() * 5, 2 + Math.random() * 2]} />
+        <meshStandardMaterial
+          color="#FFFFFF"
+          transparent
+          opacity={0.7}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    );
+};
+
 const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
@@ -186,10 +211,27 @@ const City = () => {
         return buildingData;
     }, []);
 
+    const clouds = useMemo(() => {
+        const cloudData = [];
+        for (let i = 0; i < 10; i++) {
+          cloudData.push({
+            position: [
+              (Math.random() - 0.5) * 60,
+              15 + Math.random() * 5,
+              -15 - Math.random() * 10,
+            ] as [number, number, number],
+          });
+        }
+        return cloudData;
+      }, []);
+
     return (
         <group>
             {buildings.map((b, index) => (
                 <Building key={index} position={b.position} isHospital={b.isHospital} />
+            ))}
+             {clouds.map((c, index) => (
+                <Cloud key={index} position={c.position} />
             ))}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
