@@ -92,7 +92,7 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative h-[calc(100vh-4rem)] w-full overflow-hidden flex items-center justify-center">
+        <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
           <Image
             src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/c85bf75a-bbda-4828-9abb-5888f102b302.png"
             alt="Smart green city"
@@ -259,3 +259,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
