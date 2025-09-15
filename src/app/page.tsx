@@ -8,19 +8,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const CityscapeScene = dynamic(
-  () => import('@/components/cityscape-scene').then((mod) => mod.CityscapeScene),
-  {
-    ssr: false,
-    loading: () => (
-      <Skeleton className="absolute inset-0 z-0 bg-blue-900" />
-    ),
-  }
-);
-
+import Image from 'next/image';
 
 export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -85,7 +73,13 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section className="relative h-[calc(100vh-4rem)] w-full overflow-hidden flex items-center justify-center">
-          <CityscapeScene />
+          <Image
+            src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/c85bf75a-bbda-4828-9abb-5888f102b302.png"
+            alt="Smart green city"
+            fill
+            className="object-cover z-0"
+            priority
+          />
           <div className="absolute inset-0 bg-blue-900/40 z-10" />
 
           <div className="z-20 flex flex-col items-center text-center text-white p-4">

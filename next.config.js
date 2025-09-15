@@ -34,6 +34,12 @@ const nextConfig = {
         hostname: 'i.pinimg.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'user-gen-media-assets.s3.amazonaws.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
