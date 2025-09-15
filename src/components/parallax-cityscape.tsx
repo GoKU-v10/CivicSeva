@@ -5,38 +5,84 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
-const Building = ({ position, size, color }: { position: [number, number, number], size: [number, number, number], color: string }) => {
-  const ref = useRef<THREE.Mesh>(null!);
-  
-  useFrame((state) => {
-    // Subtle animation
-    const t = state.clock.getElapsedTime();
-    ref.current.position.y = position[1] + Math.sin(t + position[0]) * 0.1;
-  });
+const Building = ({ position }: { position: [number, number, number] }) => {
+    const ref = useRef<THREE.Group>(null!);
 
-  return (
-    <mesh ref={ref} position={position}>
-      <boxGeometry args={size} />
-      <meshLambertMaterial color={color} />
-    </mesh>
-  );
+    const buildingData = useMemo(() => {
+        const parts = [];
+        const mainHeight = 4 + Math.random() * 10;
+        const mainWidth = 2 + Math.random();
+        const mainDepth = 2 + Math.random();
+        
+        const colors = ['#A9A9A9', '#BEBEBE', '#D3D3D3', '#C0C0C0'];
+        const roofColor = '#696969';
+
+        // Main tower
+        parts.push({
+            position: [0, mainHeight / 2, 0] as [number, number, number],
+            size: [mainWidth, mainHeight, mainDepth] as [number, number, number],
+            color: colors[Math.floor(Math.random() * colors.length)]
+        });
+
+        // Roof
+         parts.push({
+            position: [0, mainHeight + 0.1, 0] as [number, number, number],
+            size: [mainWidth, 0.2, mainDepth] as [number, number, number],
+            color: roofColor
+        });
+
+        // Lower section (bungalow-like)
+        if (Math.random() > 0.5) {
+            const sideHeight = 1 + Math.random() * 2;
+            const sideWidth = mainWidth * (0.6 + Math.random() * 0.4);
+            const sideDepth = mainDepth * (0.6 + Math.random() * 0.4);
+            const sideX = (mainWidth / 2 + sideWidth / 2) * (Math.random() > 0.5 ? 1 : -1);
+            
+            parts.push({
+                position: [sideX, sideHeight / 2, 0] as [number, number, number],
+                size: [sideWidth, sideHeight, sideDepth] as [number, number, number],
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+             parts.push({
+                position: [sideX, sideHeight + 0.1, 0] as [number, number, number],
+                size: [sideWidth, 0.2, sideDepth] as [number, number, number],
+                color: roofColor
+            });
+        }
+        
+        return parts;
+    }, []);
+
+    useFrame((state) => {
+        // Gentle bobbing animation
+        const t = state.clock.getElapsedTime();
+        ref.current.position.y = position[1] + Math.sin(t + position[0]) * 0.05;
+    });
+
+    return (
+        <group ref={ref} position={position}>
+            {buildingData.map((part, index) => (
+                <mesh key={index} position={part.position}>
+                    <boxGeometry args={part.size} />
+                    <meshLambertMaterial color={part.color} />
+                </mesh>
+            ))}
+        </group>
+    );
 };
 
 const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
-        // Reduce the number of buildings by increasing the step in the loops
-        for (let i = -15; i <= 15; i += 5) {
-            for (let j = -25; j <= 5; j += 5) {
-                if (Math.abs(i) < 2 && Math.abs(j) < 2) continue;
-                const height = 2 + Math.random() * 8;
-                // Add some variety to width and depth
-                const width = 2 + Math.random() * 0.5;
-                const depth = 2 + Math.random() * 0.5;
+        // Increase the step to reduce building density
+        for (let i = -20; i <= 20; i += 6) {
+            for (let j = -30; j <= 2; j += 6) {
+                // Add some randomness to position to avoid a perfect grid
+                const x = i + (Math.random() - 0.5) * 3;
+                const z = j + (Math.random() - 0.5) * 3;
+                if (Math.abs(x) < 3 && Math.abs(z) < 3) continue; // Keep center clear
                 buildingData.push({
-                    position: [i + (Math.random() - 0.5), height / 2, j + (Math.random() - 0.5)] as [number, number, number],
-                    size: [width, height, depth] as [number, number, number],
-                    color: '#4760e6'
+                    position: [x, 0, z] as [number, number, number],
                 });
             }
         }
@@ -46,7 +92,7 @@ const City = () => {
     return (
         <group>
             {buildings.map((b, index) => (
-                <Building key={index} {...b} />
+                <Building key={index} position={b.position} />
             ))}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
                 <planeGeometry args={[100, 100]} />
@@ -76,41 +122,42 @@ const Scene = () => {
   useFrame(({ camera, clock }) => {
     const elapsedTime = clock.getElapsedTime();
 
-    // 1. Continuous revolving and pulsing animation
-    const radius = 20 - (scrollY.current * 18); // Decrease radius as user scrolls in
-    const angle = elapsedTime * 0.1;
+    // 1. Continuous revolving and pulsing animation when not scrolling
+    const radius = 25 - (scrollY.current * 22); // Decrease radius as user scrolls in
+    const angle = elapsedTime * 0.08; // Slower revolution
     const continuousX = Math.sin(angle) * radius;
     const continuousZ = Math.cos(angle) * radius;
     
     // 2. Scroll-based animation
-    const scrollBasedY = 10 - scrollY.current * 7;
-    const scrollBasedFov = 75 - scrollY.current * 40;
+    const scrollBasedY = 12 - scrollY.current * 9;
+    const scrollBasedFov = 75 - scrollY.current * 50; // Enhanced "dolly zoom"
 
     // Combine animations
     camera.position.x = continuousX;
     camera.position.z = continuousZ;
-    camera.position.y = scrollBasedY + Math.sin(elapsedTime) * 0.5; // Add a gentle bobbing motion
+    // Add a gentle "breathing" bobbing motion
+    camera.position.y = scrollBasedY + Math.sin(elapsedTime * 0.5) * 0.5; 
     
     if (camera instanceof THREE.PerspectiveCamera) {
-        camera.fov = scrollBasedFov;
+        camera.fov = THREE.MathUtils.lerp(camera.fov, scrollBasedFov, 0.1);
         camera.updateProjectionMatrix();
     }
     
     // Always look at the center of the scene
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, 2, 0);
   });
 
   return (
     <>
-      <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 20]} fov={75} />
-      <ambientLight intensity={0.8} />
+      <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
+      <ambientLight intensity={0.9} />
       <directionalLight 
-        position={[10, 20, 5]}
-        intensity={1.5}
+        position={[15, 25, 10]}
+        intensity={1.8}
         castShadow
       />
       {/* Add fog for atmospheric effect */}
-      <fog attach="fog" args={['#34495e', 20, 50]} />
+      <fog attach="fog" args={['#34495e', 25, 60]} />
       <City />
     </>
   );
