@@ -97,7 +97,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         // Apply texture repeats based on geometry
         parts.forEach(part => {
             if (part.texture) {
-                const [width, height, depth] = part.size;
+                const [width, height] = part.size;
                 // Rough estimation for texture repeat based on surface area
                 part.texture.repeat.set(Math.floor(width / 2), Math.floor(height / 2));
                 part.texture.needsUpdate = true;
@@ -119,7 +119,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
     return (
         <group ref={ref} position={position}>
             {buildingData.map((part, index) => (
-                <mesh key={index} position={part.position}>
+                <mesh key={index} position={part.position} castShadow receiveShadow>
                     <boxGeometry args={part.size} />
                     <meshLambertMaterial 
                         color={part.color} 
@@ -194,7 +194,7 @@ const City = () => {
             {buildings.map((b, index) => (
                 <Building key={index} position={b.position} isHospital={b.isHospital} />
             ))}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
                 <meshLambertMaterial color="#56c156" />
             </mesh>
@@ -205,6 +205,8 @@ const City = () => {
 
 const Scene = () => {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null!);
+  const sunRef = useRef<THREE.Mesh>(null!);
+  const lightRef = useRef<THREE.DirectionalLight>(null!);
   const scrollY = useRef(0);
 
   const handleScroll = () => {
@@ -214,7 +216,7 @@ const Scene = () => {
 
   };
 
-    React.useEffect(() => {
+    useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -247,19 +249,41 @@ const Scene = () => {
     
     // Always look at the center of the scene
     camera.lookAt(0, 2, 0);
+
+    // Animate the sun in an arc
+    if (sunRef.current && lightRef.current) {
+        const sunAngle = elapsedTime * 0.05;
+        sunRef.current.position.x = Math.cos(sunAngle) * 40;
+        sunRef.current.position.y = Math.sin(sunAngle) * 20 + 20; // Creates an arc
+        sunRef.current.position.z = -30;
+
+        // Make the light follow the sun
+        lightRef.current.position.copy(sunRef.current.position);
+    }
   });
 
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={0.9} />
+      <ambientLight intensity={0.6} />
       <directionalLight 
-        position={[15, 25, 10]}
+        ref={lightRef}
         intensity={1.8}
         castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-far={100}
+        shadow-camera-left={-50}
+        shadow-camera-right={50}
+        shadow-camera-top={50}
+        shadow-camera-bottom={-50}
       />
+      <mesh ref={sunRef}>
+        <sphereGeometry args={[3, 32, 32]} />
+        <meshStandardMaterial emissive="#FFDD00" color="#FFDD00" />
+      </mesh>
       {/* Add fog for atmospheric effect */}
-      <fog attach="fog" args={['#34495e', 25, 60]} />
+      <fog attach="fog" args={['#34495e', 25, 80]} />
       <City />
     </>
   );
