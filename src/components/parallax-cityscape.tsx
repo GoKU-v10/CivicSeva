@@ -12,11 +12,12 @@ const createBuildingTexture = () => {
     const context = canvas.getContext('2d');
   
     if (!context) {
-      return new THREE.MeshLambertMaterial({ color: '#D2B48C' });
+      // Fallback material if canvas is not supported
+      return new THREE.MeshLambertMaterial({ color: '#A9A9A9' });
     }
   
-    // Building Color
-    context.fillStyle = '#D2B48C';
+    // Building Color - This will be overridden by the material color, but good for texture background
+    context.fillStyle = '#A9A9A9';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     // Single Modern Window
@@ -42,7 +43,7 @@ const createBuildingTexture = () => {
     return texture;
 };
   
-const Building = ({ position, isHospital }: { position: [number, number, number], isHospital?: boolean }) => {
+const Building = ({ position, isHospital, isSilver }: { position: [number, number, number], isHospital?: boolean, isSilver?: boolean }) => {
     const ref = useRef<THREE.Group>(null!);
 
     const buildingData = useMemo(() => {
@@ -52,7 +53,12 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         const mainDepth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
         
         const roofColor = '#696969';
-        const buildingColor = isHospital ? '#FFFFFF' : '#D2B48C';
+        let buildingColor = '#D2B48C'; // Default skin color
+        if (isHospital) {
+            buildingColor = '#FFFFFF';
+        } else if (isSilver) {
+            buildingColor = '#C0C0C0'; // Silver color
+        }
         const windowTexture = createBuildingTexture();
 
 
@@ -95,7 +101,6 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         // Apply texture repeats based on geometry
         parts.forEach(part => {
             if (part.texture) {
-                const [width, height] = part.size;
                 // We set repeat to 1,1 because the texture itself now defines the window layout
                 part.texture.repeat.set(1, 1);
                 part.texture.needsUpdate = true;
@@ -103,7 +108,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         });
 
         return parts;
-    }, [isHospital]);
+    }, [isHospital, isSilver]);
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
@@ -204,7 +209,8 @@ const City = () => {
 
                 buildingData.push({
                     position: [x, 0, z] as [number, number, number],
-                    isHospital: isHospital
+                    isHospital: isHospital,
+                    isSilver: !isHospital && Math.random() > 0.5,
                 });
             }
         }
@@ -228,7 +234,7 @@ const City = () => {
     return (
         <group>
             {buildings.map((b, index) => (
-                <Building key={index} position={b.position} isHospital={b.isHospital} />
+                <Building key={index} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} />
             ))}
              {clouds.map((c, index) => (
                 <Cloud key={index} position={c.position} />
@@ -330,5 +336,7 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
 
     
