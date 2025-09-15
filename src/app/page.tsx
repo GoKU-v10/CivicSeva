@@ -9,46 +9,23 @@ import {
   Camera,
   Cpu,
   CheckCircle,
-  MapPin,
-  TrendingUp,
-  Users,
-  Building,
-  Languages,
-  Eye,
-  Lock,
   Facebook,
   Twitter,
   Instagram,
 } from 'lucide-react';
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Dynamically import the 3D scene to ensure it's client-side only
+const ParallaxCityscape = dynamic(() => import('@/components/parallax-cityscape'), {
+  ssr: false,
+  loading: () => <Skeleton className="absolute inset-0 z-0" />,
+});
 
 export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-
-  const features = [
-    {
-      icon: <Eye className="size-8 text-primary" />,
-      title: 'Real-Time Tracking',
-      description: 'Monitor the progress of your reported issues with live status updates and photos.',
-    },
-    {
-      icon: <Cpu className="size-8 text-primary" />,
-      title: 'AI-Powered Categorization',
-      description: 'Our smart system automatically categorizes your issue for faster routing to the right department.',
-    },
-    {
-      icon: <Lock className="size-8 text-primary" />,
-      title: 'Anonymous Reporting',
-      description: 'Report issues with the option to keep your identity private and secure.',
-    },
-    {
-      icon: <Languages className="size-8 text-primary" />,
-      title: 'Multi-Language Support',
-      description: 'Our platform supports multiple languages, including English and Hindi, to serve a diverse community.',
-    },
-  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -62,14 +39,13 @@ export default function LandingPage() {
             </div>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/" className="text-sm font-medium hover:text-primary">Home</Link>
             <Link href="#how-it-works" className="text-sm font-medium hover:text-primary">How It Works</Link>
             <Link href="#statistics" className="text-sm font-medium hover:text-primary">Statistics</Link>
             <Link href="#features" className="text-sm font-medium hover:text-primary">Features</Link>
-             <Link href="/login" className="text-sm font-medium hover:text-primary">Login</Link>
+            <Link href="/login" className="text-sm font-medium hover:text-primary">Login</Link>
           </nav>
           <div className="flex items-center gap-2">
-             <Button asChild>
+            <Button asChild>
                 <Link href="/report">Report Issue Now</Link>
             </Button>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setShowMobileMenu(!showMobileMenu)}>
@@ -81,7 +57,6 @@ export default function LandingPage() {
         {showMobileMenu && (
              <div className="md:hidden bg-background/95">
                 <nav className="flex flex-col items-center gap-4 p-4">
-                    <Link href="/" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>Home</Link>
                     <Link href="#how-it-works" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>How It Works</Link>
                     <Link href="#statistics" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>Statistics</Link>
                     <Link href="#features" className="text-sm font-medium hover:text-primary" onClick={() => setShowMobileMenu(false)}>Features</Link>
@@ -93,15 +68,9 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-          <Image
-            src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/c85bf75a-bbda-4828-9abb-5888f102b302.png"
-            alt="Smart green city"
-            fill
-            className="object-cover z-0"
-            priority
-          />
-          <div className="absolute inset-0 bg-blue-900/40 z-10" />
-
+            <Suspense fallback={<Skeleton className="absolute inset-0 z-0" />}>
+                 <ParallaxCityscape />
+            </Suspense>
           <div className="z-20 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
@@ -187,27 +156,6 @@ export default function LandingPage() {
                 </div>
             </div>
         </section>
-        
-        <section id="features" className="py-16 md:py-24 bg-muted/50">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold tracking-tight">Platform Features</h2>
-              <p className="mt-2 text-lg text-muted-foreground">Empowering citizens with cutting-edge technology.</p>
-            </div>
-            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {features.map((feature) => (
-                <div key={feature.title} className="flex flex-col items-center text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-background shadow-md">
-                    {feature.icon}
-                  </div>
-                  <h3 className="mt-4 text-xl font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-muted-foreground">{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
       </main>
 
       <footer className="bg-sidebar text-sidebar-foreground py-12">
@@ -259,5 +207,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
