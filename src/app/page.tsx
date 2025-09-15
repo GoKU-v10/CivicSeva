@@ -86,9 +86,9 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative h-[150vh] w-full overflow-hidden">
+        <section className="relative h-[80vh] w-full overflow-hidden flex items-center justify-center">
           <ParallaxCityscape />
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10 flex h-full flex-col items-center text-center text-white p-4">
+          <div className="z-10 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
             </h1>
@@ -110,7 +110,7 @@ export default function LandingPage() {
         </section>
 
 
-        <section id="how-it-works" className="py-16 md:py-24">
+        <section id="how-it-works" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 md:px-6">
             <h2 className="text-center text-3xl font-bold md:text-4xl">How It Works</h2>
             <p className="mt-4 text-center text-muted-foreground max-w-2xl mx-auto">
@@ -176,7 +176,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="py-16 md-py-24">
+        <section id="features" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 md:px-6">
             <h2 className="text-center text-3xl font-bold md:text-4xl">Key Features</h2>
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
