@@ -63,7 +63,8 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
             position: [0, mainHeight / 2, 0] as [number, number, number],
             size: [mainWidth, mainHeight, mainDepth] as [number, number, number],
             texture: isHospital ? null : windowTexture.clone(),
-            color: buildingColor
+            color: buildingColor,
+            isMain: true,
         });
 
         // Roof
@@ -112,6 +113,9 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         ref.current.position.y = position[1] + Math.sin(t + position[0]) * 0.05;
     });
 
+    const mainBuildingPart = buildingData.find(p => p.isMain);
+    const doorZPosition = mainBuildingPart ? mainBuildingPart.size[2] / 2 + 0.01 : 2.51;
+
     return (
         <group ref={ref} position={position}>
             {buildingData.map((part, index) => (
@@ -123,10 +127,16 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
                     />
                 </mesh>
             ))}
+             {/* Glass Door for all buildings */}
+            <mesh position={[0, 1, doorZPosition]}>
+                <boxGeometry args={[1.5, 2, 0.1]} />
+                <meshStandardMaterial color="#6699CC" transparent opacity={0.6} />
+            </mesh>
+
             {isHospital && (
                 <>
                 {/* Red Cross */}
-                <group position={[0, 6.5, 2.51]}>
+                <group position={[0, 6.5, doorZPosition]}>
                     <mesh>
                         <boxGeometry args={[1.5, 0.4, 0.1]} />
                         <meshStandardMaterial color="#FF0000" flatShading={true} />
@@ -136,17 +146,13 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
                         <meshStandardMaterial color="#FF0000" flatShading={true} />
                     </mesh>
                 </group>
-                {/* Glass Door */}
-                <mesh position={[0, 1, 2.51]}>
-                    <boxGeometry args={[1.5, 2, 0.1]} />
-                    <meshStandardMaterial color="#6699CC" transparent opacity={0.6} />
-                </mesh>
+                
                  {/* Minimal Windows */}
-                <mesh position={[0, 4, 2.51]}>
+                <mesh position={[0, 4, doorZPosition]}>
                     <boxGeometry args={[3, 0.2, 0.1]} />
                     <meshStandardMaterial color="#333333" />
                 </mesh>
-                <mesh position={[0, 5, 2.51]}>
+                <mesh position={[0, 5, doorZPosition]}>
                     <boxGeometry args={[3, 0.2, 0.1]} />
                     <meshStandardMaterial color="#333333" />
                 </mesh>
