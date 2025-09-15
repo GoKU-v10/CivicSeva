@@ -127,14 +127,14 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
                     />
                 </mesh>
             ))}
-             {/* Glass Door for all buildings */}
-            <mesh position={[0, 1, doorZPosition]}>
-                <boxGeometry args={[1.5, 2, 0.1]} />
-                <meshStandardMaterial color="#6699CC" transparent opacity={0.6} />
-            </mesh>
 
             {isHospital && (
                 <>
+                {/* Glass Door for hospital */}
+                <mesh position={[0, 1, doorZPosition]}>
+                    <boxGeometry args={[1.5, 2, 0.1]} />
+                    <meshStandardMaterial color="#6699CC" transparent opacity={0.6} />
+                </mesh>
                 {/* Red Cross */}
                 <group position={[0, 6.5, doorZPosition]}>
                     <mesh>
@@ -214,7 +214,7 @@ const Scene = () => {
 
   };
 
-    useEffect(() => {
+    React.useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
