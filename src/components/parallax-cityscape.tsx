@@ -17,7 +17,7 @@ const createBuildingTexture = () => {
     }
   
     // Building color
-    context.fillStyle = '#C0C0C0'; // Light grey
+    context.fillStyle = '#A9A9A9';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     // Window color
@@ -54,7 +54,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         const mainDepth = isHospital ? 5 : 2 + Math.random();
         
         const roofColor = '#696969';
-        const buildingColor = isHospital ? '#FFFFFF' : '#C0C0C0';
+        const buildingColor = isHospital ? '#FFFFFF' : '#A9A9A9';
         const windowTexture = createBuildingTexture();
 
 
