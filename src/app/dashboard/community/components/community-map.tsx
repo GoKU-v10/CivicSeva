@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { WifiOff } from 'lucide-react';
 
-// Fix default Leaflet marker icon
+// Fix default Leaflet marker icon which breaks with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon-2x.png',
@@ -20,7 +20,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
 });
 
-function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
+// A component to recenter the map
+function RecenterAutomatically({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
     map.setView([lat, lng], 14);
@@ -30,72 +31,51 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 
 export default function CommunityMap() {
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default: India
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default center (India)
-  const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const { toast } = useToast();
 
-
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-
-    const getPreciseLocation = () => {
-      return new Promise<GeolocationPosition>((resolve, reject) => {
-          if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(resolve, reject, {
-                  enableHighAccuracy: true,
-                  timeout: 20000, 
-                  maximumAge: 0
-              });
-          } else {
-              reject(new Error("Geolocation is not supported by this browser."));
-          }
-      });
-    };
-
-    const detectLocation = async () => {
-        try {
-            const pos = await getPreciseLocation();
-            const { latitude, longitude } = pos.coords;
-            const newLocation: [number, number] = [latitude, longitude];
-            setUserLocation(newLocation);
-            setMapCenter(newLocation);
-            setLocationError(null); // Clear any previous errors on success
-            toast({ title: 'Success', description: 'Precise GPS location acquired!' });
-        } catch (err: any) {
-             let message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
-             if (err.code === 1) { // PERMISSION_DENIED
-                message = "You have denied location access. Please enable it in your browser's site settings to use this feature.";
-             } else if (err.code === 2 || err.code === 3) { // POSITION_UNAVAILABLE or TIMEOUT
-                message = "Could not get a precise location. Please try moving to an area with a clearer view of the sky (e.g., near a window or outdoors).";
-             }
-            
-             console.error("Geolocation Error:", err.message);
-             setLocationError(message);
-             toast({
-                variant: "destructive",
-                title: "Could Not Get Precise Location",
-                description: "The map will show a default area. See the on-map alert for more details.",
-            });
-            setUserLocation(null);
-            setMapCenter([20.5937, 78.9629]); // Fallback to default center on error
+    const fetchAllData = async () => {
+      // 1. Fetch user location
+      try {
+        const pos: GeolocationPosition = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0,
+          });
+        });
+        const { latitude, longitude } = pos.coords;
+        const newLocation: [number, number] = [latitude, longitude];
+        setUserLocation(newLocation);
+        setMapCenter(newLocation);
+        setLocationError(null);
+        toast({ title: 'Success', description: 'Precise GPS location acquired!' });
+      } catch (err: any) {
+        let message = "Your browser has blocked location access. Please enable it in your browser's site settings.";
+        if (err.code === 1) { // PERMISSION_DENIED
+          message = "You have denied location access. Please enable it in your browser's site settings to see your location.";
+        } else if (err.code === 2 || err.code === 3) { // POSITION_UNAVAILABLE or TIMEOUT
+          message = "Could not get a precise location. Please try moving to an area with a clearer view of the sky (e.g., near a window or outdoors).";
         }
-    };
+        console.error("Geolocation Error:", err.message);
+        setLocationError(message);
+        toast({
+          variant: "destructive",
+          title: "Location Error",
+          description: "Could not get your precise location. Displaying default map area.",
+        });
+        // Keep default map center (India)
+      }
 
-    detectLocation();
-
-    // Fetch issues from Firestore
-    const fetchIssues = async () => {
+      // 2. Fetch issues from Firestore
       try {
         const snapshot = await getDocs(collection(db, 'issues'));
         const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
           const docData = doc.data();
-          // Adapt the fetched data to the app's Issue type
           return {
             id: doc.id,
             title: docData.title || 'No title',
@@ -119,18 +99,20 @@ export default function CommunityMap() {
       } catch (error) {
         console.error('Failed to fetch issues from Firestore:', error);
         toast({
-            variant: 'destructive',
-            title: 'Error Fetching Issues',
-            description: 'Could not load community issues from the database.',
+          variant: 'destructive',
+          title: 'Database Error',
+          description: 'Could not load community issues.',
         });
       }
+
+      setIsLoading(false);
     };
 
-    fetchIssues();
+    fetchAllData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient]);
+  }, []);
 
-  if (!isClient) {
+  if (isLoading) {
     return <Skeleton className="w-full h-full rounded-lg" />;
   }
   
@@ -149,19 +131,22 @@ export default function CommunityMap() {
         center={mapCenter}
         zoom={14}
         style={{ height: '100%', width: '100%' }}
+        className='z-0'
       >
         <TileLayer
           url={mapboxUrl}
           attribution={mapboxAttribution}
         />
-        <RecenterMap lat={mapCenter[0]} lng={mapCenter[1]} />
-        {/* User marker */}
+        <RecenterAutomatically lat={mapCenter[0]} lng={mapCenter[1]} />
+        
+        {/* User marker - only if location was successfully found */}
         {userLocation && !locationError && (
           <Marker position={userLocation}>
             <Popup>You are here (Precise Location)</Popup>
           </Marker>
         )}
-        {/* Community issues */}
+
+        {/* Issue markers */}
         {issues.map((issue) => (
           <Marker
             key={issue.id}
@@ -179,8 +164,10 @@ export default function CommunityMap() {
           </Marker>
         ))}
       </MapContainer>
+      
+      {/* Error overlay */}
       {locationError && (
-        <div className="absolute top-4 left-4 z-[1000] w-full max-w-sm">
+        <div className="absolute top-4 left-4 right-4 z-10">
             <Alert variant="destructive">
                 <WifiOff className="h-4 w-4" />
                 <AlertTitle>Precise Location Unavailable</AlertTitle>

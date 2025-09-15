@@ -9,7 +9,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
 import {
   MapPin,
   Filter,
@@ -18,10 +17,8 @@ import {
   BarChart2,
   List,
   Trophy,
-  ArrowRight,
 } from "lucide-react";
 import { issues } from "@/lib/data";
-import Link from "next/link";
 import CommunityMap from './components/community-map';
 
 
