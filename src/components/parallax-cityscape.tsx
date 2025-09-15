@@ -12,10 +12,10 @@ const createBuildingTexture = () => {
     const context = canvas.getContext('2d');
   
     if (!context) {
-      return new THREE.MeshLambertMaterial({ color: '#A9A9A9' });
+      return new THREE.MeshLambertMaterial({ color: '#C0C0C0' });
     }
   
-    context.fillStyle = '#A9A9A9';
+    context.fillStyle = '#C0C0C0';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     context.fillStyle = '#333333';
@@ -47,7 +47,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         const mainDepth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
         
         const roofColor = '#696969';
-        const buildingColor = isHospital ? '#FFFFFF' : '#A9A9A9';
+        const buildingColor = isHospital ? '#FFFFFF' : '#C0C0C0';
         const windowTexture = createBuildingTexture();
 
 
