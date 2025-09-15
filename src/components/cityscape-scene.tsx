@@ -3,7 +3,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
 function Buildings() {
     const buildings = useMemo(() => {
@@ -63,7 +63,7 @@ function CameraController() {
         scrollY.current = window.scrollY;
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         window.addEventListener('scroll', handleScroll);
         return () => {
             window.removeEventListener('scroll', handleScroll);
