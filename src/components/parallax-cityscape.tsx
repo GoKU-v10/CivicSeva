@@ -43,8 +43,8 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
     const buildingData = useMemo(() => {
         const parts = [];
         const mainHeight = isHospital ? 8 : 4 + Math.random() * 10;
-        const mainWidth = isHospital ? 5 : 2 + Math.random();
-        const mainDepth = isHospital ? 5 : 2 + Math.random();
+        const mainWidth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
+        const mainDepth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
         
         const roofColor = '#696969';
         const buildingColor = isHospital ? '#FFFFFF' : '#A9A9A9';
@@ -282,3 +282,5 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
