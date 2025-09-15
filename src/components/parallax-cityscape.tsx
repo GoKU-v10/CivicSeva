@@ -174,13 +174,20 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
             )}
              {isDigitalHub && (
                 <>
-                    {/* Glowing Lines */}
-                    {[2, 4, 6, 8, 10].map(y => (
-                         <mesh key={y} position={[0, y, doorZPosition]}>
-                            <boxGeometry args={[4.1, 0.1, 0.1]} />
-                            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
+                    {/* WiFi Symbol */}
+                    <group position={[0, 7.5, doorZPosition + 0.1]} rotation={[0,0,Math.PI / 4]}>
+                         <mesh position={[0, -0.4, 0]}>
+                            <sphereGeometry args={[0.2, 16, 16]} />
+                            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={3} />
                         </mesh>
-                    ))}
+                         {[1, 2, 3].map(i => (
+                            <mesh key={i} rotation={[Math.PI / 2, 0, 0]}>
+                                <torusGeometry args={[i * 0.5, 0.1, 8, 32, Math.PI / 2]} />
+                                <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={3} />
+                            </mesh>
+                        ))}
+                    </group>
+
                     <mesh position={[0, 1, doorZPosition]}>
                         <boxGeometry args={[2, 2, 0.1]} />
                         <meshStandardMaterial color="#00ffff" transparent opacity={0.3} />
