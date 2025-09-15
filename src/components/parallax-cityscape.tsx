@@ -7,33 +7,23 @@ import * as THREE from 'three';
 
 const createBuildingTexture = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 512; // Taller canvas for a single long window
+    canvas.width = 64;
+    canvas.height = 128;
     const context = canvas.getContext('2d');
   
     if (!context) {
-      // Fallback material if canvas is not supported
       return new THREE.MeshLambertMaterial({ color: '#A9A9A9' });
     }
   
-    // Building Color - This will be overridden by the material color, but good for texture background
     context.fillStyle = '#A9A9A9';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
-    // Single Modern Window
-    context.fillStyle = '#333333'; // Dark window color
-    const windowWidth = 24;
-    const windowHeight = canvas.height * 0.7; // Make it 70% of the building height
-    const x = (canvas.width - windowWidth) / 2; // Centered
-    const y = (canvas.height - windowHeight) / 2; // Centered
-
-    context.fillRect(x, y, windowWidth, windowHeight);
-    
-    // Add a light border for a sleeker look
-    context.strokeStyle = '#FFFFFF';
-    context.lineWidth = 4;
-    context.strokeRect(x,y, windowWidth, windowHeight);
-
+    context.fillStyle = '#444';
+    for (let y = 8; y < canvas.height - 8; y += 16) {
+        for (let x = 8; x < canvas.width - 8; x += 16) {
+            context.fillRect(x, y, 10, 10);
+        }
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
@@ -48,10 +38,10 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
 
     const buildingData = useMemo(() => {
         const parts = [];
-        let mainHeight = 4 + Math.random() * 10;
+        let mainHeight = isDigitalHub ? 12 : 4 + Math.random() * 10;
         let mainWidth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
         let mainDepth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
-
+        
         if (isHospital) {
             mainHeight = 8;
             mainWidth = 5;
@@ -61,16 +51,20 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
             mainWidth = 4;
             mainDepth = 4;
         }
-        
+
         const roofColor = '#696969';
-        let buildingColor = '#D2B48C'; // Default skin color
+        let buildingColor: string;
+
         if (isHospital) {
             buildingColor = '#FFFFFF';
-        } else if (isSilver) {
-            buildingColor = '#C0C0C0'; // Silver color
-        } else if(isDigitalHub) {
+        } else if (isDigitalHub) {
             buildingColor = '#222222';
+        } else if (isSilver) {
+            buildingColor = '#C0C0C0';
+        } else {
+            buildingColor = '#D2B48C';
         }
+        
         const windowTexture = createBuildingTexture();
 
 
@@ -78,7 +72,7 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
         parts.push({
             position: [0, mainHeight / 2, 0] as [number, number, number],
             size: [mainWidth, mainHeight, mainDepth] as [number, number, number],
-            texture: (isHospital || isDigitalHub) ? null : windowTexture.clone(),
+            texture: isHospital || isDigitalHub ? null : windowTexture.clone(),
             color: buildingColor,
             isMain: true,
         });
@@ -91,7 +85,7 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
         });
 
         // Lower section (bungalow-like)
-        if (Math.random() > 0.5 && !isHospital && !isDigitalHub) {
+        if (mainHeight < 5 && !isHospital && !isDigitalHub) {
             const sideHeight = 1 + Math.random() * 2;
             const sideWidth = mainWidth * (0.6 + Math.random() * 0.4);
             const sideDepth = mainDepth * (0.6 + Math.random() * 0.4);
@@ -113,8 +107,7 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
         // Apply texture repeats based on geometry
         parts.forEach(part => {
             if (part.texture) {
-                // We set repeat to 1,1 because the texture itself now defines the window layout
-                part.texture.repeat.set(1, 1);
+                part.texture.repeat.set(Math.round(part.size[0]/2), Math.round(part.size[1]/2));
                 part.texture.needsUpdate = true;
             }
         });
@@ -267,38 +260,43 @@ const Fountain = ({ position }: { position: [number, number, number] }) => {
 const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
-        let hospitalPlaced = false;
-        let digitalHubPlaced = false;
         
+        // --- Define fixed positions for special buildings ---
+        const hospitalPosition: [number, number, number] = [-15, 0, 8];
+        const digitalHubPosition: [number, number, number] = [15, 0, 8];
+
+        // Place Hospital
+        buildingData.push({
+            position: hospitalPosition,
+            isHospital: true,
+        });
+
         // Place Digital Hub
         buildingData.push({
-            position: [8, 0, -8] as [number, number, number],
+            position: digitalHubPosition,
             isDigitalHub: true,
         });
-        digitalHubPlaced = true;
+
 
         for (let i = -20; i <= 20; i += 8) {
-            for (let j = -30; j <= 2; j += 8) {
+            for (let j = -30; j <= 8; j += 8) {
                 // Add some randomness to position to avoid a perfect grid
                 const x = i + (Math.random() - 0.5) * 4;
                 const z = j + (Math.random() - 0.5) * 4;
                 
                 // Keep park area clear
-                if (Math.abs(x) < 5 && Math.abs(z) < 5) continue; 
-                // Avoid placing buildings on top of digital hub
-                if (x > 5 && x < 11 && z > -11 && z < -5) continue;
+                if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
 
+                // Avoid placing buildings on top of special buildings
+                const distToHospital = Math.sqrt(Math.pow(x - hospitalPosition[0], 2) + Math.pow(z - hospitalPosition[2], 2));
+                if (distToHospital < 6) continue;
 
-                let isHospital = false;
-                if (!hospitalPlaced && x > 5 && z > -5) {
-                    isHospital = true;
-                    hospitalPlaced = true;
-                }
+                const distToHub = Math.sqrt(Math.pow(x - digitalHubPosition[0], 2) + Math.pow(z - digitalHubPosition[2], 2));
+                if (distToHub < 6) continue;
 
                 buildingData.push({
                     position: [x, 0, z] as [number, number, number],
-                    isHospital: isHospital,
-                    isSilver: !isHospital && Math.random() > 0.5,
+                    isSilver: Math.random() > 0.5,
                 });
             }
         }
@@ -442,3 +440,5 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
