@@ -11,11 +11,10 @@ function Buildings() {
         const buildingData = [];
         for (let i = -20; i <= 20; i += 5) {
             for (let j = -20; j <= 20; j += 5) {
-                if (i === 0 && j === 0) continue; // Skip center for hero text
+                if (Math.abs(i) < 10 && Math.abs(j) < 10) continue; 
                 const height = 2 + Math.random() * 8;
                 const position = new THREE.Vector3(i, height / 2 - 0.5, j);
-                const scale = new THREE.Vector3(1, 1, 1);
-                buildingData.push({ position, height, scale });
+                buildingData.push({ position, height });
             }
         }
         return buildingData;
@@ -27,12 +26,11 @@ function Buildings() {
         if (groupRef.current) {
             groupRef.current.children.forEach((building, index) => {
                 const { height } = buildings[index];
-                const yPos = Math.sin(clock.getElapsedTime() * 0.5 + index) * 0.5;
+                const yPos = Math.sin(clock.getElapsedTime() * 0.5 + index * 0.5) * 0.5;
                 building.position.y = (height / 2 - 0.5) + yPos;
             });
         }
     });
-
 
     return (
         <group ref={groupRef}>
