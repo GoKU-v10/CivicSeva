@@ -1,6 +1,6 @@
 
 'use client';
-import { useRef, useMemo, useEffect, Suspense } from 'react';
+import React, { useRef, useMemo, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -23,10 +23,11 @@ const createBuildingTexture = () => {
     // Window color
     context.fillStyle = '#444466'; // Dark blue/grey for windows
     
+    // Increased gap to reduce window count
     const windowWidth = 8;
-    const windowHeight = 12;
-    const xGap = 8;
-    const yGap = 16;
+    const windowHeight = 10;
+    const xGap = 16; 
+    const yGap = 24;
   
     // Create a grid of windows
     for (let y = yGap / 2; y < canvas.height; y += windowHeight + yGap) {
@@ -43,17 +44,17 @@ const createBuildingTexture = () => {
     return texture;
 };
   
-
-const Building = ({ position }: { position: [number, number, number] }) => {
+const Building = ({ position, isHospital }: { position: [number, number, number], isHospital?: boolean }) => {
     const ref = useRef<THREE.Group>(null!);
 
     const buildingData = useMemo(() => {
         const parts = [];
-        const mainHeight = 4 + Math.random() * 10;
-        const mainWidth = 2 + Math.random();
-        const mainDepth = 2 + Math.random();
+        const mainHeight = isHospital ? 8 : 4 + Math.random() * 10;
+        const mainWidth = isHospital ? 5 : 2 + Math.random();
+        const mainDepth = isHospital ? 5 : 2 + Math.random();
         
         const roofColor = '#696969';
+        const buildingColor = isHospital ? '#FFFFFF' : '#C0C0C0';
         const windowTexture = createBuildingTexture();
 
 
@@ -61,7 +62,8 @@ const Building = ({ position }: { position: [number, number, number] }) => {
         parts.push({
             position: [0, mainHeight / 2, 0] as [number, number, number],
             size: [mainWidth, mainHeight, mainDepth] as [number, number, number],
-            texture: windowTexture.clone()
+            texture: isHospital ? null : windowTexture.clone(),
+            color: buildingColor
         });
 
         // Roof
@@ -72,7 +74,7 @@ const Building = ({ position }: { position: [number, number, number] }) => {
         });
 
         // Lower section (bungalow-like)
-        if (Math.random() > 0.5) {
+        if (Math.random() > 0.5 && !isHospital) {
             const sideHeight = 1 + Math.random() * 2;
             const sideWidth = mainWidth * (0.6 + Math.random() * 0.4);
             const sideDepth = mainDepth * (0.6 + Math.random() * 0.4);
@@ -81,7 +83,8 @@ const Building = ({ position }: { position: [number, number, number] }) => {
             parts.push({
                 position: [sideX, sideHeight / 2, 0] as [number, number, number],
                 size: [sideWidth, sideHeight, sideDepth] as [number, number, number],
-                texture: windowTexture.clone()
+                texture: windowTexture.clone(),
+                color: buildingColor
             });
              parts.push({
                 position: [sideX, sideHeight + 0.1, 0] as [number, number, number],
@@ -95,13 +98,13 @@ const Building = ({ position }: { position: [number, number, number] }) => {
             if (part.texture) {
                 const [width, height, depth] = part.size;
                 // Rough estimation for texture repeat based on surface area
-                part.texture.repeat.set(Math.floor(width), Math.floor(height / 2));
+                part.texture.repeat.set(Math.floor(width / 2), Math.floor(height / 2));
                 part.texture.needsUpdate = true;
             }
         });
 
         return parts;
-    }, []);
+    }, [isHospital]);
 
     useFrame((state) => {
         // Gentle bobbing animation
@@ -120,6 +123,18 @@ const Building = ({ position }: { position: [number, number, number] }) => {
                     />
                 </mesh>
             ))}
+            {isHospital && (
+                <group position={[0, 4, 2.51]}>
+                    <mesh>
+                        <boxGeometry args={[2, 0.5, 0.1]} />
+                        <meshLambertMaterial color="#FF0000" />
+                    </mesh>
+                    <mesh>
+                        <boxGeometry args={[0.5, 2, 0.1]} />
+                        <meshLambertMaterial color="#FF0000" />
+                    </mesh>
+                </group>
+            )}
         </group>
     );
 };
@@ -127,15 +142,24 @@ const Building = ({ position }: { position: [number, number, number] }) => {
 const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
+        let hospitalPlaced = false;
         // Increase the step to reduce building density
-        for (let i = -20; i <= 20; i += 6) {
-            for (let j = -30; j <= 2; j += 6) {
+        for (let i = -20; i <= 20; i += 8) {
+            for (let j = -30; j <= 2; j += 8) {
                 // Add some randomness to position to avoid a perfect grid
-                const x = i + (Math.random() - 0.5) * 3;
-                const z = j + (Math.random() - 0.5) * 3;
+                const x = i + (Math.random() - 0.5) * 4;
+                const z = j + (Math.random() - 0.5) * 4;
                 if (Math.abs(x) < 3 && Math.abs(z) < 3) continue; // Keep center clear
+
+                let isHospital = false;
+                if (!hospitalPlaced && x > 5 && z > -5) {
+                    isHospital = true;
+                    hospitalPlaced = true;
+                }
+
                 buildingData.push({
                     position: [x, 0, z] as [number, number, number],
+                    isHospital: isHospital
                 });
             }
         }
@@ -145,7 +169,7 @@ const City = () => {
     return (
         <group>
             {buildings.map((b, index) => (
-                <Building key={index} position={b.position} />
+                <Building key={index} position={b.position} isHospital={b.isHospital} />
             ))}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
                 <planeGeometry args={[100, 100]} />
