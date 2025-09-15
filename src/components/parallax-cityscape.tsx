@@ -1,9 +1,48 @@
 
 'use client';
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
+
+const createBuildingTexture = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 128;
+    const context = canvas.getContext('2d');
+  
+    if (!context) {
+      // Fallback in case canvas is not supported
+      return new THREE.MeshLambertMaterial({ color: '#A9A9A9' });
+    }
+  
+    // Building color
+    context.fillStyle = '#C0C0C0'; // Light grey
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  
+    // Window color
+    context.fillStyle = '#444466'; // Dark blue/grey for windows
+    
+    const windowWidth = 8;
+    const windowHeight = 12;
+    const xGap = 8;
+    const yGap = 16;
+  
+    // Create a grid of windows
+    for (let y = yGap / 2; y < canvas.height; y += windowHeight + yGap) {
+      for (let x = xGap / 2; x < canvas.width; x += windowWidth + xGap) {
+        context.fillRect(x, y, windowWidth, windowHeight);
+      }
+    }
+  
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1); // This will be scaled per building part
+  
+    return texture;
+};
+  
 
 const Building = ({ position }: { position: [number, number, number] }) => {
     const ref = useRef<THREE.Group>(null!);
@@ -14,14 +53,15 @@ const Building = ({ position }: { position: [number, number, number] }) => {
         const mainWidth = 2 + Math.random();
         const mainDepth = 2 + Math.random();
         
-        const colors = ['#A9A9A9', '#BEBEBE', '#D3D3D3', '#C0C0C0'];
         const roofColor = '#696969';
+        const windowTexture = createBuildingTexture();
+
 
         // Main tower
         parts.push({
             position: [0, mainHeight / 2, 0] as [number, number, number],
             size: [mainWidth, mainHeight, mainDepth] as [number, number, number],
-            color: colors[Math.floor(Math.random() * colors.length)]
+            texture: windowTexture.clone()
         });
 
         // Roof
@@ -41,7 +81,7 @@ const Building = ({ position }: { position: [number, number, number] }) => {
             parts.push({
                 position: [sideX, sideHeight / 2, 0] as [number, number, number],
                 size: [sideWidth, sideHeight, sideDepth] as [number, number, number],
-                color: colors[Math.floor(Math.random() * colors.length)]
+                texture: windowTexture.clone()
             });
              parts.push({
                 position: [sideX, sideHeight + 0.1, 0] as [number, number, number],
@@ -50,6 +90,16 @@ const Building = ({ position }: { position: [number, number, number] }) => {
             });
         }
         
+        // Apply texture repeats based on geometry
+        parts.forEach(part => {
+            if (part.texture) {
+                const [width, height, depth] = part.size;
+                // Rough estimation for texture repeat based on surface area
+                part.texture.repeat.set(Math.floor(width), Math.floor(height / 2));
+                part.texture.needsUpdate = true;
+            }
+        });
+
         return parts;
     }, []);
 
@@ -64,7 +114,10 @@ const Building = ({ position }: { position: [number, number, number] }) => {
             {buildingData.map((part, index) => (
                 <mesh key={index} position={part.position}>
                     <boxGeometry args={part.size} />
-                    <meshLambertMaterial color={part.color} />
+                    <meshLambertMaterial 
+                        color={part.color} 
+                        map={part.texture || null}
+                    />
                 </mesh>
             ))}
         </group>
@@ -94,7 +147,7 @@ const City = () => {
             {buildings.map((b, index) => (
                 <Building key={index} position={b.position} />
             ))}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
                 <planeGeometry args={[100, 100]} />
                 <meshLambertMaterial color="#56c156" />
             </mesh>
@@ -109,7 +162,9 @@ const Scene = () => {
 
   const handleScroll = () => {
     // We get the scroll position as a percentage (0-1)
-    scrollY.current = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    const newScrollY = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    scrollY.current = isNaN(newScrollY) ? 0 : newScrollY;
+
   };
 
   useEffect(() => {
@@ -168,7 +223,9 @@ export default function ParallaxCityscape() {
     <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-transparent z-10" />
       <Canvas shadows>
-        <Scene />
+        <Suspense fallback={null}>
+            <Scene />
+        </Suspense>
       </Canvas>
     </div>
   );
