@@ -43,14 +43,24 @@ const createBuildingTexture = () => {
     return texture;
 };
   
-const Building = ({ position, isHospital, isSilver }: { position: [number, number, number], isHospital?: boolean, isSilver?: boolean }) => {
+const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: [number, number, number], isHospital?: boolean, isSilver?: boolean, isDigitalHub?: boolean }) => {
     const ref = useRef<THREE.Group>(null!);
 
     const buildingData = useMemo(() => {
         const parts = [];
-        const mainHeight = isHospital ? 8 : 4 + Math.random() * 10;
-        const mainWidth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
-        const mainDepth = isHospital ? 5 : (mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random());
+        let mainHeight = 4 + Math.random() * 10;
+        let mainWidth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
+        let mainDepth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
+
+        if (isHospital) {
+            mainHeight = 8;
+            mainWidth = 5;
+            mainDepth = 5;
+        } else if (isDigitalHub) {
+            mainHeight = 12;
+            mainWidth = 4;
+            mainDepth = 4;
+        }
         
         const roofColor = '#696969';
         let buildingColor = '#D2B48C'; // Default skin color
@@ -58,6 +68,8 @@ const Building = ({ position, isHospital, isSilver }: { position: [number, numbe
             buildingColor = '#FFFFFF';
         } else if (isSilver) {
             buildingColor = '#C0C0C0'; // Silver color
+        } else if(isDigitalHub) {
+            buildingColor = '#222222';
         }
         const windowTexture = createBuildingTexture();
 
@@ -66,7 +78,7 @@ const Building = ({ position, isHospital, isSilver }: { position: [number, numbe
         parts.push({
             position: [0, mainHeight / 2, 0] as [number, number, number],
             size: [mainWidth, mainHeight, mainDepth] as [number, number, number],
-            texture: isHospital ? null : windowTexture.clone(),
+            texture: (isHospital || isDigitalHub) ? null : windowTexture.clone(),
             color: buildingColor,
             isMain: true,
         });
@@ -79,7 +91,7 @@ const Building = ({ position, isHospital, isSilver }: { position: [number, numbe
         });
 
         // Lower section (bungalow-like)
-        if (Math.random() > 0.5 && !isHospital) {
+        if (Math.random() > 0.5 && !isHospital && !isDigitalHub) {
             const sideHeight = 1 + Math.random() * 2;
             const sideWidth = mainWidth * (0.6 + Math.random() * 0.4);
             const sideDepth = mainDepth * (0.6 + Math.random() * 0.4);
@@ -108,7 +120,7 @@ const Building = ({ position, isHospital, isSilver }: { position: [number, numbe
         });
 
         return parts;
-    }, [isHospital, isSilver]);
+    }, [isHospital, isSilver, isDigitalHub]);
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
@@ -123,7 +135,7 @@ const Building = ({ position, isHospital, isSilver }: { position: [number, numbe
             {buildingData.map((part, index) => (
                 <mesh key={index} position={part.position} castShadow receiveShadow>
                     <boxGeometry args={part.size} />
-                    <meshLambertMaterial 
+                     <meshLambertMaterial 
                         color={part.color} 
                         map={part.texture || null}
                     />
@@ -160,6 +172,21 @@ const Building = ({ position, isHospital, isSilver }: { position: [number, numbe
                 </mesh>
                 </>
             )}
+             {isDigitalHub && (
+                <>
+                    {/* Glowing Lines */}
+                    {[2, 4, 6, 8, 10].map(y => (
+                         <mesh key={y} position={[0, y, doorZPosition]}>
+                            <boxGeometry args={[4.1, 0.1, 0.1]} />
+                            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
+                        </mesh>
+                    ))}
+                    <mesh position={[0, 1, doorZPosition]}>
+                        <boxGeometry args={[2, 2, 0.1]} />
+                        <meshStandardMaterial color="#00ffff" transparent opacity={0.3} />
+                    </mesh>
+                </>
+            )}
         </group>
     );
 };
@@ -189,17 +216,68 @@ const Cloud = ({ position }: { position: [number, number, number] }) => {
     );
 };
 
+const Tree = ({ position }: { position: [number, number, number] }) => {
+    return (
+        <group position={position}>
+            <mesh position={[0, 0.5, 0]}>
+                <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
+                <meshLambertMaterial color="#8B4513" />
+            </mesh>
+            <mesh position={[0, 1.5, 0]}>
+                <coneGeometry args={[1, 2, 8]} />
+                <meshLambertMaterial color="#228B22" />
+            </mesh>
+        </group>
+    )
+}
+
+const Fountain = ({ position }: { position: [number, number, number] }) => {
+    return (
+        <group position={position}>
+            {/* Base */}
+            <mesh position={[0, 0.1, 0]}>
+                <cylinderGeometry args={[1.5, 1.5, 0.2, 16]} />
+                <meshLambertMaterial color="#AAAAAA" />
+            </mesh>
+            {/* Water */}
+            <mesh position={[0, 0.2, 0]}>
+                <cylinderGeometry args={[1.4, 1.4, 0.1, 16]} />
+                <meshStandardMaterial color="#6699CC" transparent opacity={0.8} />
+            </mesh>
+             {/* Centerpiece */}
+            <mesh position={[0, 0.6, 0]}>
+                <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
+                <meshLambertMaterial color="#888888" />
+            </mesh>
+        </group>
+    )
+}
+
+
 const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
         let hospitalPlaced = false;
-        // Increase the step to reduce building density
+        let digitalHubPlaced = false;
+        
+        // Place Digital Hub
+        buildingData.push({
+            position: [8, 0, -8] as [number, number, number],
+            isDigitalHub: true,
+        });
+        digitalHubPlaced = true;
+
         for (let i = -20; i <= 20; i += 8) {
             for (let j = -30; j <= 2; j += 8) {
                 // Add some randomness to position to avoid a perfect grid
                 const x = i + (Math.random() - 0.5) * 4;
                 const z = j + (Math.random() - 0.5) * 4;
-                if (Math.abs(x) < 3 && Math.abs(z) < 3) continue; // Keep center clear
+                
+                // Keep park area clear
+                if (Math.abs(x) < 5 && Math.abs(z) < 5) continue; 
+                // Avoid placing buildings on top of digital hub
+                if (x > 5 && x < 11 && z > -11 && z < -5) continue;
+
 
                 let isHospital = false;
                 if (!hospitalPlaced && x > 5 && z > -5) {
@@ -231,14 +309,32 @@ const City = () => {
         return cloudData;
       }, []);
 
+    const parkTrees = useMemo(() => {
+        const treeData = [];
+        for (let i=0; i<5; i++) {
+            treeData.push({
+                position: [
+                    (Math.random() - 0.5) * 8,
+                    0,
+                    (Math.random() - 0.5) * 8
+                ] as [number, number, number]
+            });
+        }
+        return treeData;
+    }, []);
+
     return (
         <group>
             {buildings.map((b, index) => (
-                <Building key={index} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} />
+                <Building key={`building-${index}`} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} isDigitalHub={b.isDigitalHub} />
             ))}
              {clouds.map((c, index) => (
-                <Cloud key={index} position={c.position} />
+                <Cloud key={`cloud-${index}`} position={c.position} />
             ))}
+             {parkTrees.map((t, index) => (
+                <Tree key={`tree-${index}`} position={t.position} />
+            ))}
+            <Fountain position={[0, 0, 0]} />
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
                 <meshLambertMaterial color="#56c156" />
@@ -336,6 +432,8 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
 
     
 
