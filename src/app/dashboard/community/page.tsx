@@ -22,16 +22,7 @@ import {
 } from "lucide-react";
 import { issues } from "@/lib/data";
 import Link from "next/link";
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const CommunityMap = dynamic(
-  () => import('./components/community-map'),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="w-full h-[600px]" />
-  }
-);
+import CommunityMap from './components/community-map';
 
 
 const recentActivities = [

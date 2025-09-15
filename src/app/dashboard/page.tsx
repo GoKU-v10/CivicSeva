@@ -17,7 +17,7 @@ const CommunityMap = dynamic(
   () => import('./community/components/community-map'),
   {
     ssr: false,
-    loading: () => <Skeleton className="w-full h-full aspect-video" />
+    loading: () => <Skeleton className="w-full h-full" />
   }
 );
 
@@ -98,7 +98,7 @@ export default function HomePage() {
         <div className="space-y-4">
              <h2 className="text-2xl font-bold mb-4">Community Map</h2>
              <Card className="overflow-hidden">
-                <div className="relative aspect-video w-full">
+                <div className="relative aspect-video w-full h-[300px]">
                     <CommunityMap />
                 </div>
                 <CardContent className="p-4">
