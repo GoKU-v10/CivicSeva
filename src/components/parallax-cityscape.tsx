@@ -73,21 +73,30 @@ const Scene = () => {
     };
   }, []);
 
-  useFrame(({ camera }) => {
-    // Animate camera position and zoom based on scroll
-    // Move from z=20 to z=5 for a zoom-in effect
-    camera.position.z = 20 - scrollY.current * 18;
+  useFrame(({ camera, clock }) => {
+    const elapsedTime = clock.getElapsedTime();
 
-    // Move from y=10 down to y=3
-    camera.position.y = 10 - scrollY.current * 7;
+    // 1. Continuous revolving and pulsing animation
+    const radius = 20 - (scrollY.current * 18); // Decrease radius as user scrolls in
+    const angle = elapsedTime * 0.1;
+    const continuousX = Math.sin(angle) * radius;
+    const continuousZ = Math.cos(angle) * radius;
     
-    // Dolly zoom effect: zoom fov from 75 to 45 for a more dramatic effect
+    // 2. Scroll-based animation
+    const scrollBasedY = 10 - scrollY.current * 7;
+    const scrollBasedFov = 75 - scrollY.current * 40;
+
+    // Combine animations
+    camera.position.x = continuousX;
+    camera.position.z = continuousZ;
+    camera.position.y = scrollBasedY + Math.sin(elapsedTime) * 0.5; // Add a gentle bobbing motion
+    
     if (camera instanceof THREE.PerspectiveCamera) {
-        camera.fov = 75 - scrollY.current * 30;
+        camera.fov = scrollBasedFov;
         camera.updateProjectionMatrix();
     }
     
-    // Pan the camera view slightly
+    // Always look at the center of the scene
     camera.lookAt(0, 0, 0);
   });
 
