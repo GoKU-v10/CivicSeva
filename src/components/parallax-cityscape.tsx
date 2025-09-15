@@ -76,14 +76,14 @@ const Scene = () => {
   useFrame(({ camera }) => {
     // Animate camera position and zoom based on scroll
     // Move from z=20 to z=5 for a zoom-in effect
-    camera.position.z = 20 - scrollY.current * 15;
+    camera.position.z = 20 - scrollY.current * 18;
 
     // Move from y=10 down to y=3
     camera.position.y = 10 - scrollY.current * 7;
     
-    // Dolly zoom effect: zoom fov from 75 to 60
+    // Dolly zoom effect: zoom fov from 75 to 45 for a more dramatic effect
     if (camera instanceof THREE.PerspectiveCamera) {
-        camera.fov = 75 - scrollY.current * 15;
+        camera.fov = 75 - scrollY.current * 30;
         camera.updateProjectionMatrix();
     }
     
