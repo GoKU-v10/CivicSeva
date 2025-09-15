@@ -124,16 +124,33 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
                 </mesh>
             ))}
             {isHospital && (
-                <group position={[0, 4, 2.51]}>
+                <>
+                {/* Red Cross */}
+                <group position={[0, 6.5, 2.51]}>
                     <mesh>
-                        <boxGeometry args={[2, 0.5, 0.1]} />
-                        <meshLambertMaterial color="#FF0000" />
+                        <boxGeometry args={[1.5, 0.4, 0.1]} />
+                        <meshStandardMaterial color="#FF0000" flatShading={true} />
                     </mesh>
                     <mesh>
-                        <boxGeometry args={[0.5, 2, 0.1]} />
-                        <meshLambertMaterial color="#FF0000" />
+                        <boxGeometry args={[0.4, 1.5, 0.1]} />
+                        <meshStandardMaterial color="#FF0000" flatShading={true} />
                     </mesh>
                 </group>
+                {/* Glass Door */}
+                <mesh position={[0, 1, 2.51]}>
+                    <boxGeometry args={[1.5, 2, 0.1]} />
+                    <meshStandardMaterial color="#6699CC" transparent opacity={0.6} />
+                </mesh>
+                 {/* Minimal Windows */}
+                <mesh position={[0, 4, 2.51]}>
+                    <boxGeometry args={[3, 0.2, 0.1]} />
+                    <meshStandardMaterial color="#333333" />
+                </mesh>
+                <mesh position={[0, 5, 2.51]}>
+                    <boxGeometry args={[3, 0.2, 0.1]} />
+                    <meshStandardMaterial color="#333333" />
+                </mesh>
+                </>
             )}
         </group>
     );
@@ -191,7 +208,7 @@ const Scene = () => {
 
   };
 
-  useEffect(() => {
+    useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
