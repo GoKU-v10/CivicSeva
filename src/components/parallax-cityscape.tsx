@@ -12,24 +12,22 @@ const createBuildingTexture = () => {
     const context = canvas.getContext('2d');
   
     if (!context) {
-      // Fallback in case canvas is not supported
       return new THREE.MeshLambertMaterial({ color: '#A9A9A9' });
     }
   
-    // Building color
     context.fillStyle = '#A9A9A9';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
-    // Window color
     context.fillStyle = '#333333';
-    context.strokeStyle = '#CCCCCC'; // Light border for the window
-    context.lineWidth = 4;
-
-    const margin = 20;
+    const windowWidth = 20;
+    const windowHeight = 30;
+    const gap = 15;
     
-    // Draw one large window
-    context.fillRect(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2);
-    context.strokeRect(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2);
+    for (let y = gap; y < canvas.height - windowHeight; y += windowHeight + gap) {
+        for (let x = gap; x < canvas.width - windowWidth; x += windowWidth + gap) {
+            context.fillRect(x, y, windowWidth, windowHeight);
+        }
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
@@ -93,7 +91,6 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         parts.forEach(part => {
             if (part.texture) {
                 const [width, height] = part.size;
-                // Rough estimation for texture repeat based on surface area
                 part.texture.repeat.set(Math.floor(width / 4), Math.floor(height / 4));
                 part.texture.needsUpdate = true;
             }
@@ -103,7 +100,6 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
     }, [isHospital]);
 
     useFrame((state) => {
-        // Gentle bobbing animation
         const t = state.clock.getElapsedTime();
         ref.current.position.y = position[1] + Math.sin(t + position[0]) * 0.05;
     });
@@ -205,7 +201,6 @@ const Scene = () => {
   const scrollY = useRef(0);
 
   const handleScroll = () => {
-    // We get the scroll position as a percentage (0-1)
     const newScrollY = window.scrollY / (document.body.scrollHeight - window.innerHeight);
     scrollY.current = isNaN(newScrollY) ? 0 : newScrollY;
 
@@ -221,20 +216,16 @@ const Scene = () => {
   useFrame(({ camera, clock }) => {
     const elapsedTime = clock.getElapsedTime();
 
-    // 1. Continuous revolving and pulsing animation when not scrolling
-    const radius = 25 - (scrollY.current * 22); // Decrease radius as user scrolls in
-    const angle = elapsedTime * 0.08; // Slower revolution
+    const radius = 25 - (scrollY.current * 22); 
+    const angle = elapsedTime * 0.08;
     const continuousX = Math.sin(angle) * radius;
     const continuousZ = Math.cos(angle) * radius;
     
-    // 2. Scroll-based animation
     const scrollBasedY = 12 - scrollY.current * 9;
-    const scrollBasedFov = 75 - scrollY.current * 50; // Enhanced "dolly zoom"
+    const scrollBasedFov = 75 - scrollY.current * 50;
 
-    // Combine animations
     camera.position.x = continuousX;
     camera.position.z = continuousZ;
-    // Add a gentle "breathing" bobbing motion
     camera.position.y = scrollBasedY + Math.sin(elapsedTime * 0.5) * 0.5; 
     
     if (camera instanceof THREE.PerspectiveCamera) {
@@ -242,17 +233,14 @@ const Scene = () => {
         camera.updateProjectionMatrix();
     }
     
-    // Always look at the center of the scene
     camera.lookAt(0, 2, 0);
 
-    // Animate the sun in an arc
     if (sunRef.current && lightRef.current) {
         const sunAngle = elapsedTime * 0.05;
         sunRef.current.position.x = Math.cos(sunAngle) * 40;
-        sunRef.current.position.y = Math.sin(sunAngle) * 20 + 20; // Creates an arc
+        sunRef.current.position.y = Math.sin(sunAngle) * 20 + 20;
         sunRef.current.position.z = -30;
 
-        // Make the light follow the sun
         lightRef.current.position.copy(sunRef.current.position);
     }
   });
@@ -277,8 +265,7 @@ const Scene = () => {
         <sphereGeometry args={[3, 32, 32]} />
         <meshStandardMaterial emissive="#FFDD00" color="#FFDD00" />
       </mesh>
-      {/* Add fog for atmospheric effect */}
-      <fog attach="fog" args={['#34495e', 25, 80]} />
+      <fog attach="fog" args={['#87CEEB', 25, 80]} />
       <City />
     </>
   );
@@ -286,8 +273,7 @@ const Scene = () => {
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-transparent z-10" />
+    <div className="absolute inset-0 z-0 bg-[#87CEEB]">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
