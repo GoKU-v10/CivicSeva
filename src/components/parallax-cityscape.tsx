@@ -7,8 +7,8 @@ import * as THREE from 'three';
 
 const createBuildingTexture = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 128;
+    canvas.width = 128;
+    canvas.height = 256;
     const context = canvas.getContext('2d');
   
     if (!context) {
@@ -21,25 +21,20 @@ const createBuildingTexture = () => {
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     // Window color
-    context.fillStyle = '#444466'; // Dark blue/grey for windows
+    context.fillStyle = '#333333';
+    context.strokeStyle = '#CCCCCC'; // Light border for the window
+    context.lineWidth = 4;
+
+    const margin = 20;
     
-    // Increased gap to reduce window count
-    const windowWidth = 8;
-    const windowHeight = 10;
-    const xGap = 16; 
-    const yGap = 24;
-  
-    // Create a grid of windows
-    for (let y = yGap / 2; y < canvas.height; y += windowHeight + yGap) {
-      for (let x = xGap / 2; x < canvas.width; x += windowWidth + xGap) {
-        context.fillRect(x, y, windowWidth, windowHeight);
-      }
-    }
-  
+    // Draw one large window
+    context.fillRect(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2);
+    context.strokeRect(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2);
+
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 1); // This will be scaled per building part
+    texture.repeat.set(1, 1);
   
     return texture;
 };
@@ -99,7 +94,7 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
             if (part.texture) {
                 const [width, height] = part.size;
                 // Rough estimation for texture repeat based on surface area
-                part.texture.repeat.set(Math.floor(width / 2), Math.floor(height / 2));
+                part.texture.repeat.set(Math.floor(width / 4), Math.floor(height / 4));
                 part.texture.needsUpdate = true;
             }
         });
