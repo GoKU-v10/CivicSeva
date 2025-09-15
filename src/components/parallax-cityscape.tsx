@@ -25,13 +25,17 @@ const Building = ({ position, size, color }: { position: [number, number, number
 const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
-        for (let i = -15; i <= 15; i += 3) {
-            for (let j = -25; j <= 10; j += 3) {
+        // Reduce the number of buildings by increasing the step in the loops
+        for (let i = -15; i <= 15; i += 5) {
+            for (let j = -25; j <= 5; j += 5) {
                 if (Math.abs(i) < 2 && Math.abs(j) < 2) continue;
                 const height = 2 + Math.random() * 8;
+                // Add some variety to width and depth
+                const width = 2 + Math.random() * 0.5;
+                const depth = 2 + Math.random() * 0.5;
                 buildingData.push({
                     position: [i + (Math.random() - 0.5), height / 2, j + (Math.random() - 0.5)] as [number, number, number],
-                    size: [2, height, 2] as [number, number, number],
+                    size: [width, height, depth] as [number, number, number],
                     color: '#4760e6'
                 });
             }
@@ -58,7 +62,8 @@ const Scene = () => {
   const scrollY = useRef(0);
 
   const handleScroll = () => {
-    scrollY.current = window.scrollY;
+    // We get the scroll position as a percentage (0-1)
+    scrollY.current = window.scrollY / (document.body.scrollHeight - window.innerHeight);
   };
 
   useEffect(() => {
@@ -69,12 +74,21 @@ const Scene = () => {
   }, []);
 
   useFrame(({ camera }) => {
-    // Scroll-based camera animation
-    const scrollFactor = scrollY.current / (document.body.scrollHeight - window.innerHeight);
-    camera.position.z = 20 - scrollFactor * 15;
-    camera.position.y = 10 - scrollFactor * 5;
-    camera.rotation.x = -0.5 + scrollFactor * 0.3;
-    camera.lookAt(0,0,0);
+    // Animate camera position and zoom based on scroll
+    // Move from z=20 to z=5 for a zoom-in effect
+    camera.position.z = 20 - scrollY.current * 15;
+
+    // Move from y=10 down to y=3
+    camera.position.y = 10 - scrollY.current * 7;
+    
+    // Dolly zoom effect: zoom fov from 75 to 60
+    if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = 75 - scrollY.current * 15;
+        camera.updateProjectionMatrix();
+    }
+    
+    // Pan the camera view slightly
+    camera.lookAt(0, 0, 0);
   });
 
   return (
@@ -86,8 +100,9 @@ const Scene = () => {
         intensity={1.5}
         castShadow
       />
-      <City />
+      {/* Add fog for atmospheric effect */}
       <fog attach="fog" args={['#34495e', 20, 50]} />
+      <City />
     </>
   );
 };
