@@ -24,8 +24,14 @@ export function ParallaxCityscape() {
 
   return (
     <div className="fixed top-0 left-0 w-full h-full -z-10">
-        {/* Base Color */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-200 to-cyan-200" />
+        {/* Base Background Image */}
+        <Image
+            src="https://i.pinimg.com/736x/5c/c8/4a/5cc84aea3a977c9587fa73680d721a4.jpg"
+            alt="City background"
+            layout="fill"
+            objectFit="cover"
+            className="absolute inset-0"
+        />
       
         {/* Sky and Sun */}
         <motion.div style={{ opacity: skyOpacity }} className="absolute inset-0 bg-gradient-to-b from-sky-400 to-sky-600" />
