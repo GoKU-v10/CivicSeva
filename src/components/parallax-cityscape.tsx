@@ -8,26 +8,31 @@ import * as THREE from 'three';
 const createBuildingTexture = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
-    canvas.height = 256;
+    canvas.height = 512; // Taller canvas for a single long window
     const context = canvas.getContext('2d');
   
     if (!context) {
       return new THREE.MeshLambertMaterial({ color: '#C0C0C0' });
     }
   
+    // Building Color
     context.fillStyle = '#C0C0C0';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
-    context.fillStyle = '#333333';
-    const windowWidth = 20;
-    const windowHeight = 30;
-    const gap = 15;
+    // Single Modern Window
+    context.fillStyle = '#333333'; // Dark window color
+    const windowWidth = 24;
+    const windowHeight = canvas.height * 0.7; // Make it 70% of the building height
+    const x = (canvas.width - windowWidth) / 2; // Centered
+    const y = (canvas.height - windowHeight) / 2; // Centered
+
+    context.fillRect(x, y, windowWidth, windowHeight);
     
-    for (let y = gap; y < canvas.height - windowHeight; y += windowHeight + gap) {
-        for (let x = gap; x < canvas.width - windowWidth; x += windowWidth + gap) {
-            context.fillRect(x, y, windowWidth, windowHeight);
-        }
-    }
+    // Add a light border for a sleeker look
+    context.strokeStyle = '#FFFFFF';
+    context.lineWidth = 4;
+    context.strokeRect(x,y, windowWidth, windowHeight);
+
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
@@ -91,7 +96,8 @@ const Building = ({ position, isHospital }: { position: [number, number, number]
         parts.forEach(part => {
             if (part.texture) {
                 const [width, height] = part.size;
-                part.texture.repeat.set(Math.floor(width / 4), Math.floor(height / 4));
+                // We set repeat to 1,1 because the texture itself now defines the window layout
+                part.texture.repeat.set(1, 1);
                 part.texture.needsUpdate = true;
             }
         });
