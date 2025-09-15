@@ -31,7 +31,7 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 export default function CommunityMap() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default center (India)
   const [isClient, setIsClient] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -65,7 +65,7 @@ export default function CommunityMap() {
             const newLocation: [number, number] = [latitude, longitude];
             setUserLocation(newLocation);
             setMapCenter(newLocation);
-            setLocationError(null); // Clear any previous errors
+            setLocationError(null); // Clear any previous errors on success
             toast({ title: 'Success', description: 'Precise GPS location acquired!' });
         } catch (err: any) {
              let message = "Your browser has blocked location access. Please enable it in your browser's site settings to see your current location.";
@@ -83,7 +83,7 @@ export default function CommunityMap() {
                 description: "The map will show a default area. See the on-map alert for more details.",
             });
             setUserLocation(null);
-            setMapCenter([20.5937, 78.9629]); // Fallback to default
+            setMapCenter([20.5937, 78.9629]); // Fallback to default center on error
         }
     };
 
@@ -127,7 +127,8 @@ export default function CommunityMap() {
     };
 
     fetchIssues();
-  }, [isClient, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClient]);
 
   if (!isClient) {
     return <Skeleton className="w-full h-full rounded-lg" />;
