@@ -1,10 +1,6 @@
 
-// This file is deprecated. Please use next.config.js
-// Keeping it for reference, but it will be ignored by Next.js
-
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   /* config options here */
   reactStrictMode: false,
   typescript: {
@@ -46,5 +42,4 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
-
+module.exports = nextConfig;
