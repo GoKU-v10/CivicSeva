@@ -19,7 +19,19 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { ParallaxCityscape } from '@/components/parallax-cityscape';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const CityscapeScene = dynamic(
+  () => import('@/components/cityscape-scene').then((mod) => mod.CityscapeScene),
+  {
+    ssr: false,
+    loading: () => (
+      <Skeleton className="absolute inset-0 z-0 bg-blue-900" />
+    ),
+  }
+);
+
 
 export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -87,8 +99,10 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section className="relative h-[80vh] w-full overflow-hidden flex items-center justify-center">
-          <ParallaxCityscape />
-          <div className="z-10 flex flex-col items-center text-center text-white p-4">
+          <CityscapeScene />
+          <div className="absolute inset-0 bg-black/20 z-10" />
+
+          <div className="z-20 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
             </h1>
