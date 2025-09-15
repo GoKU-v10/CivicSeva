@@ -19,7 +19,13 @@ import {
   Trophy,
 } from "lucide-react";
 import { issues } from "@/lib/data";
-import CommunityMap from './components/community-map';
+import dynamic from 'next/dynamic';
+import { Skeleton } from "@/components/ui/skeleton";
+
+const CommunityMap = dynamic(() => import('./components/community-map'), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-full rounded-lg" />,
+});
 
 
 const recentActivities = [
