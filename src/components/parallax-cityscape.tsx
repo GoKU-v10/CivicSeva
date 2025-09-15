@@ -32,7 +32,7 @@ const City = () => {
                 buildingData.push({
                     position: [i + (Math.random() - 0.5), height / 2, j + (Math.random() - 0.5)] as [number, number, number],
                     size: [2, height, 2] as [number, number, number],
-                    color: ['#4760e6', '#ffb85c', '#ff8f61', '#f2e86d'][Math.floor(Math.random() * 4)]
+                    color: '#4760e6'
                 });
             }
         }
@@ -46,7 +46,7 @@ const City = () => {
             ))}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
                 <planeGeometry args={[100, 100]} />
-                <meshLambertMaterial color="#2c3e50" />
+                <meshLambertMaterial color="#56c156" />
             </mesh>
         </group>
     );
