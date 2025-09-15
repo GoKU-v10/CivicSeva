@@ -100,13 +100,13 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="relative h-[80vh] w-full overflow-hidden flex items-center justify-center">
           <CityscapeScene />
-          <div className="absolute inset-0 bg-black/20 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/10 to-transparent z-10" />
 
           <div className="z-20 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
             </h1>
-            <p className="mt-4 max-w-3xl text-lg md:text-xl text-primary-foreground/80 text-shadow">
+            <p className="mt-4 max-w-3xl text-lg md:text-xl text-primary-foreground/90 text-shadow">
               An AI-powered platform connecting citizens with municipal services for faster issue resolution.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
