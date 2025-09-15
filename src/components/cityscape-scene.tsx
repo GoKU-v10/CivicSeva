@@ -2,19 +2,22 @@
 'use client';
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 function Buildings() {
     const buildings = useMemo(() => {
         const buildingData = [];
-        for (let i = -20; i <= 20; i += 5) {
-            for (let j = -20; j <= 20; j += 5) {
-                if (Math.abs(i) < 10 && Math.abs(j) < 10) continue; 
-                const height = 2 + Math.random() * 8;
-                const position = new THREE.Vector3(i, height / 2 - 0.5, j);
-                buildingData.push({ position, height });
+        const citySize = 40; 
+        const density = 4; 
+
+        for (let i = -citySize; i <= citySize; i += density) {
+            for (let j = -citySize; j <= citySize; j += density) {
+                if (Math.random() > 0.3) { 
+                    const height = 2 + Math.random() * 15;
+                    const position = new THREE.Vector3(i, height / 2, j);
+                    buildingData.push({ position, height });
+                }
             }
         }
         return buildingData;
@@ -25,9 +28,8 @@ function Buildings() {
     useFrame(({ clock }) => {
         if (groupRef.current) {
             groupRef.current.children.forEach((building, index) => {
-                const { height } = buildings[index];
-                const yPos = Math.sin(clock.getElapsedTime() * 0.5 + index * 0.5) * 0.5;
-                building.position.y = (height / 2 - 0.5) + yPos;
+                const yPos = Math.sin(clock.getElapsedTime() * 0.5 + index * 0.3) * 0.2;
+                building.position.y = (buildings[index].height / 2) + yPos;
             });
         }
     });
@@ -36,8 +38,8 @@ function Buildings() {
         <group ref={groupRef}>
             {buildings.map((data, index) => (
                  <mesh key={index} position={data.position}>
-                    <boxGeometry args={[2.5, data.height, 2.5]} />
-                    <meshLambertMaterial color={'#4760e6'} />
+                    <boxGeometry args={[2.8, data.height, 2.8]} />
+                    <meshLambertMaterial color={'#1E3A8A'} />
                 </mesh>
             ))}
         </group>
@@ -46,20 +48,35 @@ function Buildings() {
 
 function Ground() {
     return (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
             <planeGeometry args={[100, 100]} />
-            <meshStandardMaterial color={'#56c156'} roughness={0.8} metalness={0.2} />
+            <meshStandardMaterial color={'#1D4ED8'} roughness={0.8} metalness={0.2} />
         </mesh>
     )
 }
 
 function CameraController() {
     const { camera } = useThree();
+    const scrollY = useRef(0);
+
+    const handleScroll = () => {
+        scrollY.current = window.scrollY;
+    };
+
+    React.useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
-        camera.position.x = Math.sin(t * 0.1) * 30;
-        camera.position.z = 30 + Math.cos(t * 0.1) * 10;
+        const scrollFactor = scrollY.current * 0.05;
+
+        camera.position.x = Math.sin(t * 0.05) * 5;
+        camera.position.y = 5 + scrollFactor;
+        camera.position.z = 20 - scrollFactor;
         camera.lookAt(0, 0, 0);
     });
 
@@ -70,16 +87,15 @@ function CameraController() {
 export function CityscapeScene() {
   return (
     <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 10, 40], fov: 50 }}>
-            <ambientLight intensity={1.0} color="#b4e7b4" />
+        <Canvas camera={{ position: [0, 5, 20], fov: 75 }}>
+            <ambientLight intensity={0.5} color="#4060ff" />
             <directionalLight 
-                position={[30, 50, 20]} 
-                intensity={1.5}
+                position={[10, 20, 5]} 
+                intensity={1}
                 color="#ffffff"
-                castShadow
             />
-            <hemisphereLight skyColor={"#1e3572"} groundColor={"#56c156"} intensity={0.8} />
-            <fog attach="fog" args={['#b4e7b4', 20, 100]} />
+            <hemisphereLight skyColor={"#3b82f6"} groundColor={"#1e3a8a"} intensity={1} />
+            <fog attach="fog" args={['#1e3a8a', 20, 60]} />
 
             <Ground />
             <Buildings />
