@@ -62,7 +62,7 @@ export default function CommunityMap() {
         } else if (err.code === 2 || err.code === 3) { // POSITION_UNAVAILABLE or TIMEOUT
           message = "Could not get a precise location. Please try moving to an area with a clearer view of the sky (e.g., near a window or outdoors).";
         }
-        console.error("Geolocation Error:", err.message);
+        console.log("Geolocation Error:", err.message);
         setLocationError(message);
         toast({
           variant: "destructive",
