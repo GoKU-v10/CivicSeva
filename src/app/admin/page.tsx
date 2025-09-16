@@ -53,7 +53,7 @@ export default function AdminPage() {
     return (
         <div className="space-y-6">
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
+                <Card className="transition-all hover:scale-105 hover:shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
                         Today's New Issues
@@ -67,7 +67,7 @@ export default function AdminPage() {
                         </p>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="transition-all hover:scale-105 hover:shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
                         Pending Assignment
@@ -81,7 +81,7 @@ export default function AdminPage() {
                         </p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="transition-all hover:scale-105 hover:shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Avg. Resolution Time</CardTitle>
                         <Clock className="h-4 w-4 text-muted-foreground" />
