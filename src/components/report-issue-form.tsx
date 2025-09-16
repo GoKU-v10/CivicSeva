@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect, useTransition, useRef } from 'react';
+import { useState, useEffect, useTransition, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -84,13 +84,16 @@ export function ReportIssueForm() {
 
     const photoInputRef = useRef<HTMLInputElement>(null);
     
-    useEffect(() => {
+    const detectLocation = useCallback(async () => {
+        setIsFetchingLocation(true);
+        form.setValue('address', 'Detecting location...');
+
         const getPreciseLocation = () => {
             return new Promise<GeolocationPosition>((resolve, reject) => {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
                         enableHighAccuracy: true,
-                        timeout: 12000, 
+                        timeout: 12000,
                         maximumAge: 0
                     });
                 } else {
@@ -115,47 +118,44 @@ export function ReportIssueForm() {
                 return `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
             }
         };
-    
+
         const getFallbackLocation = async () => {
             let res = await fetch("https://ipapi.co/json/");
             if (!res.ok) throw new Error("IP API failed");
             return res.json();
         };
-    
-        const detectLocation = async () => {
-            setIsFetchingLocation(true);
-            form.setValue('address', 'Detecting location...');
-    
+
+        try {
+            const pos = await getPreciseLocation();
+            const { latitude, longitude } = pos.coords;
+            const address = await reverseGeocode(latitude, longitude);
+            setLocation({ latitude, longitude, address, error: null });
+            form.setValue('address', address, { shouldValidate: true });
+            toast({ title: 'Success', description: 'Precise location captured!' });
+        } catch (err) {
+            console.warn("GPS failed, falling back to IP:", err);
+            toast({ variant: 'default', title: 'GPS failed', description: 'Using approximate location from IP address.' });
             try {
-                const pos = await getPreciseLocation();
-                const { latitude, longitude } = pos.coords;
-                const address = await reverseGeocode(latitude, longitude);
-                setLocation({ latitude, longitude, address, error: null });
+                const data = await getFallbackLocation();
+                const address = await reverseGeocode(data.latitude, data.longitude);
+                setLocation({ latitude: data.latitude, longitude: data.longitude, address, error: null });
                 form.setValue('address', address, { shouldValidate: true });
-                toast({ title: 'Success', description: 'Precise location captured!' });
-            } catch (err) {
-                console.warn("GPS failed, falling back to IP:", err);
-                toast({ variant: 'default', title: 'GPS failed', description: 'Using approximate location from IP address.' });
-                try {
-                    const data = await getFallbackLocation();
-                    const address = await reverseGeocode(data.latitude, data.longitude);
-                    setLocation({ latitude: data.latitude, longitude: data.longitude, address, error: null });
-                    form.setValue('address', address, { shouldValidate: true });
-                } catch (fallbackErr) {
-                    console.error("IP fallback also failed:", fallbackErr);
-                    const errorMsg = "Could not detect location automatically. Please enter manually.";
-                    setLocation(prev => ({ ...prev, error: errorMsg }));
-                    form.setValue('address', '');
-                    form.setError('address', { type: 'manual', message: errorMsg });
-                }
-            } finally {
-                setIsFetchingLocation(false);
+            } catch (fallbackErr) {
+                console.error("IP fallback also failed:", fallbackErr);
+                const errorMsg = "Could not detect location automatically. Please enter manually.";
+                setLocation(prev => ({ ...prev, error: errorMsg }));
+                form.setValue('address', '');
+                form.setError('address', { type: 'manual', message: errorMsg });
             }
-        };
-    
-        detectLocation();
+        } finally {
+            setIsFetchingLocation(false);
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [form]);
+
+    useEffect(() => {
+        detectLocation();
+    }, [detectLocation]);
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -391,7 +391,7 @@ export function ReportIssueForm() {
                                         {...field} 
                                     />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={() => useEffect(() => {}, [])} disabled={isFetchingLocation}>
+                                <Button type="button" variant="outline" size="icon" onClick={detectLocation} disabled={isFetchingLocation}>
                                     {isFetchingLocation ? <Loader2 className="animate-spin" /> : <LocateFixed />}
                                 </Button>
                              </div>
