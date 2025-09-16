@@ -12,6 +12,10 @@ import {
   Facebook,
   Twitter,
   Instagram,
+  Map,
+  Eye,
+  Languages,
+  UserCheck,
 } from 'lucide-react';
 import { useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
@@ -156,6 +160,70 @@ export default function LandingPage() {
                 </div>
             </div>
         </section>
+
+        <section id="features" className="py-16 md:py-24 bg-muted/50">
+          <div className="container mx-auto px-4 md:px-6 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">Powerful Features</h2>
+            <p className="mt-2 text-lg text-muted-foreground">Everything you need to improve your community.</p>
+            <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Eye className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">Real-time Tracking</CardTitle>
+                </CardHeader>
+                <CardContent className="text-left text-muted-foreground">Track the status of your reported issues from start to finish, with progress photos at each stage.</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Cpu className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">AI Categorization</CardTitle>
+                </CardHeader>
+                <CardContent className="text-left text-muted-foreground">Our AI automatically analyzes your submission to categorize it and route it to the right department, fast.</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <UserCheck className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">Anonymous Reporting</CardTitle>
+                </CardHeader>
+                <CardContent className="text-left text-muted-foreground">Report issues with confidence. We value your privacy and offer the option to submit reports anonymously.</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Languages className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">Multi-language Support</CardTitle>
+                </CardHeader>
+                <CardContent className="text-left text-muted-foreground">Our platform supports multiple languages, including English and Hindi, to ensure accessibility for all citizens.</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Map className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">Interactive Maps</CardTitle>
+                </CardHeader>
+                <CardContent className="text-left text-muted-foreground">Explore a map of your local area to see all reported issues, check their status, and avoid duplicate reports.</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <CheckCircle className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">PWA & Offline-ready</CardTitle>
+                </CardHeader>
+                <CardContent className="text-left text-muted-foreground">Use our app on any device, even without an internet connection. Your reports will be saved and submitted later.</CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <footer className="bg-sidebar text-sidebar-foreground py-12">
