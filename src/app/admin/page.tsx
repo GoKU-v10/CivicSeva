@@ -1,15 +1,54 @@
 
+'use client';
+
 import { AdminDashboard } from "@/app/admin/components/admin-dashboard";
-import { issues } from "@/lib/data";
+import { issues as initialIssues } from "@/lib/data";
+import type { Issue } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Clock, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const LOCAL_STORAGE_KEY = 'civicseva_issues';
 
 export default function AdminPage() {
-    const newIssuesToday = issues.filter(i => new Date(i.reportedAt).toDateString() === new Date().toDateString()).length;
-    const pendingAssignments = issues.filter(i => i.department === 'Pending Assignment').length;
+    const [allIssues, setAllIssues] = useState<Issue[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // This effect runs on the client-side
+        const storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        
+        // Combine and remove duplicates, preferring stored (newer) issues
+        const combined = [...storedIssues, ...initialIssues];
+        const uniqueIssues = combined.filter((issue, index, self) =>
+            index === self.findIndex((t) => (
+                t.id === issue.id
+            ))
+        );
+        
+        setAllIssues(uniqueIssues);
+        setIsLoading(false);
+    }, []);
+
+    const newIssuesToday = allIssues.filter(i => new Date(i.reportedAt).toDateString() === new Date().toDateString()).length;
+    const pendingAssignments = allIssues.filter(i => i.department === 'Pending Assignment').length;
     
     // Dummy data for avg resolution time
     const avgResolutionTime = "4.2 Days";
+
+    if (isLoading) {
+        return (
+             <div className="space-y-6">
+                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card><CardHeader><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /></CardContent></Card>
+                    <Card><CardHeader><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /></CardContent></Card>
+                    <Card><CardHeader><Skeleton className="h-4 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /></CardContent></Card>
+                 </div>
+                 <Skeleton className="h-96 w-full" />
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-6">
@@ -55,7 +94,7 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
             </div>
-            <AdminDashboard issues={issues} />
+            <AdminDashboard issues={allIssues} />
         </div>
     );
 }
