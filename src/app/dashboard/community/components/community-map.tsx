@@ -2,11 +2,10 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState }from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { db } from '@/firebase';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { issues as localIssues } from '@/lib/data';
 import type { Issue } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -72,36 +71,14 @@ export default function CommunityMap() {
         // Keep default map center (India)
       }
 
-      // 2. Fetch issues from Firestore
+      // 2. Fetch issues from local data
       try {
-        const snapshot = await getDocs(collection(db, 'issues'));
-        const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
-          const docData = doc.data();
-          return {
-            id: doc.id,
-            title: docData.title || 'No title',
-            description: docData.description || '',
-            imageUrl: docData.imageUrl || '',
-            imageHint: '',
-            images: docData.imageUrl ? [{ url: docData.imageUrl, caption: 'Issue Photo' }] : [],
-            location: {
-              latitude: docData.lat || docData.latitude || 0,
-              longitude: docData.lng || docData.longitude || 0,
-              address: docData.address || 'No address provided',
-            },
-            status: docData.status || 'Reported',
-            category: docData.category || 'Other',
-            reportedAt: docData.reportedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-            department: docData.department || 'Pending Assignment',
-            updates: docData.updates || [],
-          } as Issue;
-        });
-        setIssues(data);
+        setIssues(localIssues);
       } catch (error) {
-        console.error('Failed to fetch issues from Firestore:', error);
+        console.error('Failed to fetch issues from local data:', error);
         toast({
           variant: 'destructive',
-          title: 'Database Error',
+          title: 'Data Error',
           description: 'Could not load community issues.',
         });
       }
@@ -117,7 +94,7 @@ export default function CommunityMap() {
     return <Skeleton className="w-full h-full rounded-lg" />;
   }
   
-  const mapboxAccessToken = 'pk.eyJ1IjoiZ29vZ2xlLWZpcmViYXNlIiwiYSI6ImNsc3ZlZ3AwbjB2dG4yanA2bXR4d3kya3QifQ.5h3L2H-p2bW40h2cM5y4fA';
+  const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`;
   const mapboxAttribution = '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
