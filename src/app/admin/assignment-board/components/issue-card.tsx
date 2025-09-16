@@ -43,8 +43,10 @@ export function IssueCard({ issue }: IssueCardProps) {
             <CardContent className="p-3">
                 <Badge variant="secondary" className="mb-2">{issue.category}</Badge>
                 <h4 className="font-semibold text-sm leading-tight">{issue.title}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{issue.location.address}</p>
-                <p className="text-xs text-muted-foreground/80">({issue.location.latitude.toFixed(5)}, {issue.location.longitude.toFixed(5)})</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                    {issue.location.address} <br />
+                    ({issue.location.latitude.toFixed(5)}, {issue.location.longitude.toFixed(5)})
+                </p>
                 <div className="flex justify-between items-center mt-2">
                     {priority && (
                          <div className="flex items-center text-xs">

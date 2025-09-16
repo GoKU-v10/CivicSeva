@@ -398,7 +398,7 @@ export function ReportIssueForm() {
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
                              {!location.error && location.latitude && location.longitude && (
                                 <FormDescription>
-                                   GPS Coordinates: ({location.latitude.toFixed(5)}, {location.longitude.toFixed(5)})
+                                   ({location.latitude.toFixed(5)}, {location.longitude.toFixed(5)})
                                 </FormDescription>
                              )}
                             <FormMessage />
