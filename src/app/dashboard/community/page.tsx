@@ -29,9 +29,9 @@ const CommunityMap = dynamic(() => import('./components/community-map'), {
 
 
 const recentActivities = [
-    { user: 'Anonymous', action: 'supported', issue: 'Large pothole on main street', time: '5m ago', avatar: 'https://picsum.photos/seed/user1/40/40' },
-    { user: 'Anonymous', action: 'commented on', issue: 'Graffiti on park wall', time: '12m ago', avatar: 'https://picsum.photos/seed/user2/40/40' },
-    { user: 'Anonymous', action: 'reported a new issue', issue: 'Broken park bench', time: '30m ago', avatar: 'https://picsum.photos/seed/user3/40/40' },
+    { user: 'Anonymous', action: 'supported', issue: 'Large pothole on main street', time: '5m ago', avatar: 'https://picsum.photos/seed/anon1/40/40' },
+    { user: 'Anonymous', action: 'commented on', issue: 'Graffiti on park wall', time: '12m ago', avatar: 'https://picsum.photos/seed/anon2/40/40' },
+    { user: 'Anonymous', action: 'reported a new issue', issue: 'Broken park bench', time: '30m ago', avatar: 'https://picsum.photos/seed/anon3/40/40' },
     { user: 'City Official', action: 'updated status of', issue: 'Damaged Stop Sign', time: '1h ago', avatar: 'https://picsum.photos/seed/official/40/40' },
 ]
 

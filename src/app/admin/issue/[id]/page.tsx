@@ -12,7 +12,7 @@ import { IssueStatusBadge } from "@/components/issue-status-badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Image from "next/image";
 import { format } from "date-fns";
-import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow } from "lucide-react";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow, ShieldQuestion } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -298,11 +298,11 @@ export default function AdminIssueDetailPage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><User /> Citizen Details</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><ShieldQuestion /> Citizen Details</CardTitle>
                         </CardHeader>
                         <CardContent>
                            <p className="text-sm text-muted-foreground">
-                            This feature is coming soon. You'll be able to see details about the citizen who reported the issue here.
+                            To protect privacy, the identity of the citizen who reported this issue is kept completely anonymous.
                            </p>
                         </CardContent>
                     </Card>

@@ -66,29 +66,29 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Update your personal details here.</CardDescription>
+          <CardDescription>Your personal information is kept private and anonymous.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
-                    <AvatarImage src="https://picsum.photos/seed/user/100/100" alt="User avatar" />
-                    <AvatarFallback>SN</AvatarFallback>
+                    <AvatarImage src="https://picsum.photos/seed/anon/100/100" alt="User avatar" />
+                    <AvatarFallback>AC</AvatarFallback>
                 </Avatar>
                 <Button variant="outline">Change Photo</Button>
             </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="Samarth Narayankar" />
+              <Input id="name" defaultValue="Anonymous Citizen" disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue="samarth.narayankar@example.com" />
+              <Input id="email" type="email" defaultValue="citizen@civicseva.app" disabled />
             </div>
           </div>
            <div className="space-y-2">
               <Label htmlFor="address">Home Address (Optional)</Label>
-              <Input id="address" defaultValue="123 Main St, New York, NY" />
+              <Input id="address" placeholder="Your address is not stored" />
             </div>
         </CardContent>
       </Card>
