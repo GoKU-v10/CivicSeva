@@ -79,11 +79,11 @@ export default function SettingsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="Samarth Narayankar" disabled />
+              <Input id="name" defaultValue="Samarth Narayankar" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue="citizen@civicseva.app" disabled />
+              <Input id="email" type="email" defaultValue="citizen@civicseva.app" required />
             </div>
           </div>
            <div className="space-y-2">
