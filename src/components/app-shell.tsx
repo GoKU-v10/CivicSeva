@@ -162,10 +162,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <div className="p-2 flex items-center gap-2 rounded-lg bg-sidebar-accent">
                         <Avatar className="h-9 w-9">
                             <AvatarImage src="https://picsum.photos/seed/anon/80/80" />
-                            <AvatarFallback>AC</AvatarFallback>
+                            <AvatarFallback>SN</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-sidebar-accent-foreground">Anonymous Citizen</span>
+                            <span className="text-sm font-semibold text-sidebar-accent-foreground">Samarth Narayankar</span>
                             <span className="text-xs text-muted-foreground">citizen@civicseva.app</span>
                         </div>
                     </div>

@@ -72,14 +72,14 @@ export default function SettingsPage() {
             <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
                     <AvatarImage src="https://picsum.photos/seed/anon/100/100" alt="User avatar" />
-                    <AvatarFallback>AC</AvatarFallback>
+                    <AvatarFallback>SN</AvatarFallback>
                 </Avatar>
                 <Button variant="outline">Change Photo</Button>
             </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="Anonymous Citizen" disabled />
+              <Input id="name" defaultValue="Samarth Narayankar" disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
