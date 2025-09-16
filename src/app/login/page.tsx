@@ -65,9 +65,10 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [role, setRole] = useState('citizen');
+  const [hasTriggeredSignIn, setHasTriggeredSignIn] = useState(false);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignIn = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     
     // Simulate setting a session for the citizen
     sessionStorage.setItem('is_citizen_logged_in', 'true');
@@ -115,6 +116,13 @@ export function LoginForm() {
     }
   };
 
+  useEffect(() => {
+    if (!hasTriggeredSignIn) {
+      handleSignIn();
+      setHasTriggeredSignIn(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasTriggeredSignIn]);
 
   return (
     <Card className="w-full max-w-md">
@@ -171,7 +179,7 @@ export function LoginForm() {
             <>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="m@example.com" required />
+                    <Input id="email" type="email" placeholder="m@example.com" defaultValue="citizen@civicseva.app" required />
                 </div>
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -180,7 +188,7 @@ export function LoginForm() {
                         Forgot password?
                         </Link>
                     </div>
-                    <Input id="password" type="password" required />
+                    <Input id="password" type="password" defaultValue="password123" required />
                 </div>
                 <Button type="submit" className="w-full">
                     <LogIn className="mr-2" />
@@ -191,11 +199,11 @@ export function LoginForm() {
             <>
                 <div className="space-y-2">
                     <Label htmlFor="employeeId">Government Employee ID</Label>
-                    <Input id="employeeId" type="text" placeholder="e.g., DPT-12345" required />
+                    <Input id="employeeId" type="text" placeholder="e.g., DPT-12345" defaultValue="ADMIN-001" required />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="twoFactor">Two-Factor Authentication Code</Label>
-                    <Input id="twoFactor" type="text" placeholder="Enter code from your authenticator app" required />
+                    <Input id="twoFactor" type="text" placeholder="Enter code from your authenticator app" defaultValue="123456" required />
                 </div>
                 <Button type="submit" className="w-full">
                     <Fingerprint className="mr-2" />
