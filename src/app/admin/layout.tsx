@@ -2,8 +2,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, LogOut, ShieldCheck, UserCog, LayoutGrid, List } from "lucide-react";
+import { Bell, LogOut, ShieldCheck, UserCog, LayoutGrid, List, Settings } from "lucide-react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AdminLayout({
   children,
@@ -38,24 +46,43 @@ export default function AdminLayout({
                     <Bell />
                     <span className="sr-only">System Notifications</span>
                 </Button>
-                <Card>
-                    <CardContent className="p-2 flex items-center gap-2">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="ghost" className="flex items-center gap-2">
                          <Avatar className="h-9 w-9">
                             <AvatarImage src="https://picsum.photos/seed/admin/80/80" />
                             <AvatarFallback>A</AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col items-start">
                             <span className="text-sm font-semibold">Admin User</span>
-                            <span className="text-xs text-muted-foreground">Public Works Dept.</span>
+                            <span className="text-xs text-muted-foreground">Administrator</span>
                         </div>
-                    </CardContent>
-                </Card>
-                 <Button variant="outline" size="sm" asChild>
-                   <Link href="/login">
-                    <LogOut className="mr-2" />
-                    Logout
-                   </Link>
-                </Button>
+                       </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/settings">
+                                <Settings className="mr-2" />
+                                Settings
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/department-update">
+                                <UserCog className="mr-2" />
+                                Update Issue
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                         <DropdownMenuItem asChild>
+                           <Link href="/login">
+                                <LogOut className="mr-2" />
+                                Logout
+                           </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
         <main className="p-4 md:p-6 lg:p-8">
