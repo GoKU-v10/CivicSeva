@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description';
-import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle, LocateFixed } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -98,6 +98,23 @@ export function ReportIssueForm() {
                 }
             });
         };
+
+        const reverseGeocode = async (lat: number, lon: number) => {
+            const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${accessToken}&types=address,place`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Reverse geocoding failed');
+                const data = await response.json();
+                if (data.features && data.features.length > 0) {
+                    return data.features[0].place_name;
+                }
+                return `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+            } catch (error) {
+                console.error("Reverse geocoding error:", error);
+                return `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+            }
+        };
     
         const getFallbackLocation = async () => {
             let res = await fetch("https://ipapi.co/json/");
@@ -111,8 +128,8 @@ export function ReportIssueForm() {
     
             try {
                 const pos = await getPreciseLocation();
-                const { latitude, longitude, accuracy } = pos.coords;
-                const address = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)} (GPS, ~${accuracy.toFixed(0)}m accuracy)`;
+                const { latitude, longitude } = pos.coords;
+                const address = await reverseGeocode(latitude, longitude);
                 setLocation({ latitude, longitude, address, error: null });
                 form.setValue('address', address, { shouldValidate: true });
                 toast({ title: 'Success', description: 'Precise location captured!' });
@@ -121,7 +138,7 @@ export function ReportIssueForm() {
                 toast({ variant: 'default', title: 'GPS failed', description: 'Using approximate location from IP address.' });
                 try {
                     const data = await getFallbackLocation();
-                    const address = `${data.city}, ${data.region}`;
+                    const address = await reverseGeocode(data.latitude, data.longitude);
                     setLocation({ latitude: data.latitude, longitude: data.longitude, address, error: null });
                     form.setValue('address', address, { shouldValidate: true });
                 } catch (fallbackErr) {
@@ -370,16 +387,18 @@ export function ReportIssueForm() {
                              <div className="flex gap-2">
                                 <FormControl>
                                     <Input 
-                                        placeholder={isFetchingLocation ? 'Detecting location...' : 'Location'} 
+                                        placeholder={isFetchingLocation ? 'Detecting location...' : 'Location Address'} 
                                         {...field} 
-                                        readOnly
                                     />
                                 </FormControl>
+                                <Button type="button" variant="outline" size="icon" onClick={() => useEffect(() => {}, [])} disabled={isFetchingLocation}>
+                                    {isFetchingLocation ? <Loader2 className="animate-spin" /> : <LocateFixed />}
+                                </Button>
                              </div>
                              {location.error && <FormDescription className="text-destructive">{location.error}</FormDescription>}
                              {!location.error && location.latitude && location.longitude && (
                                 <FormDescription>
-                                    Your location will be submitted with the report.
+                                   GPS Coordinates: ({location.latitude.toFixed(5)}, {location.longitude.toFixed(5)})
                                 </FormDescription>
                              )}
                             <FormMessage />

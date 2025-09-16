@@ -388,6 +388,7 @@ export default function IssueDetailPage() {
                                 <div>
                                     <h4 className="font-semibold">Location</h4>
                                     <p className="text-muted-foreground">{issue.location.address}</p>
+                                    <p className="text-xs text-muted-foreground/80">({issue.location.latitude.toFixed(5)}, {issue.location.longitude.toFixed(5)})</p>
                                 </div>
                             </div>
                              <div className="flex items-start gap-2 text-sm">
