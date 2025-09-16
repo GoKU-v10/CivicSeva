@@ -450,11 +450,7 @@ export function ReportIssueForm() {
                                         }} 
                                     />
                                     <div className="grid grid-cols-2 gap-2">
-                                        <div className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 flex flex-col items-center justify-center" onClick={() => photoInputRef.current?.click()}>
-                                            <ImageIcon className="mx-auto size-10 text-muted-foreground" />
-                                            <p className="mt-2 text-sm text-muted-foreground">Upload File</p>
-                                        </div>
-                                         <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
+                                        <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
                                             <DialogTrigger asChild>
                                                 <div className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 flex flex-col items-center justify-center">
                                                     <Camera className="mx-auto size-10 text-muted-foreground" />
@@ -482,6 +478,10 @@ export function ReportIssueForm() {
                                                 </div>
                                             </DialogContent>
                                         </Dialog>
+                                        <div className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 flex flex-col items-center justify-center" onClick={() => photoInputRef.current?.click()}>
+                                            <ImageIcon className="mx-auto size-10 text-muted-foreground" />
+                                            <p className="mt-2 text-sm text-muted-foreground">Upload File</p>
+                                        </div>
                                     </div>
                                     {photoPreviews.length > 0 && (
                                         <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
@@ -585,7 +585,7 @@ export function ReportIssueForm() {
                             <Info className="h-4 w-4" />
                             <AlertTitle>Expected Resolution Timeline</AlertTitle>
                             <AlertDescription>
-                            Based on the selected category, the expected resolution time is <span className="font-bold">3-5 business days</span>. This may vary depending on issue severity.
+                            Based on the selected category, the expected resolution time is <span className="font-bold">7-8 business days</span>. This may vary depending on issue severity.
                             </AlertDescription>
                         </Alert>
                          <Alert variant="destructive">
