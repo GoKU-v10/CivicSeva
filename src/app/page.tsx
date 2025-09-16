@@ -16,6 +16,10 @@ import {
   Eye,
   Languages,
   UserCheck,
+  TrendingUp,
+  Clock,
+  Users,
+  Building,
 } from 'lucide-react';
 import { useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
@@ -132,30 +136,60 @@ export default function LandingPage() {
                     <h2 className="text-3xl font-bold tracking-tight">Live Statistics</h2>
                     <p className="mt-2 text-lg text-muted-foreground">Real-time impact of citizen engagement.</p>
                 </div>
-                <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8">
-                    <Card className="text-center">
-                        <CardHeader>
-                            <CardTitle className="text-4xl font-bold text-primary">2,847</CardTitle>
+                <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-8">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Issues Resolved
+                        </CardTitle>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent><p className="text-muted-foreground">Issues Resolved This Month</p></CardContent>
+                        <CardContent>
+                        <div className="text-2xl font-bold">2,847</div>
+                        <p className="text-xs text-muted-foreground">
+                            in the last 30 days
+                        </p>
+                        </CardContent>
                     </Card>
-                     <Card className="text-center">
-                        <CardHeader>
-                            <CardTitle className="text-4xl font-bold text-primary">3.2 Days</CardTitle>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Avg. Resolution Time
+                        </CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent><p className="text-muted-foreground">Average Resolution Time</p></CardContent>
+                        <CardContent>
+                        <div className="text-2xl font-bold">3.2 Days</div>
+                        <p className="text-xs text-muted-foreground">
+                            across all departments
+                        </p>
+                        </CardContent>
                     </Card>
-                     <Card className="text-center">
-                        <CardHeader>
-                            <CardTitle className="text-4xl font-bold text-primary">15,632</CardTitle>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent><p className="text-muted-foreground">Active Users</p></CardContent>
+                        <CardContent>
+                        <div className="text-2xl font-bold">15,632</div>
+                        <p className="text-xs text-muted-foreground">
+                            making a difference
+                        </p>
+                        </CardContent>
                     </Card>
-                     <Card className="text-center">
-                        <CardHeader>
-                            <CardTitle className="text-4xl font-bold text-primary">12</CardTitle>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Departments Connected
+                        </CardTitle>
+                        <Building className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent><p className="text-muted-foreground">Departments Connected</p></CardContent>
+                        <CardContent>
+                        <div className="text-2xl font-bold">12</div>
+                        <p className="text-xs text-muted-foreground">
+                            working together efficiently
+                        </p>
+                        </CardContent>
                     </Card>
                 </div>
             </div>
