@@ -94,9 +94,8 @@ export default function CommunityMap() {
     return <Skeleton className="w-full h-full rounded-lg" />;
   }
   
-  const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`;
-  const mapboxAttribution = '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+  const osmUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden shadow-lg">
@@ -107,8 +106,8 @@ export default function CommunityMap() {
         className='z-0'
       >
         <TileLayer
-          url={mapboxUrl}
-          attribution={mapboxAttribution}
+          url={osmUrl}
+          attribution={osmAttribution}
         />
         <RecenterAutomatically lat={mapCenter[0]} lng={mapCenter[1]} />
         
