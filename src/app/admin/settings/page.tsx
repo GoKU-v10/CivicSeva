@@ -37,14 +37,14 @@ export default function AdminSettingsPage() {
             <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
                     <AvatarImage src="https://picsum.photos/seed/admin/100/100" alt="Admin avatar" />
-                    <AvatarFallback>AU</AvatarFallback>
+                    <AvatarFallback>S</AvatarFallback>
                 </Avatar>
                 <Button variant="outline">Change Photo</Button>
             </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="Admin User" />
+              <Input id="name" defaultValue="Siddharam" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>

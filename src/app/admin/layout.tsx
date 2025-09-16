@@ -51,10 +51,10 @@ export default function AdminLayout({
                        <Button variant="ghost" className="flex items-center gap-2">
                          <Avatar className="h-9 w-9">
                             <AvatarImage src="https://picsum.photos/seed/admin/80/80" />
-                            <AvatarFallback>A</AvatarFallback>
+                            <AvatarFallback>S</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col items-start">
-                            <span className="text-sm font-semibold">Admin User</span>
+                            <span className="text-sm font-semibold">Siddharam</span>
                             <span className="text-xs text-muted-foreground">Administrator</span>
                         </div>
                        </Button>
