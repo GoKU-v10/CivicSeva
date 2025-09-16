@@ -18,7 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description';
-import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle, LocateFixed } from 'lucide-react';
+import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
+import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle, LocateFixed, Camera } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -27,6 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { createIssueAction } from '@/lib/actions';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
 
 const reportIssueSchema = z.object({
@@ -68,6 +70,10 @@ export function ReportIssueForm() {
 
     const [isListening, setIsListening] = useState(false);
     const recognitionRef = useRef<any>(null);
+
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
 
     const form = useForm<z.infer<typeof reportIssueSchema>>({
@@ -151,7 +157,7 @@ export function ReportIssueForm() {
             setIsFetchingLocation(false);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [form]);
+    }, []);
 
     useEffect(() => {
         detectLocation();
@@ -160,22 +166,49 @@ export function ReportIssueForm() {
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-            const previewUrls = files.map(file => URL.createObjectURL(file));
-            setPhotoPreviews(previewUrls);
-
-            const dataUris = await Promise.all(
-                files.map(file => {
-                    return new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result as string);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-                })
-            );
-            setPhotoDataUris(dataUris);
+            processFiles(files);
         }
     };
+
+    const processFiles = async (files: File[]) => {
+         const previewUrls = files.map(file => URL.createObjectURL(file));
+        setPhotoPreviews(prev => [...prev, ...previewUrls]);
+
+        const dataUris = await Promise.all(
+            files.map(file => {
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            })
+        );
+        setPhotoDataUris(prev => [...prev, ...dataUris]);
+        form.setValue('photos', [...(form.getValues('photos') || []), ...files], { shouldValidate: true });
+
+        // Trigger AI category suggestion
+        if (dataUris.length > 0 && location.latitude && location.longitude) {
+            startSuggestionTransition(async () => {
+                try {
+                    const result = await categorizeIssue({
+                        photoDataUri: dataUris[0],
+                        description: '', // Can be empty for initial category suggestion
+                        location: {
+                            latitude: location.latitude!,
+                            longitude: location.longitude!,
+                        }
+                    });
+                    if (result && result.category) {
+                        setAiSuggestion(result);
+                        form.setValue('category', result.category, { shouldValidate: true });
+                    }
+                } catch (error) {
+                    console.error("AI categorization failed:", error);
+                }
+            });
+        }
+    }
     
     const handleSuggestDescription = () => {
         if (photoDataUris.length === 0 || !location.latitude) {
@@ -184,16 +217,21 @@ export function ReportIssueForm() {
         }
 
         startSuggestionTransition(async () => {
-            const result = await suggestIssueDescription({
-                photoDataUri: photoDataUris[0],
-                locationData: JSON.stringify({ lat: location.latitude, lon: location.longitude }),
-            });
+            try {
+                const result = await suggestIssueDescription({
+                    photoDataUri: photoDataUris[0],
+                    locationData: JSON.stringify({ lat: location.latitude, lon: location.longitude }),
+                });
 
-            if (result.suggestedDescription) {
-                form.setValue('description', result.suggestedDescription);
-                toast({ title: 'Success', description: 'AI has generated a description for you.' });
-            } else {
-                toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: 'Could not generate a suggestion.' });
+                if (result.suggestedDescription) {
+                    form.setValue('description', result.suggestedDescription, { shouldValidate: true });
+                    toast({ title: 'Success', description: 'AI has generated a description for you.' });
+                } else {
+                    toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: 'Could not generate a suggestion.' });
+                }
+            } catch (error) {
+                 toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: 'An error occurred while generating the description.' });
+                 console.error(error);
             }
         });
     };
@@ -290,6 +328,59 @@ export function ReportIssueForm() {
         }
     };
     
+    useEffect(() => {
+        if (!isCameraOpen) {
+            // Stop camera stream when dialog closes
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+            }
+            return;
+        }
+
+        const getCameraPermission = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                setHasCameraPermission(true);
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                setHasCameraPermission(false);
+                toast({
+                    variant: 'destructive',
+                    title: 'Camera Access Denied',
+                    description: 'Please enable camera permissions in your browser settings.',
+                });
+            }
+        };
+
+        getCameraPermission();
+    }, [isCameraOpen, toast]);
+
+    const handleCapture = () => {
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const context = canvas.getContext('2d');
+            if (context) {
+                context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+                const dataUri = canvas.toDataURL('image/jpeg');
+                
+                // Convert data URI to File
+                fetch(dataUri)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        processFiles([file]);
+                    });
+            }
+            setIsCameraOpen(false);
+        }
+    };
+    
     const descriptionLength = form.watch('description')?.length || 0;
 
     return (
@@ -317,7 +408,7 @@ export function ReportIssueForm() {
                                     </AlertDescription>
                                 </Alert>
                             )}
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Select an issue category" />
@@ -358,9 +449,39 @@ export function ReportIssueForm() {
                                             handlePhotoChange(e);
                                         }} 
                                     />
-                                    <div className="p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50" onClick={() => photoInputRef.current?.click()}>
-                                        <ImageIcon className="mx-auto size-12 text-muted-foreground" />
-                                        <p className="mt-2 text-sm text-muted-foreground">Drag & drop files here, or click to browse.</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 flex flex-col items-center justify-center" onClick={() => photoInputRef.current?.click()}>
+                                            <ImageIcon className="mx-auto size-10 text-muted-foreground" />
+                                            <p className="mt-2 text-sm text-muted-foreground">Upload File</p>
+                                        </div>
+                                         <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
+                                            <DialogTrigger asChild>
+                                                <div className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-muted/50 flex flex-col items-center justify-center">
+                                                    <Camera className="mx-auto size-10 text-muted-foreground" />
+                                                    <p className="mt-2 text-sm text-muted-foreground">Use Camera</p>
+                                                </div>
+                                            </DialogTrigger>
+                                            <DialogContent className="max-w-md">
+                                                <DialogHeader>
+                                                <DialogTitle>Live Camera</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="space-y-4">
+                                                    <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay muted playsInline />
+                                                     {hasCameraPermission === false && (
+                                                        <Alert variant="destructive">
+                                                            <AlertTriangle className="h-4 w-4" />
+                                                            <AlertTitle>Camera Access Denied</AlertTitle>
+                                                            <AlertDescription>
+                                                                Please allow camera access in your browser settings to use this feature.
+                                                            </AlertDescription>
+                                                        </Alert>
+                                                    )}
+                                                    <Button onClick={handleCapture} className="w-full" disabled={!hasCameraPermission}>
+                                                        <Camera className="mr-2" /> Capture Photo
+                                                    </Button>
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
                                     </div>
                                     {photoPreviews.length > 0 && (
                                         <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
