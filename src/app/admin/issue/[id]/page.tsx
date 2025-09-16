@@ -1,0 +1,312 @@
+
+'use client';
+
+import { issues as initialIssues } from "@/lib/data";
+import type { Issue, IssueUpdate, IssueImage } from "@/lib/types";
+import { useParams, notFound, useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { IssueStatusBadge } from "@/components/issue-status-badge";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import Image from "next/image";
+import { format } from "date-fns";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { priorities } from "../../components/columns";
+
+
+function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
+    const [formattedTimestamp, setFormattedTimestamp] = useState('');
+
+    useEffect(() => {
+        setFormattedTimestamp(format(new Date(item.timestamp), "PPP p"));
+    }, [item.timestamp]);
+    
+    return (
+        <div className="flex gap-4">
+            <div className="flex flex-col items-center">
+                <div className="flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground">
+                    <CheckCircle2 className="size-4" />
+                </div>
+                {!isLast && <div className="w-px h-full bg-border flex-1" />}
+            </div>
+            <div className="pb-8">
+                <p className="font-semibold">{item.status}</p>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">{formattedTimestamp || '...'}</p>
+            </div>
+        </div>
+    )
+}
+
+function ImageGallery({ images }: { images: IssueImage[] }) {
+    if (!images || images.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 bg-muted rounded-lg border-2 border-dashed">
+                <div className="text-center text-muted-foreground">
+                    <AlertTriangle className="mx-auto size-8 mb-2"/>
+                    <p className="font-semibold">No Images Available</p>
+                </div>
+            </div>
+        );
+    }
+    return (
+        <Carousel className="w-full">
+            <CarouselContent>
+                {images.map((image, index) => (
+                <CarouselItem key={index}>
+                    <div className="p-1">
+                        <Card>
+                            <CardContent className="relative aspect-video flex items-center justify-center p-6">
+                                <Image src={image.url} alt={image.caption} fill className="object-cover rounded-lg" data-ai-hint="issue photo" />
+                                <Badge className="absolute bottom-2 left-2">{image.caption}</Badge>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex -left-4 md:-left-12" />
+            <CarouselNext className="hidden md:flex -right-4 md:-right-12" />
+        </Carousel>
+    )
+}
+
+
+function AdminIssueDetailSkeleton() {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-8 w-1/4" />
+        <div>
+            <Skeleton className="h-6 w-1/4 mb-2" />
+            <Skeleton className="h-9 w-3/4" />
+        </div>
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="w-full aspect-video" />
+                    </CardContent>
+                </Card>
+                <Card>
+                     <CardHeader>
+                        <Skeleton className="h-6 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                       <div className="space-y-4">
+                            <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                       </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                         <Skeleton className="h-6 w-1/3" />
+                    </CardHeader>
+                     <CardContent className="space-y-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                     </CardContent>
+                </Card>
+            </div>
+        </div>
+      </div>
+    );
+}
+
+
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState('');
+    useEffect(() => {
+        if (dateString) {
+          try {
+            setFormattedDate(format(new Date(dateString), 'PPP'));
+          } catch (e) {
+            console.error("Invalid date format for", dateString);
+            setFormattedDate("Invalid Date");
+          }
+        }
+    }, [dateString]);
+    return <span>{formattedDate || "..."}</span>;
+}
+
+export default function AdminIssueDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const id = params.id as string;
+    const [issue, setIssue] = useState<Issue | null | undefined>(undefined);
+
+    useEffect(() => {
+        if (!id) return;
+        
+        const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
+        const allIssues = [...localIssues, ...initialIssues];
+        const foundIssue = allIssues.find(i => i.id === id);
+        
+        setIssue(foundIssue || null);
+
+    }, [id]);
+
+    useEffect(() => {
+        if(issue === null) {
+            notFound();
+        }
+    }, [issue]);
+
+    if (issue === undefined) {
+        return <AdminIssueDetailSkeleton />;
+    }
+
+    const priority = priorities.find(p => p.value === issue.priority);
+
+    return (
+        <div className="space-y-8">
+             <Button variant="outline" size="sm" onClick={() => router.back()}>
+                <ArrowLeft className="mr-2" />
+                Back to Dashboard
+            </Button>
+            
+            <div className="flex justify-between items-start">
+                <div>
+                    <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
+                    <h1 className="text-3xl font-bold">{issue.title}</h1>
+                </div>
+                <IssueStatusBadge status={issue.status} className="text-base py-1 px-3" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Description</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                           <p className="text-muted-foreground">{issue.description}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Photo Gallery</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ImageGallery images={issue.images} />
+                        </CardContent>
+                    </Card>
+
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Workflow /> Issue Timeline</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div>
+                                {issue.updates.map((update, index) => (
+                                    <TimelineItem key={index} item={update} isLast={index === issue.updates.length - 1} />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Internal Notes</CardTitle>
+                            <CardDescription>Notes are only visible to other admins and officials.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           <div className="space-y-4">
+                               <div className="flex gap-4">
+                                   <Textarea placeholder="Add an internal note..." />
+                                   <Button>
+                                       <MessageSquare className="mr-2" />
+                                       Add Note
+                                   </Button>
+                               </div>
+                           </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 text-sm">
+                            <div>
+                                <h4 className="font-semibold">Category</h4>
+                                <Badge variant="secondary" className="mt-1">{issue.category}</Badge>
+                            </div>
+                            <Separator />
+                             {priority && (
+                                <>
+                                <div>
+                                    <h4 className="font-semibold">Priority</h4>
+                                    <div className="flex items-center text-sm mt-1">
+                                        <priority.icon className="mr-1.5 h-4 w-4 text-muted-foreground" />
+                                        <span>{priority.label}</span>
+                                    </div>
+                                </div>
+                                <Separator />
+                                </>
+                             )}
+                            <div className="flex items-start gap-2.5">
+                                <Building className="size-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                    <h4 className="font-semibold">Department</h4>
+                                    <p className="text-muted-foreground">{issue.department}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                                <MapPin className="size-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                    <h4 className="font-semibold">Location</h4>
+                                    <p className="text-muted-foreground">{issue.location.address}</p>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-2.5">
+                                <Calendar className="size-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                    <h4 className="font-semibold">Reported On</h4>
+                                    <p className="text-muted-foreground">
+                                        <FormattedDate dateString={issue.reportedAt} />
+                                    </p>
+                                </div>
+                            </div>
+                            {issue.eta && (
+                                <div className="flex items-start gap-2.5">
+                                    <Clock className="size-4 text-muted-foreground mt-0.5" />
+                                    <div>
+                                        <h4 className="font-semibold">Est. Completion</h4>
+                                        <p className="text-muted-foreground">
+                                            <FormattedDate dateString={issue.eta} />
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><User /> Citizen Details</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                           <p className="text-sm text-muted-foreground">
+                            This feature is coming soon. You'll be able to see details about the citizen who reported the issue here.
+                           </p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    )
+}

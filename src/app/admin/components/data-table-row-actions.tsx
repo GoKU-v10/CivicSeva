@@ -1,7 +1,7 @@
 
 "use client"
 
-import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building, Trash2 } from "lucide-react"
+import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building, Trash2, Eye } from "lucide-react"
 import { Row } from "@tanstack/react-table"
 import Link from "next/link"
 
@@ -69,6 +69,13 @@ export function DataTableRowActions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[180px]">
+        <DropdownMenuItem asChild>
+          <Link href={`/admin/issue/${issue.id}`}>
+             <Eye className="mr-2 h-4 w-4" />
+            View Details
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <Building className="mr-2 h-4 w-4" />
@@ -107,11 +114,6 @@ export function DataTableRowActions<TData>({
             </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href={`/track/${issue.id}`}>
-            View Details
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem className="text-red-600" onClick={deleteIssue}>
           <Trash2 className="mr-2 h-4 w-4" />
           Delete Issue
