@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, LogOut, ShieldCheck, UserCog, LayoutGrid, List, Settings } from "lucide-react";
+import { Bell, LogOut, ShieldCheck, UserCog, LayoutGrid, List, Settings, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -37,6 +37,12 @@ export default function AdminLayout({
                     <Link href="/admin/assignment-board">
                         <LayoutGrid className="mr-2" />
                         Assignment Board
+                    </Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                    <Link href="/admin/analytics">
+                        <BarChart3 className="mr-2" />
+                        Analytics
                     </Link>
                 </Button>
             </nav>
