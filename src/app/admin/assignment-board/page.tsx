@@ -45,7 +45,7 @@ export default function AssignmentBoardPage() {
             handleIssueUpdate(result.issue);
             toast({
                 title: "Department Assigned",
-                description: `Issue #${issueId} assigned to ${department}.`,
+                description: `Issue #${issueId.substring(0,6)} assigned to ${department}.`,
             });
         } else {
             toast({
@@ -59,7 +59,8 @@ export default function AssignmentBoardPage() {
 
      useEffect(() => {
         // This effect runs on the client-side
-        const storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        const storedIssuesJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        const storedIssues: Issue[] = storedIssuesJSON ? JSON.parse(storedIssuesJSON) : [];
         
         // Combine and remove duplicates, preferring stored (newer) issues
         const issueMap = new Map<string, Issue>();

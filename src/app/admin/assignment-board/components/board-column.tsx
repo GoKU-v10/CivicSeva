@@ -1,5 +1,4 @@
 
-
 'use client'
 
 import type { Issue } from "@/lib/types";
@@ -37,7 +36,7 @@ export function BoardColumn({ title, issues, onDrop, onDragOver, onDragStart }: 
                     ))}
                      {issues.length === 0 && (
                         <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg">
-                            <p className="text-sm text-muted-foreground">No issues here.</p>
+                            <p className="text-sm text-muted-foreground">Drop issues here.</p>
                         </div>
                     )}
                 </div>

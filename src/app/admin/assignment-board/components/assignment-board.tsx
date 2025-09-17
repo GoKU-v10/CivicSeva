@@ -25,8 +25,20 @@ export function AssignmentBoard({ unassigned, publicWorks, sanitation, transport
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>, department: string) => {
         e.preventDefault();
-        if (draggedIssueId) {
-            await onAssignDepartment(draggedIssueId, department);
+        if (draggedIssueId && department !== "Unassigned") {
+            try {
+                await onAssignDepartment(draggedIssueId, department);
+                toast({
+                    title: "Issue Assigned",
+                    description: `Successfully assigned issue to ${department}.`,
+                });
+            } catch (error) {
+                 toast({
+                    variant: "destructive",
+                    title: "Assignment Failed",
+                    description: "Could not assign the issue. Please try again.",
+                });
+            }
             setDraggedIssueId(null);
         }
     };
