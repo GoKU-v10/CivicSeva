@@ -194,31 +194,6 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
     );
 };
 
-const Cloud = ({ position }: { position: [number, number, number] }) => {
-    const ref = useRef<THREE.Mesh>(null!);
-  
-    useFrame((state) => {
-      // Move clouds slowly from right to left
-      ref.current.position.x -= 0.01;
-      // If cloud moves off screen, reset its position to the right
-      if (ref.current.position.x < -30) {
-        ref.current.position.x = 30;
-      }
-    });
-  
-    return (
-      <mesh ref={ref} position={position}>
-        <planeGeometry args={[5 + Math.random() * 5, 2 + Math.random() * 2]} />
-        <meshStandardMaterial
-          color="#FFFFFF"
-          transparent
-          opacity={0.7}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-    );
-};
-
 const Tree = ({ position }: { position: [number, number, number] }) => {
     return (
         <group position={position}>
@@ -303,20 +278,6 @@ const City = () => {
         return buildingData;
     }, []);
 
-    const clouds = useMemo(() => {
-        const cloudData = [];
-        for (let i = 0; i < 10; i++) {
-          cloudData.push({
-            position: [
-              (Math.random() - 0.5) * 60,
-              15 + Math.random() * 5,
-              -15 - Math.random() * 10,
-            ] as [number, number, number],
-          });
-        }
-        return cloudData;
-      }, []);
-
     const parkTrees = useMemo(() => {
         const treeData = [];
         for (let i=0; i<5; i++) {
@@ -335,9 +296,6 @@ const City = () => {
         <group>
             {buildings.map((b, index) => (
                 <Building key={`building-${index}`} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} isDigitalHub={b.isDigitalHub} />
-            ))}
-             {clouds.map((c, index) => (
-                <Cloud key={`cloud-${index}`} position={c.position} />
             ))}
              {parkTrees.map((t, index) => (
                 <Tree key={`tree-${index}`} position={t.position} />
@@ -440,5 +398,7 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
 
     
