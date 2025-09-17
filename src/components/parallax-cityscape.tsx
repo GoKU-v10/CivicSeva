@@ -393,17 +393,14 @@ const City = () => {
 
 const Scene = () => {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null!);
-  const sunRef = useRef<THREE.Mesh>(null!);
-  const lightRef = useRef<THREE.DirectionalLight>(null!);
   const scrollY = useRef(0);
 
   const handleScroll = () => {
     const newScrollY = window.scrollY / (document.body.scrollHeight - window.innerHeight);
     scrollY.current = isNaN(newScrollY) ? 0 : newScrollY;
-
   };
 
-    useEffect(() => {
+  useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -431,24 +428,15 @@ const Scene = () => {
     }
     
     camera.lookAt(0, 2, 0);
-
-    if (sunRef.current && lightRef.current) {
-        const sunAngle = elapsedTime * 0.05;
-        sunRef.current.position.x = Math.cos(sunAngle) * 40;
-        sunRef.current.position.y = Math.sin(sunAngle) * 20 + 20;
-        sunRef.current.position.z = -30;
-
-        lightRef.current.position.copy(sunRef.current.position);
-    }
   });
 
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={0.8} />
       <directionalLight 
-        ref={lightRef}
-        intensity={1.8}
+        position={[20, 40, -30]}
+        intensity={2.5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -458,9 +446,9 @@ const Scene = () => {
         shadow-camera-top={50}
         shadow-camera-bottom={-50}
       />
-      <mesh ref={sunRef}>
+      <mesh position={[20, 40, -30]}>
         <sphereGeometry args={[3, 32, 32]} />
-        <meshStandardMaterial emissive="#FFDD00" color="#FFDD00" />
+        <meshStandardMaterial emissive="#FFDD00" color="#FFDD00" emissiveIntensity={3} />
       </mesh>
       <fog attach="fog" args={['#87CEEB', 25, 80]} />
       <City />
@@ -479,3 +467,5 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
