@@ -108,10 +108,10 @@ export async function updateIssueAction(formData: FormData) {
             localIssues: formData.get('localIssues'),
         });
         
-        const allIssues = [...initialIssues];
+        // Combine initial data with data from local storage
+        const allIssues: Issue[] = [...initialIssues];
         if (validatedData.localIssues) {
             const parsedLocalIssues = JSON.parse(validatedData.localIssues) as Issue[];
-            // Add local issues, avoiding duplicates
             parsedLocalIssues.forEach(localIssue => {
                 if (!allIssues.some(i => i.id === localIssue.id)) {
                     allIssues.push(localIssue);
@@ -181,12 +181,16 @@ export async function updateIssueDetailsAction(formData: FormData) {
     const { issueId, status, department, localIssues: localIssuesJSON } = validatedData;
     
     // Combine initial issues with issues from localStorage
-    const allIssues = [...initialIssues];
+    const allIssues: Issue[] = [...initialIssues];
     if (localIssuesJSON) {
         try {
             const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
             parsedLocalIssues.forEach(localIssue => {
-                if (!allIssues.some(i => i.id === localIssue.id)) {
+                 // Replace if exists, otherwise add
+                const existingIndex = allIssues.findIndex(i => i.id === localIssue.id);
+                if (existingIndex > -1) {
+                    allIssues[existingIndex] = localIssue;
+                } else {
                     allIssues.push(localIssue);
                 }
             });
@@ -204,12 +208,12 @@ export async function updateIssueDetailsAction(formData: FormData) {
     let updateDescription = '';
     let statusUpdated = false;
 
-    if (department) {
+    if (department && department !== issueToUpdate.department) {
         issueToUpdate.department = department;
         updateDescription = `Assigned to ${department}.`;
     }
 
-    if (status) {
+    if (status && status !== issueToUpdate.status) {
         issueToUpdate.status = status;
         updateDescription = `Status updated to ${status}.`;
         if (status === 'Resolved') {
@@ -219,14 +223,15 @@ export async function updateIssueDetailsAction(formData: FormData) {
     }
     
     if(!updateDescription) {
-        throw new Error("No update data provided.");
+        // If no change was made but it was called, maybe just succeed silently
+        return { success: true, issue: issueToUpdate };
     }
 
-    issueToUpdate.updates.push({
+    issueToUpdate.updates = [...issueToUpdate.updates, {
         timestamp: new Date().toISOString(),
         status: statusUpdated ? status! : issueToUpdate.status,
         description: updateDescription,
-    });
+    }];
     
     // In a real app, this would write to the DB. For now, we return the updated object.
     // The client will be responsible for updating its state and localStorage.

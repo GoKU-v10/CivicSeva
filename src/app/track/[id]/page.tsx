@@ -275,8 +275,14 @@ export default function IssueDetailPage() {
         const issueIndex = localIssues.findIndex(i => i.id === updatedIssue.id);
         if(issueIndex > -1) {
             localIssues[issueIndex] = updatedIssue;
-            localStorage.setItem('civicseva_issues', JSON.stringify(localIssues));
+        } else {
+            // if it's a new issue not in localstorage yet (e.g. from initialData), add it
+            const initialIssueIndex = initialIssues.findIndex(i => i.id === updatedIssue.id);
+            if(initialIssueIndex === -1) {
+                 localIssues.unshift(updatedIssue);
+            }
         }
+        localStorage.setItem('civicseva_issues', JSON.stringify(localIssues));
     }
 
     useEffect(() => {
