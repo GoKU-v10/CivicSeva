@@ -66,7 +66,7 @@ export default function AdminPage() {
     const pendingAssignments = allIssues.filter(i => i.department === 'Pending Assignment').length;
     
     // Dummy data for avg resolution time
-    const avgResolutionTime = "4.2 Days";
+    const avgResolutionTime = "5.2 Days";
 
     if (isLoading) {
         return (

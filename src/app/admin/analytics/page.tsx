@@ -44,7 +44,7 @@ export default function AdminAnalyticsPage() {
     ).length;
 
     // Dummy data for example purposes
-    const avgResolutionTime = 3.2; // in days
+    const avgResolutionTime = 5.2; // in days
     const userSatisfaction = 4.5; // out of 5
 
      if (isLoading) {
