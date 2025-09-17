@@ -39,7 +39,7 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
 
     const buildingData = useMemo(() => {
         const parts = [];
-        let mainHeight = isDigitalHub ? 12 : 4 + Math.random() * 10;
+        let mainHeight = 4 + Math.random() * 10;
         let mainWidth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
         let mainDepth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
         
@@ -479,7 +479,7 @@ const Scene = () => {
       </mesh>
       <EffectComposer>
         <Vignette eskil={false} offset={0.15} darkness={0.5} />
-        <BrightnessContrast brightness={0.05} contrast={0.15} />
+        <BrightnessContrast brightness={-0.05} contrast={0.15} />
       </EffectComposer>
     </>
   );
