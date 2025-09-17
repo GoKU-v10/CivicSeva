@@ -258,7 +258,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={1} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={2} />
             </mesh>
         </group>
     )
@@ -479,7 +479,7 @@ const Scene = () => {
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
       <ambientLight intensity={1.5} color="#ff9a9e" />
       <directionalLight 
-        color="#fad0c4"
+        color="#FDE4D6"
         position={[40, 20, 30]}
         intensity={8}
         castShadow
@@ -497,7 +497,7 @@ const Scene = () => {
       <City />
        <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={2} />
+            <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={2} />
       </mesh>
       <EffectComposer>
         <Vignette eskil={false} offset={0.15} darkness={0.5} />
