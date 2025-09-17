@@ -18,7 +18,7 @@ import { useEffect, useState, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { priorities } from "../../components/columns";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { updateIssueDetailsAction } from "@/lib/actions";
@@ -435,3 +435,5 @@ export default function AdminIssueDetailPage() {
         </div>
     )
 }
+
+    
