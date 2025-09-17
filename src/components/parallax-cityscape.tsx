@@ -196,17 +196,25 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
     );
 };
 
-const Tree = ({ position }: { position: [number, number, number] }) => {
+const Tree = ({ position, type = 'cone' }: { position: [number, number, number], type?: 'cone' | 'sphere' }) => {
     return (
         <group position={position}>
             <mesh position={[0, 0.5, 0]} castShadow>
                 <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
                 <meshLambertMaterial color="#8B4513" />
             </mesh>
-            <mesh position={[0, 1.5, 0]} castShadow>
-                <coneGeometry args={[1, 2, 8]} />
-                <meshLambertMaterial color="#228B22" />
-            </mesh>
+            {type === 'cone' && (
+                <mesh position={[0, 1.5, 0]} castShadow>
+                    <coneGeometry args={[1, 2, 8]} />
+                    <meshLambertMaterial color="#2E8B57" />
+                </mesh>
+            )}
+            {type === 'sphere' && (
+                 <mesh position={[0, 1.5, 0]} castShadow>
+                    <sphereGeometry args={[0.8, 16, 16]} />
+                    <meshLambertMaterial color="#3CB371" />
+                </mesh>
+            )}
         </group>
     )
 }
@@ -249,7 +257,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={5} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={50} />
             </mesh>
         </group>
     )
@@ -293,17 +301,14 @@ const City = () => {
     const buildings = useMemo(() => {
         const buildingData = [];
         
-        // --- Define fixed positions for special buildings ---
         const hospitalPosition: [number, number, number] = [-15, 0, 8];
         const digitalHubPosition: [number, number, number] = [15, 0, 8];
 
-        // Place Hospital
         buildingData.push({
             position: hospitalPosition,
             isHospital: true,
         });
 
-        // Place Digital Hub
         buildingData.push({
             position: digitalHubPosition,
             isDigitalHub: true,
@@ -312,15 +317,12 @@ const City = () => {
 
         for (let i = -20; i <= 20; i += 8) {
             for (let j = -30; j <= 8; j += 8) {
-                // Add some randomness to position to avoid a perfect grid
                 const x = i + (Math.random() - 0.5) * 4;
                 const z = j + (Math.random() - 0.5) * 4;
                 
-                // Keep park area clear
                 if (Math.abs(x) < 8 && z > -8) continue;
-                 if (Math.abs(x) > 4 && x < 12 && z > -8) continue; // Keep main road clear
+                 if (Math.abs(x) > 4 && x < 12 && z > -8) continue;
 
-                // Avoid placing buildings on top of special buildings
                 const distToHospital = Math.sqrt(Math.pow(x - hospitalPosition[0], 2) + Math.pow(z - hospitalPosition[2], 2));
                 if (distToHospital < 6) continue;
 
@@ -346,8 +348,23 @@ const City = () => {
                     (Math.random() - 0.5) * 12,
                     0,
                     (Math.random() - 0.5) * 12 + 2
-                ] as [number, number, number]
+                ] as [number, number, number],
+                type: Math.random() > 0.5 ? 'cone' : 'sphere'
             });
+        }
+        return treeData;
+    }, []);
+
+    const streetTrees = useMemo(() => {
+        const treeData = [];
+        for (let z = -30; z <= 10; z += 6) {
+            if (z > -10 && z < 10) continue; // Don't block park entrance
+            treeData.push({position: [8.5, 0, z] as [number, number, number], type: Math.random() > 0.5 ? 'cone' : 'sphere'});
+            treeData.push({position: [-8.5, 0, z] as [number, number, number], type: Math.random() > 0.5 ? 'cone' : 'sphere'});
+        }
+        for (let x = -20; x <= 20; x += 8) {
+             if (Math.abs(x) < 4) continue;
+             treeData.push({position: [x, 0, -8.5] as [number, number, number], type: Math.random() > 0.5 ? 'cone' : 'sphere'});
         }
         return treeData;
     }, []);
@@ -355,7 +372,7 @@ const City = () => {
     const streetlights = useMemo(() => {
         const lightData = [];
         for (let z = -30; z <= 12; z += 10) {
-             if (z > -8 && z < 12) continue; // Don't put lights in park
+            if (z > -8 && z < 12) continue; 
             lightData.push({ position: [8, 0, z] as [number, number, number], rotation: [0, Math.PI, 0] as [number, number, number] });
             lightData.push({ position: [-8, 0, z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] });
         }
@@ -375,8 +392,23 @@ const City = () => {
                 <meshLambertMaterial color="#4A4A4A" />
             </mesh>
             <Road position={[0, 0, -10]} size={[40, 0.1, 4]} markings={true} />
-            <Road position={[10, 0, 0]} size={[4, 0.1, 40]} markings={true} />
-            <Road position={[-10, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[10, 0, 0]} size={[4, 0.1, 40]} markings={false} />
+            <Road position={[-10, 0, 0]} size={[4, 0.1, 40]} markings={false} />
+
+            {/* Roadside grass strips */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, -8.5]} receiveShadow>
+                <planeGeometry args={[40, 1]} />
+                <meshLambertMaterial color="#345834" />
+            </mesh>
+             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[8.5, -0.04, -10]} receiveShadow>
+                <planeGeometry args={[1, 40]} />
+                <meshLambertMaterial color="#345834" />
+            </mesh>
+             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-8.5, -0.04, -10]} receiveShadow>
+                <planeGeometry args={[1, 40]} />
+                <meshLambertMaterial color="#345834" />
+            </mesh>
+            
             
             {/* Park Area */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
@@ -388,7 +420,10 @@ const City = () => {
                 <Building key={`building-${index}`} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} isTan={b.isTan} isDigitalHub={b.isDigitalHub} />
             ))}
              {parkTrees.map((t, index) => (
-                <Tree key={`tree-${index}`} position={t.position} />
+                <Tree key={`park-tree-${index}`} position={t.position} type={t.type} />
+            ))}
+            {streetTrees.map((t, index) => (
+                <Tree key={`street-tree-${index}`} position={t.position} type={t.type} />
             ))}
             {streetlights.map((sl, index) => (
                 <Streetlight key={`streetlight-${index}`} position={sl.position} rotation={sl.rotation} />
@@ -441,9 +476,9 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.5} />
+      <ambientLight intensity={1.5} color="#FFDDBB" />
       <directionalLight 
-        color="#ffffff"
+        color="#FFDDBB"
         position={[40, 20, -30]}
         intensity={3.5}
         castShadow
@@ -461,7 +496,7 @@ const Scene = () => {
       <City />
        <mesh position={[40, 20, -30]}>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
+            <meshStandardMaterial color="#FFDDBB" emissive="#FFDDBB" emissiveIntensity={2} />
       </mesh>
     </>
   );
@@ -478,3 +513,5 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
