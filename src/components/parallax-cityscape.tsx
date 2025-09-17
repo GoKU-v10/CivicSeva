@@ -349,7 +349,7 @@ const City = () => {
 
     const streetlights = useMemo(() => {
         const lightData = [];
-        for (let z = -30; z <= 8; z += 10) {
+        for (let z = -30; z <= 12; z += 10) {
             if (z > -8 && z < 12) continue; // Don't put lights in park
             lightData.push({ position: [8, 0, z] as [number, number, number], rotation: [0, Math.PI, 0] as [number, number, number] });
             lightData.push({ position: [-8, 0, z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] });
@@ -370,8 +370,8 @@ const City = () => {
                 <meshLambertMaterial color="#444444" />
             </mesh>
             <Road position={[0, 0, -10]} size={[40, 0.1, 4]} markings={true} />
-            <Road position={[15, 0, 0]} size={[4, 0.1, 40]} markings={true} />
-            <Road position={[-15, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[15, 0, -10]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[-15, 0, -10]} size={[4, 0.1, 40]} markings={true} />
 
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
                 <planeGeometry args={[14, 14]} />
@@ -435,10 +435,10 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1} />
+      <ambientLight intensity={1.2} />
       <directionalLight 
         position={[40, 50, -40]}
-        intensity={4}
+        intensity={5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -452,7 +452,7 @@ const Scene = () => {
         <sphereGeometry args={[3, 32, 32]} />
         <meshStandardMaterial emissive="#FFFFFF" color="#FFFFFF" emissiveIntensity={2} />
       </mesh>
-      <fog attach="fog" args={['#87CEEB', 25, 80]} />
+      <fog attach="fog" args={['#87CEEB', 30, 90]} />
       <City />
     </>
   );
@@ -469,5 +469,7 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
 
     
