@@ -12,12 +12,16 @@ import { IssueStatusBadge } from "@/components/issue-status-badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Image from "next/image";
 import { format } from "date-fns";
-import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow, ShieldQuestion } from "lucide-react";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow, ShieldQuestion, Upload } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { priorities } from "../../components/columns";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { updateIssueDetailsAction } from "@/lib/actions";
 
 
 function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
@@ -74,6 +78,102 @@ function ImageGallery({ images }: { images: IssueImage[] }) {
             <CarouselPrevious className="hidden md:flex -left-4 md:-left-12" />
             <CarouselNext className="hidden md:flex -right-4 md:-right-12" />
         </Carousel>
+    )
+}
+
+function AfterPhotoDialog({ issue, onIssueUpdate }: { issue: Issue, onIssueUpdate: (updatedIssue: Issue) => void }) {
+    const [open, setOpen] = useState(false);
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const photoInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setPhotoPreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                setPhotoDataUri(loadEvent.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!photoDataUri) {
+            toast({ variant: 'destructive', title: 'No Photo Selected', description: 'Please select a photo to upload.' });
+            return;
+        }
+
+        setIsSubmitting(true);
+        const formData = new FormData();
+        formData.append('issueId', issue.id);
+        formData.append('afterPhotoDataUri', photoDataUri);
+        
+        const localIssues = localStorage.getItem('civicseva_issues');
+        if (localIssues) {
+            formData.append('localIssues', localIssues);
+        }
+
+        const result = await updateIssueDetailsAction(formData);
+        
+        if (result.success && result.issue) {
+            onIssueUpdate(result.issue);
+            toast({ title: "Success!", description: "'After' photo uploaded successfully." });
+            setOpen(false);
+            setPhotoPreview(null);
+            setPhotoDataUri(null);
+        } else {
+            toast({ variant: 'destructive', title: 'Upload Failed', description: result.error });
+        }
+        setIsSubmitting(false);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                 <Button variant="outline" size="sm">
+                    <Upload className="mr-2" />
+                    Add 'After' Photo
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <form onSubmit={handleSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>Upload 'After' Photo</DialogTitle>
+                        <DialogDescription>
+                            Upload a photo showing the resolved issue. This will be visible to the public.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="photo">Photo File</Label>
+                            <Input id="photo" type="file" accept="image/*" onChange={handlePhotoChange} ref={photoInputRef} className="col-span-3" />
+                            {photoPreview && (
+                                <div className="relative aspect-video mt-2">
+                                    <Image 
+                                        src={photoPreview} 
+                                        alt="After photo preview" 
+                                        fill
+                                        className="object-cover rounded-md"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                            Upload Photo
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     )
 }
 
@@ -147,6 +247,24 @@ export default function AdminIssueDetailPage() {
     const id = params.id as string;
     const [issue, setIssue] = useState<Issue | null | undefined>(undefined);
 
+     const handleIssueUpdate = (updatedIssue: Issue) => {
+        setIssue(updatedIssue);
+        const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
+        const issueIndex = localIssues.findIndex(i => i.id === updatedIssue.id);
+        if (issueIndex > -1) {
+            localIssues[issueIndex] = updatedIssue;
+        } else {
+             const initialIssueIndex = initialIssues.findIndex(i => i.id === updatedIssue.id);
+             if (initialIssueIndex > -1) {
+                // This means the issue was from initialData, not yet in localStorage
+                // We don't add it directly, but let the main pages handle merging
+             } else {
+                 localIssues.unshift(updatedIssue);
+             }
+        }
+        localStorage.setItem('civicseva_issues', JSON.stringify(localIssues));
+    };
+
     useEffect(() => {
         if (!id) return;
         
@@ -201,8 +319,9 @@ export default function AdminIssueDetailPage() {
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row justify-between items-center">
                             <CardTitle>Photo Gallery</CardTitle>
+                             <AfterPhotoDialog issue={issue} onIssueUpdate={handleIssueUpdate} />
                         </CardHeader>
                         <CardContent>
                             <ImageGallery images={issue.images} />

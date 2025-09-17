@@ -6,7 +6,7 @@ import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
 import { revalidatePath } from 'next/cache';
 import { issues as initialIssues } from './data';
-import type { Issue, IssueCategory } from './types';
+import type { Issue, IssueCategory, IssueImage } from './types';
 
 const SuggestDescriptionSchema = z.object({
   photoDataUri: z.string(),
@@ -62,7 +62,7 @@ export async function createIssueAction(formData: FormData) {
             description: validatedData.description,
             imageUrl: validatedData.photoDataUri,
             imageHint: userCategory.toLowerCase(),
-            images: [{ url: validatedData.photoDataUri, caption: 'User submitted photo' }],
+            images: [{ url: validatedData.photoDataUri, caption: 'Before' }],
             location: {
                 latitude: validatedData.latitude,
                 longitude: validatedData.longitude,
@@ -162,6 +162,7 @@ const UpdateIssueDetailsSchema = z.object({
   issueId: z.string(),
   status: z.enum(['Reported', 'In Progress', 'Resolved']).optional().nullable(),
   department: z.string().optional().nullable(),
+  afterPhotoDataUri: z.string().optional().nullable(),
   localIssues: z.string().optional(),
 });
 
@@ -172,12 +173,13 @@ export async function updateIssueDetailsAction(formData: FormData) {
       issueId: formData.get('issueId'),
       status: formData.get('status'),
       department: formData.get('department'),
+      afterPhotoDataUri: formData.get('afterPhotoDataUri'),
       localIssues: formData.get('localIssues'),
     };
     
     const validatedData = UpdateIssueDetailsSchema.parse(rawData);
 
-    const { issueId, status, department, localIssues: localIssuesJSON } = validatedData;
+    const { issueId, status, department, afterPhotoDataUri, localIssues: localIssuesJSON } = validatedData;
     
     let allIssues: Issue[] = [...initialIssues];
     if (localIssuesJSON) {
@@ -225,6 +227,21 @@ export async function updateIssueDetailsAction(formData: FormData) {
             issueToUpdate.resolvedAt = new Date().toISOString();
         }
         statusUpdated = true;
+    }
+
+     if (afterPhotoDataUri) {
+        const afterPhoto: IssueImage = { url: afterPhotoDataUri, caption: 'After' };
+        const afterImageIndex = issueToUpdate.images.findIndex(img => img.caption.toLowerCase() === 'after');
+        if (afterImageIndex > -1) {
+            issueToUpdate.images[afterImageIndex] = afterPhoto;
+        } else {
+            issueToUpdate.images.push(afterPhoto);
+        }
+        if (updateDescription) {
+            updateDescription += ` Added 'After' photo.`
+        } else {
+            updateDescription = `Added 'After' photo.`
+        }
     }
     
     if(!updateDescription) {
