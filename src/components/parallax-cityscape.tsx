@@ -375,8 +375,8 @@ const City = () => {
                 <meshLambertMaterial color="#4A4A4A" />
             </mesh>
             <Road position={[0, 0, -10]} size={[40, 0.1, 4]} markings={true} />
-            <Road position={[10, 0, -10]} size={[4, 0.1, 40]} markings={true} />
-            <Road position={[-10, 0, -10]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[10, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[-10, 0, 0]} size={[4, 0.1, 40]} markings={true} />
             
             {/* Park Area */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
@@ -441,11 +441,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight color="#ffc085" intensity={0.5} />
+      <ambientLight intensity={1.5} />
       <directionalLight 
-        color="#ffd5a1"
+        color="#ffffff"
         position={[40, 20, -30]}
-        intensity={2.5}
+        intensity={3.5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -457,11 +457,11 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#ff8c42', 40, 120]} />
+      <fog attach="fog" args={['#ffad99', 40, 120]} />
       <City />
        <mesh position={[40, 20, -30]}>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#fff5e1" emissive="#fff5e1" emissiveIntensity={2} />
+            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
       </mesh>
     </>
   );
@@ -469,7 +469,7 @@ const Scene = () => {
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#ff8c42] via-[#ffb38a] to-[#ffc9a6]">
+    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#ff7e5f] via-[#ffad99] to-[#feb47b]">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
@@ -479,4 +479,5 @@ export default function ParallaxCityscape() {
   );
 }
 
+    
     
