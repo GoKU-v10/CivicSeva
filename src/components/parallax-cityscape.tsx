@@ -169,12 +169,12 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
                 <>
                     {/* WiFi Symbol */}
                     <group position={[0, 7.5, doorZPosition]}>
-                        <mesh position={[0, -0.4, 0]}>
+                        <mesh position={[0, 0, 0]}>
                             <sphereGeometry args={[0.2, 16, 16]} />
                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
                         </mesh>
                         {[1, 2, 3].map(i => (
-                            <mesh key={i} rotation={[0,0, -Math.PI / 4]}>
+                            <mesh key={i} rotation={[-Math.PI / 2, 0, 0]}>
                                 <torusGeometry args={[i * 0.4, 0.1, 8, 32, Math.PI / 2]} />
                                 <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
                             </mesh>
@@ -184,7 +184,7 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
                      {/* Glowing Lines */}
                      {[3, 5, 10].map(y => (
                         <mesh key={y} position={[0, y, 0]}>
-                            <boxGeometry args={[4.2, 0.15, 4.2]} />
+                            <boxGeometry args={[4.1, 0.15, 4.1]} />
                              <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
                         </mesh>
                      ))}
@@ -479,7 +479,3 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
-
-    
-
-    
