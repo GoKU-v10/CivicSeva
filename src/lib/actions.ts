@@ -78,9 +78,9 @@ export async function createIssueAction(formData: FormData) {
             ],
         };
 
-        // In a real app, you would save this to a database.
-        // For this demo, we'll prepend it to our in-memory array so the details page works on redirect.
-        initialIssues.unshift(newIssue);
+        // This is a server-side action. It doesn't have direct access to client localStorage.
+        // The client that calls this action will be responsible for adding the new issue
+        // to its local state and localStorage.
         
         return { success: true, message: 'Issue reported successfully!', issue: newIssue };
 
@@ -194,6 +194,7 @@ export async function updateIssueDetailsAction(formData: FormData) {
 
         } catch (e) {
             console.error("Failed to parse localIssues JSON:", e);
+            // Continue with initial issues if parsing fails
         }
     }
 
@@ -227,7 +228,7 @@ export async function updateIssueDetailsAction(formData: FormData) {
     }
     
     if(!updateDescription) {
-        // If no change was made but it was called, maybe just succeed silently
+        // If no change was made but it was called, succeed silently
         return { success: true, issue: issueToUpdate };
     }
 
@@ -237,6 +238,7 @@ export async function updateIssueDetailsAction(formData: FormData) {
         description: updateDescription,
     }];
     
+    // Return the completely updated issue object
     return { success: true, issue: issueToUpdate };
 
   } catch (error) {
@@ -266,26 +268,25 @@ export async function deleteIssueAction(formData: FormData) {
              try {
                 const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
                 const issueMap = new Map<string, Issue>();
+                // Add initial issues to map
                 allIssues.forEach(issue => issueMap.set(issue.id, issue));
+                // Add/overwrite with local issues
                 parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
                 allIssues = Array.from(issueMap.values());
             } catch (e) {
                 console.error("Failed to parse localIssues for deletion:", e);
+                // Continue with initial data if parsing fails
             }
         }
         
-        const issueIndex = allIssues.findIndex(i => i.id === issueId);
-        if (issueIndex === -1) {
+        const issueExists = allIssues.some(i => i.id === issueId);
+        if (!issueExists) {
             throw new Error(`Issue not found: ${issueId}`);
         }
 
         // In a real database, you'd perform a delete operation here.
-        // For our simulation, we remove it from the in-memory array.
-        // This change will only persist for the lifecycle of the server.
-        const initialIssueIndex = initialIssues.findIndex(i => i.id === issueId);
-        if (initialIssueIndex > -1) {
-            initialIssues.splice(initialIssueIndex, 1);
-        }
+        // For our simulation, we just confirm it can be deleted.
+        // The client-side will handle the actual removal from its state and localStorage.
         
         return { success: true, deletedIssueId: issueId };
 

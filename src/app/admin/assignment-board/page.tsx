@@ -19,16 +19,15 @@ export default function AssignmentBoardPage() {
 
     const handleIssueUpdate = (updatedIssue: Issue) => {
         setAllIssues(prevIssues => {
-            const issueIndex = prevIssues.findIndex(i => i.id === updatedIssue.id);
-            if (issueIndex > -1) {
-                const newIssues = [...prevIssues];
-                newIssues[issueIndex] = updatedIssue;
-                 // Update localStorage, only storing non-initial issues
-                const issuesToStore = newIssues.filter(i => !initialIssues.some(init => init.id === i.id));
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(issuesToStore));
-                return newIssues;
-            }
-            return prevIssues;
+            const newIssues = prevIssues.map(issue => 
+                issue.id === updatedIssue.id ? updatedIssue : issue
+            );
+            
+            // Update localStorage with the entire new list of issues
+            // We store all issues, not just deltas, to ensure consistency
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
+            
+            return newIssues;
         });
     };
 
@@ -37,10 +36,8 @@ export default function AssignmentBoardPage() {
         formData.append('issueId', issueId);
         formData.append('department', department);
         
-        const localIssuesJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (localIssuesJSON) {
-            formData.append('localIssues', localIssuesJSON);
-        }
+        // Pass the entire current state to the server action
+        formData.append('localIssues', JSON.stringify(allIssues));
 
         const result = await updateIssueDetailsAction(formData);
 
@@ -65,12 +62,15 @@ export default function AssignmentBoardPage() {
         const storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
         
         // Combine and remove duplicates, preferring stored (newer) issues
-        const combined = [...storedIssues, ...initialIssues];
-        const uniqueIssues = combined.filter((issue, index, self) =>
-            index === self.findIndex((t) => (
-                t.id === issue.id
-            ))
-        );
+        const issueMap = new Map<string, Issue>();
+
+        // Add initial issues first
+        initialIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+        // Overwrite with stored issues, which are more up-to-date
+        storedIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+        const uniqueIssues = Array.from(issueMap.values());
         
         setAllIssues(uniqueIssues);
         setIsLoading(false);

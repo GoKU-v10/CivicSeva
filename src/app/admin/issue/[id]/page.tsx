@@ -151,8 +151,13 @@ export default function AdminIssueDetailPage() {
         if (!id) return;
         
         const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
-        const allIssues = [...localIssues, ...initialIssues];
-        const foundIssue = allIssues.find(i => i.id === id);
+        
+        // Merge with initial data, giving preference to local (updated) data
+        const issueMap = new Map<string, Issue>();
+        initialIssues.forEach(issue => issueMap.set(issue.id, issue));
+        localIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+        const foundIssue = issueMap.get(id);
         
         setIssue(foundIssue || null);
 

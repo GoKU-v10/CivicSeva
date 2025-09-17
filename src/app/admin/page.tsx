@@ -17,21 +17,20 @@ export default function AdminPage() {
 
     const updateIssueState = (updatedIssue: Issue) => {
         setAllIssues(prevIssues => {
-            const issueIndex = prevIssues.findIndex(i => i.id === updatedIssue.id);
-            if (issueIndex > -1) {
-                const newIssues = [...prevIssues];
-                newIssues[issueIndex] = updatedIssue;
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues.filter(i => !initialIssues.some(init => init.id === i.id))));
-                return newIssues;
-            }
-            return prevIssues;
+            const newIssues = prevIssues.map(issue => 
+                issue.id === updatedIssue.id ? updatedIssue : issue
+            );
+            // Persist the entire updated list to localStorage
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
+            return newIssues;
         });
     };
 
     const removeIssueFromState = (issueId: string) => {
         setAllIssues(prevIssues => {
             const newIssues = prevIssues.filter(i => i.id !== issueId);
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues.filter(i => !initialIssues.some(init => init.id === i.id))));
+            // Persist the entire updated list to localStorage
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
             return newIssues;
         });
     }
@@ -48,12 +47,15 @@ export default function AdminPage() {
         const storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
         
         // Combine and remove duplicates, preferring stored (newer) issues
-        const combined = [...storedIssues, ...initialIssues];
-        const uniqueIssues = combined.filter((issue, index, self) =>
-            index === self.findIndex((t) => (
-                t.id === issue.id
-            ))
-        );
+        const issueMap = new Map<string, Issue>();
+
+        // Add initial issues first
+        initialIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+        // Overwrite with stored issues, which are more up-to-date
+        storedIssues.forEach(issue => issueMap.set(issue.id, issue));
+        
+        const uniqueIssues = Array.from(issueMap.values());
         
         setAllIssues(uniqueIssues);
         setIsLoading(false);
