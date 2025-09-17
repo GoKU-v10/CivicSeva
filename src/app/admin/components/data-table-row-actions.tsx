@@ -18,9 +18,21 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { useToast } from "@/hooks/use-toast"
 import type { Issue, IssueStatus } from "@/lib/types"
-import { updateIssueDetailsAction } from "@/lib/actions"
+import { updateIssueDetailsAction, deleteIssueAction } from "@/lib/actions"
 import { useState } from "react"
 
 interface DataTableRowActionsProps<TData> {
@@ -34,9 +46,11 @@ export function DataTableRowActions<TData extends {id: string}>({
 }: DataTableRowActionsProps<TData>) {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const row = cell.row;
   const issue = row.original as Issue;
   const onUpdateIssue = (cell.table.options.meta as any)?.onUpdateIssue;
+  const onDeleteIssue = (cell.table.options.meta as any)?.onDeleteIssue;
 
 
   const handleUpdate = async (updateData: {status?: IssueStatus, department?: string}) => {
@@ -80,78 +94,125 @@ export function DataTableRowActions<TData extends {id: string}>({
     setIsUpdating(false);
   }
 
-  const deleteIssue = () => {
-    // This would also require a server action and state update
-    toast({
-      variant: 'destructive',
-      title: "Issue Deleted",
-      description: `Issue #${(row.original as any).id} has been deleted.`,
-    })
+  const handleDelete = async () => {
+    if (!onDeleteIssue) {
+        console.error("onDeleteIssue function is not available.");
+        toast({ variant: "destructive", title: "Delete Failed", description: "Configuration error." });
+        return;
+    }
+    setIsDeleting(true);
+
+    const formData = new FormData();
+    formData.append('issueId', issue.id);
+    const localIssues = localStorage.getItem('civicseva_issues');
+    if (localIssues) {
+        formData.append('localIssues', localIssues);
+    }
+
+    const result = await deleteIssueAction(formData);
+
+    if (result.success && result.deletedIssueId) {
+        onDeleteIssue(result.deletedIssueId);
+        toast({
+            variant: 'destructive',
+            title: "Issue Deleted",
+            description: `Issue #${result.deletedIssueId} has been deleted.`,
+        });
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Delete Failed",
+            description: result.error,
+        });
+    }
+    setIsDeleting(false);
   }
 
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-          disabled={isUpdating}
-        >
-          {isUpdating ? <Loader2 className="animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[180px]">
-        <DropdownMenuItem asChild>
-          <Link href={`/admin/issue/${issue.id}`}>
-             <Eye className="mr-2 h-4 w-4" />
-            View Details
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Building className="mr-2 h-4 w-4" />
-            Assign Department
-          </DropdownMenuSubTrigger>
-          <DropdownMenuPortal>
-            <DropdownMenuSubContent>
-              {departments.map((dept) => (
-                 <DropdownMenuItem key={dept} onClick={() => handleUpdate({ department: dept })}>
-                    {dept}
-                 </DropdownMenuItem>
-              ))}
-            </DropdownMenuSubContent>
-          </DropdownMenuPortal>
-        </DropdownMenuSub>
-        <DropdownMenuSub>
-           <DropdownMenuSubTrigger>
-            <Wrench className="mr-2 h-4 w-4" />
-             Update Status
-           </DropdownMenuSubTrigger>
+    <AlertDialog>
+        <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button
+            variant="ghost"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+            disabled={isUpdating || isDeleting}
+            >
+            {(isUpdating || isDeleting) ? <Loader2 className="animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+            <span className="sr-only">Open menu</span>
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuItem asChild>
+            <Link href={`/admin/issue/${issue.id}`}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+            </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+                <Building className="mr-2 h-4 w-4" />
+                Assign Department
+            </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => handleUpdate({ status: 'Reported' })}>
-                        <CircleAlert className="mr-2 h-4 w-4" />
-                        Reported
+                {departments.map((dept) => (
+                    <DropdownMenuItem key={dept} onClick={() => handleUpdate({ department: dept })}>
+                        {dept}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleUpdate({ status: 'In Progress' })}>
-                        <Wrench className="mr-2 h-4 w-4" />
-                        In Progress
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleUpdate({ status: 'Resolved' })}>
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Resolved
-                    </DropdownMenuItem>
+                ))}
                 </DropdownMenuSubContent>
             </DropdownMenuPortal>
-        </DropdownMenuSub>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-600" onClick={deleteIssue}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete Issue
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+                <Wrench className="mr-2 h-4 w-4" />
+                Update Status
+            </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => handleUpdate({ status: 'Reported' })}>
+                            <CircleAlert className="mr-2 h-4 w-4" />
+                            Reported
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdate({ status: 'In Progress' })}>
+                            <Wrench className="mr-2 h-4 w-4" />
+                            In Progress
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdate({ status: 'Resolved' })}>
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Resolved
+                        </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <AlertDialogTrigger asChild>
+                 <DropdownMenuItem className="text-red-600" onSelect={(e) => e.preventDefault()}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Issue
+                </DropdownMenuItem>
+            </AlertDialogTrigger>
+        </DropdownMenuContent>
+        </DropdownMenu>
+
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the issue
+                <span className="font-bold"> #{issue.id}</span>.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                Yes, delete issue
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
   )
 }

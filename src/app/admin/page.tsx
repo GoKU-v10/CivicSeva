@@ -27,10 +27,18 @@ export default function AdminPage() {
             return prevIssues;
         });
     };
+
+    const removeIssueFromState = (issueId: string) => {
+        setAllIssues(prevIssues => {
+            const newIssues = prevIssues.filter(i => i.id !== issueId);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues.filter(i => !initialIssues.some(init => init.id === i.id))));
+            return newIssues;
+        });
+    }
     
     // Wrap the AdminDashboard in a component that receives the update function
     const DashboardWithUpdates = useCallback(() => {
-        return <AdminDashboard issues={allIssues} onUpdateIssue={updateIssueState} />;
+        return <AdminDashboard issues={allIssues} onUpdateIssue={updateIssueState} onDeleteIssue={removeIssueFromState} />;
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [allIssues]);
 

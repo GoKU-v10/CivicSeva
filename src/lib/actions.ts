@@ -113,8 +113,11 @@ export async function updateIssueAction(formData: FormData) {
         if (validatedData.localIssues) {
             const parsedLocalIssues = JSON.parse(validatedData.localIssues) as Issue[];
             parsedLocalIssues.forEach(localIssue => {
-                if (!allIssues.some(i => i.id === localIssue.id)) {
+                const existingIndex = allIssues.findIndex(i => i.id === localIssue.id);
+                if (existingIndex === -1) {
                     allIssues.push(localIssue);
+                } else {
+                    allIssues[existingIndex] = localIssue;
                 }
             });
         }
@@ -180,20 +183,19 @@ export async function updateIssueDetailsAction(formData: FormData) {
 
     const { issueId, status, department, localIssues: localIssuesJSON } = validatedData;
     
-    // Combine initial issues with issues from localStorage
-    const allIssues: Issue[] = [...initialIssues];
+    let allIssues: Issue[] = [...initialIssues];
     if (localIssuesJSON) {
         try {
             const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
-            parsedLocalIssues.forEach(localIssue => {
-                 // Replace if exists, otherwise add
-                const existingIndex = allIssues.findIndex(i => i.id === localIssue.id);
-                if (existingIndex > -1) {
-                    allIssues[existingIndex] = localIssue;
-                } else {
-                    allIssues.push(localIssue);
-                }
-            });
+            const issueMap = new Map<string, Issue>();
+            
+            // Add initial issues to map
+            allIssues.forEach(issue => issueMap.set(issue.id, issue));
+            // Add/overwrite with local issues
+            parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+            allIssues = Array.from(issueMap.values());
+
         } catch (e) {
             console.error("Failed to parse localIssues JSON:", e);
         }
@@ -201,7 +203,7 @@ export async function updateIssueDetailsAction(formData: FormData) {
 
     const issueIndex = allIssues.findIndex((i) => i.id === issueId);
     if (issueIndex === -1) {
-      throw new Error('Issue not found');
+      throw new Error(`Issue not found: ${issueId}`);
     }
 
     const issueToUpdate = { ...allIssues[issueIndex] };
@@ -215,7 +217,13 @@ export async function updateIssueDetailsAction(formData: FormData) {
 
     if (status && status !== issueToUpdate.status) {
         issueToUpdate.status = status;
-        updateDescription = `Status updated to ${status}.`;
+        // If a department change was also made, combine the descriptions
+        if (updateDescription) {
+            updateDescription += ` Status updated to ${status}.`
+        } else {
+            updateDescription = `Status updated to ${status}.`;
+        }
+
         if (status === 'Resolved') {
             issueToUpdate.resolvedAt = new Date().toISOString();
         }
@@ -233,9 +241,6 @@ export async function updateIssueDetailsAction(formData: FormData) {
         description: updateDescription,
     }];
     
-    // In a real app, this would write to the DB. For now, we return the updated object.
-    // The client will be responsible for updating its state and localStorage.
-    
     return { success: true, issue: issueToUpdate };
 
   } catch (error) {
@@ -244,4 +249,49 @@ export async function updateIssueDetailsAction(formData: FormData) {
       error instanceof Error ? error.message : 'An unknown error occurred.';
     return { success: false, error: errorMessage };
   }
+}
+
+const DeleteIssueSchema = z.object({
+  issueId: z.string(),
+  localIssues: z.string().optional(),
+});
+
+export async function deleteIssueAction(formData: FormData) {
+    try {
+        const validatedData = DeleteIssueSchema.parse({
+            issueId: formData.get('issueId'),
+            localIssues: formData.get('localIssues'),
+        });
+        
+        const { issueId, localIssues: localIssuesJSON } = validatedData;
+        
+        let allIssues: Issue[] = [...initialIssues];
+        if (localIssuesJSON) {
+             try {
+                const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
+                const issueMap = new Map<string, Issue>();
+                allIssues.forEach(issue => issueMap.set(issue.id, issue));
+                parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
+                allIssues = Array.from(issueMap.values());
+            } catch (e) {
+                console.error("Failed to parse localIssues for deletion:", e);
+            }
+        }
+        
+        const issueExists = allIssues.some(i => i.id === issueId);
+        if (!issueExists) {
+            throw new Error(`Issue not found: ${issueId}`);
+        }
+
+        // In a real database, you'd perform a delete operation here.
+        // For our simulation, we just need to confirm it can be deleted
+        // and let the client-side handle the state removal.
+        
+        return { success: true, deletedIssueId: issueId };
+
+    } catch (error) {
+        console.error('Delete Issue Action Error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+        return { success: false, error: errorMessage };
+    }
 }

@@ -36,12 +36,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   onUpdateIssue: (issue: Issue) => void;
+  onDeleteIssue: (issueId: string) => void;
 }
 
 export function DataTable<TData extends {id: string}, TValue>({
   columns,
   data,
   onUpdateIssue,
+  onDeleteIssue,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -73,6 +75,7 @@ export function DataTable<TData extends {id: string}, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     meta: {
       onUpdateIssue: onUpdateIssue,
+      onDeleteIssue: onDeleteIssue,
     },
   })
 
