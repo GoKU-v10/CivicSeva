@@ -275,11 +275,12 @@ export default function IssueDetailPage() {
         if(issueIndex > -1) {
             localIssues[issueIndex] = updatedIssue;
         } else {
-            // if it's a new issue not in localstorage yet (e.g. from initialData), add it
-            const initialIssueIndex = initialIssues.findIndex(i => i.id === updatedIssue.id);
-            if(initialIssueIndex === -1) {
-                 localIssues.unshift(updatedIssue);
-            }
+             const initialIssueIndex = initialIssues.findIndex(i => i.id === updatedIssue.id);
+             if (initialIssueIndex > -1) {
+                // This means the issue was from initialData, not yet in localStorage
+                // We add it to local storage.
+                localIssues.unshift(updatedIssue);
+             }
         }
         localStorage.setItem('civicseva_issues', JSON.stringify(localIssues));
     }
@@ -287,10 +288,14 @@ export default function IssueDetailPage() {
     useEffect(() => {
         if (!id) return;
         
-        const localIssues: Issue[] = JSON.parse(localStorage.getItem('civicseva_issues') || '[]');
-        const allIssues = [...localIssues, ...initialIssues];
-        const foundIssue = allIssues.find(i => i.id === id);
+        const localIssuesJSON = localStorage.getItem('civicseva_issues');
+        const localIssues: Issue[] = localIssuesJSON ? JSON.parse(localIssuesJSON) : [];
         
+        const issueMap = new Map<string, Issue>();
+        initialIssues.forEach(issue => issueMap.set(issue.id, issue));
+        localIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+        const foundIssue = issueMap.get(id);
         setIssue(foundIssue || null);
 
     }, [id]);

@@ -152,7 +152,7 @@ export default function AdminAnalyticsPage() {
                 </div>
             </div>
 
-             <BeforeAfterGallery />
+             <BeforeAfterGallery issues={allIssues} />
 
         </div>
     )
