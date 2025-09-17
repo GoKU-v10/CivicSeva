@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description';
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
 import { revalidatePath } from 'next/cache';
-import { issues } from './data';
-import type { Issue, IssueCategory } from './types';
+import { issues as initialIssues } from './data';
+import type { Issue, IssueCategory, IssueStatus } from './types';
 
 const SuggestDescriptionSchema = z.object({
   photoDataUri: z.string(),
@@ -79,7 +79,7 @@ export async function createIssueAction(formData: FormData) {
 
         // In a real app, you would save this to a database.
         // For this demo, we'll prepend it to our in-memory array so the details page works on redirect.
-        issues.unshift(newIssue);
+        initialIssues.unshift(newIssue);
         
         return { success: true, message: 'Issue reported successfully!', issue: newIssue };
 
@@ -108,7 +108,7 @@ export async function updateIssueAction(formData: FormData) {
             localIssues: formData.get('localIssues'),
         });
         
-        const allIssues = [...issues];
+        const allIssues = [...initialIssues];
         if (validatedData.localIssues) {
             const parsedLocalIssues = JSON.parse(validatedData.localIssues) as Issue[];
             // Add local issues, avoiding duplicates
@@ -157,4 +157,73 @@ export async function updateIssueAction(formData: FormData) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during update.';
         return { success: false, error: errorMessage };
     }
+}
+
+const UpdateIssueDetailsSchema = z.object({
+  issueId: z.string(),
+  status: z.nativeEnum(IssueStatus).optional(),
+  department: z.string().optional(),
+  localIssues: z.string().optional(),
+});
+
+
+export async function updateIssueDetailsAction(formData: FormData) {
+  try {
+    const validatedData = UpdateIssueDetailsSchema.parse({
+      issueId: formData.get('issueId'),
+      status: formData.get('status'),
+      department: formData.get('department'),
+      localIssues: formData.get('localIssues'),
+    });
+
+    const { issueId, status, department, localIssues: localIssuesJSON } = validatedData;
+    
+    // Combine initial issues with issues from localStorage
+    const allIssues = [...initialIssues];
+    if (localIssuesJSON) {
+        const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
+        parsedLocalIssues.forEach(localIssue => {
+            if (!allIssues.some(i => i.id === localIssue.id)) {
+                allIssues.push(localIssue);
+            }
+        });
+    }
+
+    const issueIndex = allIssues.findIndex((i) => i.id === issueId);
+    if (issueIndex === -1) {
+      throw new Error('Issue not found');
+    }
+
+    const issueToUpdate = { ...allIssues[issueIndex] };
+    let updateDescription = '';
+
+    if (status) {
+        issueToUpdate.status = status;
+        updateDescription = `Status updated to ${status}.`;
+        if (status === 'Resolved') {
+            issueToUpdate.resolvedAt = new Date().toISOString();
+        }
+    }
+    if (department) {
+        issueToUpdate.department = department;
+        updateDescription = `Assigned to ${department}.`;
+    }
+
+    issueToUpdate.updates.push({
+        timestamp: new Date().toISOString(),
+        status: issueToUpdate.status,
+        description: updateDescription,
+    });
+    
+    // In a real app, this would write to the DB. For now, we return the updated object.
+    // The client will be responsible for updating its state and localStorage.
+    
+    return { success: true, issue: issueToUpdate };
+
+  } catch (error) {
+    console.error('Update Issue Details Action Error:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { success: false, error: errorMessage };
+  }
 }

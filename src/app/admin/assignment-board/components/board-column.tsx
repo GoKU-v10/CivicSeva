@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import type { Issue } from "@/lib/types";
@@ -9,22 +10,30 @@ import { Badge } from "@/components/ui/badge";
 interface BoardColumnProps {
     title: string;
     issues: Issue[];
+    onDrop: (e: React.DragEvent<HTMLDivElement>, title: string) => void;
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+    onDragStart: (e: React.DragEvent<HTMLDivElement>, issueId: string) => void;
 }
 
-export function BoardColumn({ title, issues }: BoardColumnProps) {
+export function BoardColumn({ title, issues, onDrop, onDragOver, onDragStart }: BoardColumnProps) {
     return (
-        <div className="flex flex-col bg-muted/50 rounded-lg">
+        <div 
+            className="flex flex-col bg-muted/50 rounded-lg"
+            onDrop={(e) => onDrop(e, title)}
+            onDragOver={onDragOver}
+        >
             <div className="p-4 border-b">
                 <h3 className="font-semibold flex items-center gap-2">
                     {title}
                     <Badge variant="secondary" className="text-sm">{issues.length}</Badge>
                 </h3>
             </div>
-            {/* This scroll area makes each column independently scrollable */}
             <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
                     {issues.map(issue => (
-                        <IssueCard key={issue.id} issue={issue} />
+                        <div key={issue.id} draggable onDragStart={(e) => onDragStart(e, issue.id)}>
+                            <IssueCard issue={issue} />
+                        </div>
                     ))}
                      {issues.length === 0 && (
                         <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg">

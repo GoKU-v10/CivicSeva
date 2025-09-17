@@ -6,7 +6,7 @@ import { issues as initialIssues } from "@/lib/data";
 import type { Issue } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Clock, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const LOCAL_STORAGE_KEY = 'civicseva_issues';
@@ -14,6 +14,26 @@ const LOCAL_STORAGE_KEY = 'civicseva_issues';
 export default function AdminPage() {
     const [allIssues, setAllIssues] = useState<Issue[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const updateIssueState = (updatedIssue: Issue) => {
+        setAllIssues(prevIssues => {
+            const issueIndex = prevIssues.findIndex(i => i.id === updatedIssue.id);
+            if (issueIndex > -1) {
+                const newIssues = [...prevIssues];
+                newIssues[issueIndex] = updatedIssue;
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues.filter(i => !initialIssues.some(init => init.id === i.id))));
+                return newIssues;
+            }
+            return prevIssues;
+        });
+    };
+    
+    // Wrap the AdminDashboard in a component that receives the update function
+    const DashboardWithUpdates = useCallback(() => {
+        return <AdminDashboard issues={allIssues} onUpdateIssue={updateIssueState} />;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allIssues]);
+
 
     useEffect(() => {
         // This effect runs on the client-side
@@ -94,7 +114,8 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
             </div>
-            <AdminDashboard issues={allIssues} />
+            <DashboardWithUpdates />
         </div>
     );
 }
+

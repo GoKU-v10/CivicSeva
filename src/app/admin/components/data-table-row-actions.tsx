@@ -1,7 +1,8 @@
 
+
 "use client"
 
-import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building, Trash2, Eye } from "lucide-react"
+import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building, Trash2, Eye, Loader2 } from "lucide-react"
 import { Row } from "@tanstack/react-table"
 import Link from "next/link"
 
@@ -18,36 +19,58 @@ import {
   DropdownMenuPortal
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
-import type { Issue } from "@/lib/types"
+import type { Issue, IssueStatus } from "@/lib/types"
+import { updateIssueDetailsAction } from "@/lib/actions"
+import { useState } from "react"
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
+  onUpdateIssue: (issue: Issue) => void;
 }
 
 const departments = ["Public Works", "Sanitation", "Transportation", "Parks & Recreation", "Water Dept."];
 
-export function DataTableRowActions<TData>({
+export function DataTableRowActions<TData extends {id: string}>({
   row,
+  onUpdateIssue
 }: DataTableRowActionsProps<TData>) {
-  const { toast } = useToast()
+  const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const issue = row.original as Issue;
   
-  // In a real app, these would trigger server actions to update the database
-  const updateStatus = (status: string) => {
-    toast({
-      title: "Status Updated",
-      description: `Issue #${(row.original as any).id} marked as ${status}.`,
-    })
-  }
+  const handleUpdate = async (updateData: {status?: IssueStatus, department?: string}) => {
+    setIsUpdating(true);
+    const formData = new FormData();
+    formData.append('issueId', issue.id);
+    if(updateData.status) formData.append('status', updateData.status);
+    if(updateData.department) formData.append('department', updateData.department);
+    
+    // Pass localStorage to server action
+    const localIssues = localStorage.getItem('civicseva_issues');
+    if (localIssues) {
+      formData.append('localIssues', localIssues);
+    }
 
-  const assignDepartment = (department: string) => {
-     toast({
-      title: "Department Assigned",
-      description: `Issue #${(row.original as any).id} assigned to ${department}.`,
-    })
+    const result = await updateIssueDetailsAction(formData);
+
+    if (result.success && result.issue) {
+        onUpdateIssue(result.issue);
+        toast({
+            title: "Success!",
+            description: `Issue #${issue.id} has been updated.`,
+        });
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: result.error,
+        });
+    }
+    setIsUpdating(false);
   }
 
   const deleteIssue = () => {
-    // In a real app, this would also need to update localStorage on the client
+    // This would also require a server action and state update
     toast({
       variant: 'destructive',
       title: "Issue Deleted",
@@ -55,16 +78,15 @@ export function DataTableRowActions<TData>({
     })
   }
 
-  const issue = row.original as Issue;
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+          disabled={isUpdating}
         >
-          <MoreHorizontal className="h-4 w-4" />
+          {isUpdating ? <Loader2 className="animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
@@ -84,7 +106,7 @@ export function DataTableRowActions<TData>({
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
               {departments.map((dept) => (
-                 <DropdownMenuItem key={dept} onClick={() => assignDepartment(dept)}>
+                 <DropdownMenuItem key={dept} onClick={() => handleUpdate({ department: dept })}>
                     {dept}
                  </DropdownMenuItem>
               ))}
@@ -98,15 +120,15 @@ export function DataTableRowActions<TData>({
            </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => updateStatus('Reported')}>
+                    <DropdownMenuItem onClick={() => handleUpdate({ status: 'Reported' })}>
                         <CircleAlert className="mr-2 h-4 w-4" />
                         Reported
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateStatus('In Progress')}>
+                    <DropdownMenuItem onClick={() => handleUpdate({ status: 'In Progress' })}>
                         <Wrench className="mr-2 h-4 w-4" />
                         In Progress
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateStatus('Resolved')}>
+                    <DropdownMenuItem onClick={() => handleUpdate({ status: 'Resolved' })}>
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Resolved
                     </DropdownMenuItem>

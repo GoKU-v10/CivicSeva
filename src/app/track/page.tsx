@@ -6,40 +6,24 @@ import { Issue } from "@/lib/types";
 import { useEffect, useState } from "react";
 
 const LOCAL_STORAGE_KEY = 'civicseva_issues';
-const ISSUES_TO_DELETE = ['IS-11404', 'IS-17905', 'IS-86772', 'IS-18069'];
 
 export default function TrackIssuesPage() {
-    const [issues, setIssues] = useState<Issue[]>(() => {
-        // Load initial state from data file
-        return [...initialIssuesData];
-    });
+    const [issues, setIssues] = useState<Issue[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         // This effect runs once on the client-side after the component mounts
         let storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
         
-        // --- FIX: Explicitly remove specified issues from local storage ---
-        const initialCount = storedIssues.length;
-        storedIssues = storedIssues.filter(issue => !ISSUES_TO_DELETE.includes(issue.id));
-        if (storedIssues.length < initialCount) {
-             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(storedIssues));
-        }
-        // --- END FIX ---
-
         const newIssueJSON = sessionStorage.getItem('newly_submitted_issue');
         
-        let allIssues = [...storedIssues, ...initialIssuesData];
-        let newIssueFound = false;
-
         if (newIssueJSON) {
             try {
                 const newIssue: Issue = JSON.parse(newIssueJSON);
                 // Ensure the new issue isn't already in our list
-                if (!allIssues.some(issue => issue.id === newIssue.id)) {
-                    allIssues.unshift(newIssue);
+                if (!storedIssues.some(issue => issue.id === newIssue.id)) {
                     storedIssues.unshift(newIssue);
                     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(storedIssues));
-                    newIssueFound = true;
                 }
                 sessionStorage.removeItem('newly_submitted_issue');
             } catch (error) {
@@ -47,14 +31,16 @@ export default function TrackIssuesPage() {
             }
         }
         
-        // Remove duplicates, preferring the ones from localStorage/sessionStorage
-        const uniqueIssues = allIssues.filter((issue, index, self) =>
+        // Combine and remove duplicates, preferring the ones from localStorage/sessionStorage
+        const combined = [...storedIssues, ...initialIssuesData];
+        const uniqueIssues = combined.filter((issue, index, self) =>
             index === self.findIndex((t) => (
                 t.id === issue.id
             ))
         );
         
         setIssues(uniqueIssues);
+        setIsLoading(false);
 
     // The empty dependency array ensures this runs only once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps

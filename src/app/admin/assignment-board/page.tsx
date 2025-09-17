@@ -4,14 +4,61 @@
 import { AssignmentBoard } from "./components/assignment-board";
 import { issues as initialIssues } from "@/lib/data";
 import type { Issue } from "@/lib/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { updateIssueDetailsAction } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
+
 
 const LOCAL_STORAGE_KEY = 'civicseva_issues';
 
 export default function AssignmentBoardPage() {
     const [allIssues, setAllIssues] = useState<Issue[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+
+    const handleIssueUpdate = (updatedIssue: Issue) => {
+        setAllIssues(prevIssues => {
+            const issueIndex = prevIssues.findIndex(i => i.id === updatedIssue.id);
+            if (issueIndex > -1) {
+                const newIssues = [...prevIssues];
+                newIssues[issueIndex] = updatedIssue;
+                 // Update localStorage, only storing non-initial issues
+                const issuesToStore = newIssues.filter(i => !initialIssues.some(init => init.id === i.id));
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(issuesToStore));
+                return newIssues;
+            }
+            return prevIssues;
+        });
+    };
+
+    const handleAssignDepartment = async (issueId: string, department: string) => {
+        const formData = new FormData();
+        formData.append('issueId', issueId);
+        formData.append('department', department);
+        
+        const localIssuesJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (localIssuesJSON) {
+            formData.append('localIssues', localIssuesJSON);
+        }
+
+        const result = await updateIssueDetailsAction(formData);
+
+        if (result.success && result.issue) {
+            handleIssueUpdate(result.issue);
+            toast({
+                title: "Department Assigned",
+                description: `Issue #${issueId} assigned to ${department}.`,
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: "Assignment Failed",
+                description: result.error,
+            });
+        }
+    };
+
 
      useEffect(() => {
         // This effect runs on the client-side
@@ -64,6 +111,7 @@ export default function AssignmentBoardPage() {
                 publicWorks={publicWorksIssues}
                 sanitation={sanitationIssues}
                 transportation={transportIssues}
+                onAssignDepartment={handleAssignDepartment}
             />
         </div>
     )
