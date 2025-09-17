@@ -87,27 +87,6 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
             color: roofColor
         });
 
-        // Add extra tiers for taller buildings
-        if (mainHeight > 8 && !isHospital && !isDigitalHub) {
-            const tierHeight = 2 + Math.random() * 4;
-            const tierWidth = mainWidth * 0.8;
-            const tierDepth = mainDepth * 0.8;
-            
-            parts.push({
-                position: [0, mainHeight + tierHeight / 2, 0] as [number, number, number],
-                size: [tierWidth, tierHeight, tierDepth] as [number, number, number],
-                texture: windowTexture.clone(),
-                color: buildingColor,
-            });
-            // Roof for tier
-             parts.push({
-                position: [0, mainHeight + tierHeight + 0.1, 0] as [number, number, number],
-                size: [tierWidth, 0.2, tierDepth] as [number, number, number],
-                color: roofColor,
-            });
-        }
-
-
         // Lower section (bungalow-like)
         if (mainHeight < 5 && !isHospital && !isDigitalHub) {
             const sideHeight = 1 + Math.random() * 2;
@@ -496,9 +475,9 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.2} color="#ff8c69" />
+      <ambientLight intensity={1.5} color="#ff8c69" />
       <directionalLight 
-        color="#ffffff"
+        color="#FDB813"
         position={[40, 20, 30]}
         intensity={4}
         castShadow
@@ -537,6 +516,3 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
-
-    
-    
