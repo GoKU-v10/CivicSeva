@@ -168,13 +168,13 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
              {isDigitalHub && (
                 <>
                     {/* WiFi Symbol */}
-                    <group position={[0, 7.5, doorZPosition]}>
+                    <group position={[0, 7.5, doorZPosition]} rotation={[0, Math.PI, 0]}>
                         <mesh position={[0, 0, 0]}>
                             <sphereGeometry args={[0.2, 16, 16]} />
                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
                         </mesh>
                         {[1, 2, 3].map(i => (
-                            <mesh key={i} rotation={[-Math.PI / 2, 0, 0]}>
+                            <mesh key={i} rotation={[0, 0, 0]}>
                                 <torusGeometry args={[i * 0.4, 0.1, 8, 32, Math.PI / 2]} />
                                 <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
                             </mesh>
@@ -197,13 +197,13 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
 const Tree = ({ position }: { position: [number, number, number] }) => {
     return (
         <group position={position}>
-            <mesh position={[0, 0.5, 0]}>
+            <mesh position={[0, 0.5, 0]} castShadow>
                 <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
                 <meshLambertMaterial color="#8B4513" />
             </mesh>
-            <mesh position={[0, 1.5, 0]}>
+            <mesh position={[0, 1.5, 0]} castShadow>
                 <coneGeometry args={[1, 2, 8]} />
-                <meshLambertMaterial color="#228B22" />
+                <meshLambertMaterial color="#2E8B57" />
             </mesh>
         </group>
     )
@@ -213,17 +213,17 @@ const Fountain = ({ position }: { position: [number, number, number] }) => {
     return (
         <group position={position}>
             {/* Base */}
-            <mesh position={[0, 0.1, 0]}>
+            <mesh position={[0, 0.1, 0]} receiveShadow>
                 <cylinderGeometry args={[1.5, 1.5, 0.2, 16]} />
                 <meshLambertMaterial color="#AAAAAA" />
             </mesh>
             {/* Water */}
             <mesh position={[0, 0.2, 0]}>
                 <cylinderGeometry args={[1.4, 1.4, 0.1, 16]} />
-                <meshStandardMaterial color="#6699CC" transparent opacity={0.8} />
+                <meshStandardMaterial color="#87CEEB" transparent opacity={0.7} />
             </mesh>
              {/* Centerpiece */}
-            <mesh position={[0, 0.6, 0]}>
+            <mesh position={[0, 0.6, 0]} castShadow>
                 <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
                 <meshLambertMaterial color="#888888" />
             </mesh>
@@ -235,19 +235,19 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
     return (
         <group position={position} rotation={rotation}>
             {/* Pole */}
-            <mesh position={[0, 1.5, 0]}>
+            <mesh position={[0, 1.5, 0]} castShadow>
                 <boxGeometry args={[0.1, 3, 0.1]} />
                 <meshLambertMaterial color="#555555" />
             </mesh>
             {/* Arm */}
-            <mesh position={[0, 3, 0.5]}>
+            <mesh position={[0, 3, 0.5]} castShadow>
                 <boxGeometry args={[0.1, 0.1, 1]} />
                 <meshLambertMaterial color="#555555" />
             </mesh>
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="yellow" emissive="yellow" emissiveIntensity={3} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={4} />
             </mesh>
         </group>
     )
@@ -266,9 +266,9 @@ const Road = ({ position, size, markings }: { position: [number, number, number]
         for (let i = -numDashes / 2; i < numDashes / 2; i++) {
             const pos = i * (dashLength + gapLength);
             if (isVertical) {
-                marks.push(<mesh key={i} position={[0, 0.01, pos]}><boxGeometry args={[0.1, 0.01, dashLength]} /><meshLambertMaterial color="white" /></mesh>);
+                marks.push(<mesh key={i} position={[0, 0.01, pos]}><boxGeometry args={[0.1, 0.01, dashLength]} /><meshLambertMaterial color="#E0E0E0" /></mesh>);
             } else {
-                 marks.push(<mesh key={i} position={[pos, 0.01, 0]}><boxGeometry args={[dashLength, 0.01, 0.1]} /><meshLambertMaterial color="white" /></mesh>);
+                 marks.push(<mesh key={i} position={[pos, 0.01, 0]}><boxGeometry args={[dashLength, 0.01, 0.1]} /><meshLambertMaterial color="#E0E0E0" /></mesh>);
             }
         }
         return marks;
@@ -277,7 +277,7 @@ const Road = ({ position, size, markings }: { position: [number, number, number]
 
     return (
         <group position={position}>
-            <mesh>
+            <mesh receiveShadow>
                 <boxGeometry args={size} />
                 <meshLambertMaterial color="#333333" />
             </mesh>
@@ -316,6 +316,7 @@ const City = () => {
                 
                 // Keep park area clear
                 if (Math.abs(x) < 8 && z > -8) continue;
+                 if (Math.abs(x) > 4 && x < 12 && z > -8) continue; // Keep main road clear
 
                 // Avoid placing buildings on top of special buildings
                 const distToHospital = Math.sqrt(Math.pow(x - hospitalPosition[0], 2) + Math.pow(z - hospitalPosition[2], 2));
@@ -367,15 +368,16 @@ const City = () => {
             {/* Base ground and roads */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
-                <meshLambertMaterial color="#444444" />
+                <meshLambertMaterial color="#4A4A4A" />
             </mesh>
             <Road position={[0, 0, -10]} size={[40, 0.1, 4]} markings={true} />
-            <Road position={[15, 0, -10]} size={[4, 0.1, 40]} markings={true} />
-            <Road position={[-15, 0, -10]} size={[4, 0.1, 40]} markings={true} />
-
+            <Road position={[10, 0, -10]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[-10, 0, -10]} size={[4, 0.1, 40]} markings={true} />
+            
+            {/* Park Area */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
-                <planeGeometry args={[14, 14]} />
-                <meshLambertMaterial color="#56c156" />
+                <planeGeometry args={[18, 24]} />
+                <meshLambertMaterial color="#3A5F0B" />
             </mesh>
 
             {buildings.map((b, index) => (
@@ -412,13 +414,13 @@ const Scene = () => {
   useFrame(({ camera, clock }) => {
     const elapsedTime = clock.getElapsedTime();
 
-    const radius = 25 - (scrollY.current * 22); 
-    const angle = elapsedTime * 0.08;
+    const radius = 28 - (scrollY.current * 25); 
+    const angle = elapsedTime * 0.05;
     const continuousX = Math.sin(angle) * radius;
     const continuousZ = Math.cos(angle) * radius;
     
-    const scrollBasedY = 12 - scrollY.current * 9;
-    const scrollBasedFov = 75 - scrollY.current * 50;
+    const scrollBasedY = 15 - scrollY.current * 12;
+    const scrollBasedFov = 75 - scrollY.current * 40;
 
     camera.position.x = continuousX;
     camera.position.z = continuousZ;
@@ -435,10 +437,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.2} />
+      <ambientLight color="#FFDAB9" intensity={1.5} />
       <directionalLight 
-        position={[40, 50, -40]}
-        intensity={5}
+        color="#FFA500"
+        position={[40, 20, -30]}
+        intensity={6}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -447,12 +450,13 @@ const Scene = () => {
         shadow-camera-right={60}
         shadow-camera-top={60}
         shadow-camera-bottom={-60}
+        shadow-bias={-0.005}
       />
-      <mesh position={[40, 50, -40]}>
+      <mesh position={[40, 20, -30]}>
         <sphereGeometry args={[3, 32, 32]} />
-        <meshStandardMaterial emissive="#FFFFFF" color="#FFFFFF" emissiveIntensity={2} />
+        <meshStandardMaterial emissive="#FFFF99" color="#FFFF99" emissiveIntensity={2} />
       </mesh>
-      <fog attach="fog" args={['#87CEEB', 30, 90]} />
+      <fog attach="fog" args={['#F28500', 30, 100]} />
       <City />
     </>
   );
@@ -460,7 +464,7 @@ const Scene = () => {
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-[#87CEEB]">
+    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#F28500] to-[#E6E6FA]">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
@@ -469,7 +473,5 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
-
-    
 
     
