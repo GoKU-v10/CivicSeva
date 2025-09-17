@@ -249,7 +249,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFFFE0" emissive="#FFFFE0" emissiveIntensity={2.5} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={5} />
             </mesh>
         </group>
     )
@@ -478,8 +478,3 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
-
-    
-    
-
-    
