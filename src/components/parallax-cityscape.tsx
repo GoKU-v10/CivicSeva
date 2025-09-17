@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
+import { EffectComposer, Vignette, BrightnessContrast } from '@react-three/postprocessing';
 
 const createBuildingTexture = (isSilver: boolean, isTan: boolean) => {
     const canvas = document.createElement('canvas');
@@ -170,7 +171,7 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
              {isDigitalHub && (
                 <>
                     {/* WiFi Symbol */}
-                    <group position={[0, 7.5, doorZPosition]} rotation={[0, Math.PI, 0]}>
+                    <group position={[0, 7.5, doorZPosition]} rotation={[Math.PI / 4, 0, 0]}>
                         <mesh position={[0, 0, 0]}>
                             <sphereGeometry args={[0.2, 16, 16]} />
                             <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
@@ -476,7 +477,7 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={3} color="#FFFFFF" />
+      <ambientLight intensity={2} color="#FFFFFF" />
       <directionalLight 
         color="#FFFFFF"
         position={[40, 20, 30]}
@@ -498,6 +499,10 @@ const Scene = () => {
             <sphereGeometry args={[2, 32, 32]} />
             <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={1} />
       </mesh>
+      <EffectComposer>
+        <Vignette eskil={false} offset={0.1} darkness={0.4} />
+        <BrightnessContrast contrast={0.1} />
+      </EffectComposer>
     </>
   );
 };
@@ -513,5 +518,3 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
-
-    
