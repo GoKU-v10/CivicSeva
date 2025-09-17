@@ -249,7 +249,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFFFE0" emissive="#FFFFE0" emissiveIntensity={1.5} />
+                <meshStandardMaterial color="#FFFFE0" emissive="#FFFFE0" emissiveIntensity={2.5} />
             </mesh>
         </group>
     )
@@ -469,7 +469,7 @@ const Scene = () => {
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#ff7e5f] via-[#ffad99] to-[#feb47b]">
+    <div className="absolute inset-0 z-0 bg-gradient-to-b from-orange-300 via-purple-300 to-blue-400">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
@@ -480,4 +480,6 @@ export default function ParallaxCityscape() {
 }
 
     
+    
+
     
