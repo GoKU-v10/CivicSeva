@@ -277,7 +277,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={10} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={20} />
             </mesh>
         </group>
     )
@@ -496,11 +496,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={0.8} color="#ff8c69" />
+      <ambientLight intensity={1.2} color="#ff8c69" />
       <directionalLight 
-        color="#ffd3a1"
+        color="#ffffff"
         position={[40, 20, 30]}
-        intensity={3}
+        intensity={4}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -512,7 +512,7 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#ffb2a1', 40, 100]} />
+      <fog attach="fog" args={['#E67171', 60, 120]} />
       <City />
        <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
@@ -520,7 +520,7 @@ const Scene = () => {
       </mesh>
       <EffectComposer>
         <Vignette eskil={false} offset={0.15} darkness={0.5} />
-        <BrightnessContrast contrast={0.15} />
+        <BrightnessContrast brightness={0.05} contrast={0.15} />
       </EffectComposer>
     </>
   );
@@ -538,4 +538,5 @@ export default function ParallaxCityscape() {
   );
 }
 
+    
     
