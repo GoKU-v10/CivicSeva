@@ -3,7 +3,7 @@
 "use client"
 
 import { MoreHorizontal, Wrench, CheckCircle2, CircleAlert, Building, Trash2, Eye, Loader2 } from "lucide-react"
-import { Row } from "@tanstack/react-table"
+import { Row, getTable } from "@tanstack/react-table"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -35,7 +35,7 @@ export function DataTableRowActions<TData extends {id: string}>({
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const issue = row.original as Issue;
-  const onUpdateIssue = (row.original as any).onUpdateIssue || (row.table.options.meta as any)?.onUpdateIssue;
+  const onUpdateIssue = (row.getContext().table.options.meta as any)?.onUpdateIssue;
 
 
   const handleUpdate = async (updateData: {status?: IssueStatus, department?: string}) => {
