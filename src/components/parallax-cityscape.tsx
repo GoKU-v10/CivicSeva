@@ -16,7 +16,7 @@ const createBuildingTexture = (isSilver: boolean, isTan: boolean) => {
       return new THREE.MeshLambertMaterial({ color: '#333' });
     }
   
-    context.fillStyle = isSilver ? '#CCCCCC' : (isTan ? '#D2B48C' : '#A9A9A9');
+    context.fillStyle = isSilver ? '#C0C0C0' : (isTan ? '#C4A484' : '#A9A9A9');
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     for (let y = 8; y < canvas.height - 8; y += 12) {
@@ -59,11 +59,11 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
         if (isHospital) {
             buildingColor = '#FFFFFF';
         } else if (isDigitalHub) {
-            buildingColor = '#333333';
+            buildingColor = '#2C3E50';
         } else if (isSilver) {
-            buildingColor = '#CCCCCC';
+            buildingColor = '#C0C0C0';
         } else if (isTan) {
-            buildingColor = '#D2B48C';
+            buildingColor = '#C4A484';
         } else {
             buildingColor = '#A9A9A9';
         }
@@ -79,13 +79,34 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
             color: buildingColor,
             isMain: true,
         });
-
-        // Roof
+        
+        // Roof for main tower
          parts.push({
             position: [0, mainHeight + 0.1, 0] as [number, number, number],
             size: [mainWidth, 0.2, mainDepth] as [number, number, number],
             color: roofColor
         });
+
+        // Add extra tiers for taller buildings
+        if (mainHeight > 8 && !isHospital && !isDigitalHub) {
+            const tierHeight = 2 + Math.random() * 4;
+            const tierWidth = mainWidth * 0.8;
+            const tierDepth = mainDepth * 0.8;
+            
+            parts.push({
+                position: [0, mainHeight + tierHeight / 2, 0] as [number, number, number],
+                size: [tierWidth, tierHeight, tierDepth] as [number, number, number],
+                texture: windowTexture.clone(),
+                color: buildingColor,
+            });
+            // Roof for tier
+             parts.push({
+                position: [0, mainHeight + tierHeight + 0.1, 0] as [number, number, number],
+                size: [tierWidth, 0.2, tierDepth] as [number, number, number],
+                color: roofColor,
+            });
+        }
+
 
         // Lower section (bungalow-like)
         if (mainHeight < 5 && !isHospital && !isDigitalHub) {
@@ -149,11 +170,11 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
                 <group position={[0, 6.5, doorZPosition]}>
                     <mesh>
                         <boxGeometry args={[1.5, 0.4, 0.1]} />
-                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={0.6} flatShading={true} />
+                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={1} flatShading={true} />
                     </mesh>
                     <mesh>
                         <boxGeometry args={[0.4, 1.5, 0.1]} />
-                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={0.6} flatShading={true} />
+                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={1} flatShading={true} />
                     </mesh>
                 </group>
                 
@@ -174,12 +195,12 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
                     <group position={[0, 7.5, doorZPosition]} rotation={[Math.PI / 4, 0, 0]}>
                         <mesh position={[0, 0, 0]}>
                             <sphereGeometry args={[0.2, 16, 16]} />
-                            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
+                            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
                         </mesh>
                         {[1, 2, 3].map(i => (
                             <mesh key={i} rotation={[0, 0, 0]}>
                                 <torusGeometry args={[i * 0.4, 0.1, 8, 32, Math.PI / 2]} />
-                                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
+                                <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
                             </mesh>
                         ))}
                     </group>
@@ -188,7 +209,7 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
                      {[3, 5, 10].map(y => (
                         <mesh key={y} position={[0, y, 0]}>
                             <boxGeometry args={[4.1, 0.15, 4.1]} />
-                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={0.5} />
+                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={0.8} />
                         </mesh>
                      ))}
                 </>
@@ -258,7 +279,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={2} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={5} />
             </mesh>
         </group>
     )
@@ -477,11 +498,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.5} color="#ff9a9e" />
+      <ambientLight intensity={1.5} color="#FFC0CB" />
       <directionalLight 
-        color="#FDE4D6"
+        color="#FEF9E7"
         position={[40, 20, 30]}
-        intensity={8}
+        intensity={6}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -493,15 +514,15 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#ffad99', 40, 100]} />
+      <fog attach="fog" args={['#FADBD8', 40, 100]} />
       <City />
        <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={2} />
+            <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={1} />
       </mesh>
       <EffectComposer>
         <Vignette eskil={false} offset={0.15} darkness={0.5} />
-        <BrightnessContrast contrast={0.15} />
+        <BrightnessContrast contrast={0.1} />
       </EffectComposer>
     </>
   );
@@ -518,3 +539,5 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
