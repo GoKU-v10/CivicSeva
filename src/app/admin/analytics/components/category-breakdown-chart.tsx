@@ -62,8 +62,8 @@ export function CategoryBreakdownChart() {
           nameKey="name"
           cx="50%"
           cy="50%"
-          outerRadius={120}
-          innerRadius={80}
+          outerRadius={100}
+          innerRadius={60}
           strokeWidth={5}
           labelLine={false}
           label={({
@@ -87,7 +87,7 @@ export function CategoryBreakdownChart() {
                 textAnchor={x > (cy || 0) ? "start" : "end"}
                 dominantBaseline="central"
               >
-                {chartData[index].name} ({value})
+                {chartData[index].name.split(' ')[0]} ({value})
               </text>
             )
           }}
@@ -98,9 +98,10 @@ export function CategoryBreakdownChart() {
         </Pie>
          <ChartLegend
             content={<ChartLegendContent nameKey="name" />}
-            className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+            className="flex-wrap gap-2 [&>*]:basis-1/3 [&>*]:justify-center"
         />
       </PieChart>
     </ChartContainer>
   );
 }
+
