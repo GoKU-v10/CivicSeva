@@ -59,11 +59,11 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
         if (isHospital) {
             buildingColor = '#FFFFFF';
         } else if (isDigitalHub) {
-            buildingColor = '#2C3E50';
+            buildingColor = '#101010'; // Updated to black
         } else if (isSilver) {
             buildingColor = '#C0C0C0';
         } else if (isTan) {
-            buildingColor = '#C4A484';
+            buildingColor = '#D2B48C'; // A slightly different tan
         } else {
             buildingColor = '#A9A9A9';
         }
@@ -191,18 +191,16 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
             )}
              {isDigitalHub && (
                 <>
-                    {/* WiFi Symbol */}
-                    <group position={[0, 7.5, doorZPosition]} rotation={[Math.PI / 4, 0, 0]}>
-                        <mesh position={[0, 0, 0]}>
-                            <sphereGeometry args={[0.2, 16, 16]} />
+                    {/* New "D" logo */}
+                    <group position={[0, 7.5, doorZPosition]}>
+                        <mesh position={[-0.4, 0, 0]}>
+                            <boxGeometry args={[0.2, 2, 0.2]} />
                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
                         </mesh>
-                        {[1, 2, 3].map(i => (
-                            <mesh key={i} rotation={[0, 0, 0]}>
-                                <torusGeometry args={[i * 0.4, 0.1, 8, 32, Math.PI / 2]} />
-                                <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
-                            </mesh>
-                        ))}
+                         <mesh position={[0, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+                            <torusGeometry args={[1, 0.2, 16, 32, Math.PI]} />
+                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
+                        </mesh>
                     </group>
 
                      {/* Glowing Lines */}
@@ -279,7 +277,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={5} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={10} />
             </mesh>
         </group>
     )
@@ -498,11 +496,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.5} color="#FFC0CB" />
+      <ambientLight intensity={0.8} color="#ff8c69" />
       <directionalLight 
-        color="#FEF9E7"
+        color="#ffd3a1"
         position={[40, 20, 30]}
-        intensity={6}
+        intensity={3}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -514,7 +512,7 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#FADBD8', 40, 100]} />
+      <fog attach="fog" args={['#ffb2a1', 40, 100]} />
       <City />
        <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
@@ -522,7 +520,7 @@ const Scene = () => {
       </mesh>
       <EffectComposer>
         <Vignette eskil={false} offset={0.15} darkness={0.5} />
-        <BrightnessContrast contrast={0.1} />
+        <BrightnessContrast contrast={0.15} />
       </EffectComposer>
     </>
   );
