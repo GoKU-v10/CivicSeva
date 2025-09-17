@@ -231,6 +231,61 @@ const Fountain = ({ position }: { position: [number, number, number] }) => {
     )
 }
 
+const Streetlight = ({ position, rotation }: { position: [number, number, number], rotation?: [number, number, number] }) => {
+    return (
+        <group position={position} rotation={rotation}>
+            {/* Pole */}
+            <mesh position={[0, 1.5, 0]}>
+                <boxGeometry args={[0.1, 3, 0.1]} />
+                <meshLambertMaterial color="#555555" />
+            </mesh>
+            {/* Arm */}
+            <mesh position={[0, 3, 0.5]}>
+                <boxGeometry args={[0.1, 0.1, 1]} />
+                <meshLambertMaterial color="#555555" />
+            </mesh>
+            {/* Light */}
+            <mesh position={[0, 2.9, 1]}>
+                <boxGeometry args={[0.2, 0.2, 0.2]} />
+                <meshStandardMaterial color="yellow" emissive="yellow" emissiveIntensity={3} />
+            </mesh>
+        </group>
+    )
+}
+
+const Road = ({ position, size, markings }: { position: [number, number, number], size: [number, number, number], markings?: boolean }) => {
+    const roadMarkings = useMemo(() => {
+        if (!markings) return null;
+        const marks = [];
+        const isVertical = size[0] < size[2];
+        const length = isVertical ? size[2] : size[0];
+        const dashLength = 2;
+        const gapLength = 2;
+        const numDashes = Math.floor(length / (dashLength + gapLength));
+        
+        for (let i = -numDashes / 2; i < numDashes / 2; i++) {
+            const pos = i * (dashLength + gapLength);
+            if (isVertical) {
+                marks.push(<mesh key={i} position={[0, 0.01, pos]}><boxGeometry args={[0.1, 0.01, dashLength]} /><meshLambertMaterial color="white" /></mesh>);
+            } else {
+                 marks.push(<mesh key={i} position={[pos, 0.01, 0]}><boxGeometry args={[dashLength, 0.01, 0.1]} /><meshLambertMaterial color="white" /></mesh>);
+            }
+        }
+        return marks;
+
+    }, [size, markings]);
+
+    return (
+        <group position={position}>
+            <mesh>
+                <boxGeometry args={size} />
+                <meshLambertMaterial color="#333333" />
+            </mesh>
+            {roadMarkings}
+        </group>
+    )
+}
+
 
 const City = () => {
     const buildings = useMemo(() => {
@@ -260,7 +315,8 @@ const City = () => {
                 const z = j + (Math.random() - 0.5) * 4;
                 
                 // Keep park area clear
-                if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+                if (Math.abs(x) < 8 && z > -8) continue;
+                if (Math.abs(x) < 4) continue; // Clear main road
 
                 // Avoid placing buildings on top of special buildings
                 const distToHospital = Math.sqrt(Math.pow(x - hospitalPosition[0], 2) + Math.pow(z - hospitalPosition[2], 2));
@@ -280,31 +336,56 @@ const City = () => {
 
     const parkTrees = useMemo(() => {
         const treeData = [];
-        for (let i=0; i<5; i++) {
+        for (let i=0; i<8; i++) {
             treeData.push({
                 position: [
-                    (Math.random() - 0.5) * 8,
+                    (Math.random() - 0.5) * 12,
                     0,
-                    (Math.random() - 0.5) * 8
+                    (Math.random() - 0.5) * 12 + 2
                 ] as [number, number, number]
             });
         }
         return treeData;
     }, []);
 
+    const streetlights = useMemo(() => {
+        const lightData = [];
+        for (let z = -30; z <= 8; z += 10) {
+            lightData.push({ position: [3, 0, z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] });
+            lightData.push({ position: [-3, 0, z] as [number, number, number], rotation: [0, Math.PI, 0] as [number, number, number] });
+        }
+        for (let x = -20; x <= 20; x += 10) {
+             if (Math.abs(x) < 4) continue;
+             lightData.push({ position: [x, 0, -10] as [number, number, number], rotation: [0, Math.PI / 2, 0] as [number, number, number] });
+             lightData.push({ position: [x, 0, -8] as [number, number, number], rotation: [0, -Math.PI / 2, 0] as [number, number, number] });
+        }
+        return lightData;
+    }, []);
+
     return (
         <group>
+            {/* Base ground and roads */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
+                <planeGeometry args={[100, 100]} />
+                <meshLambertMaterial color="#444444" />
+            </mesh>
+            <Road position={[0, 0, -10]} size={[40, 0.1, 2]} />
+            <Road position={[0, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
+                <planeGeometry args={[14, 14]} />
+                <meshLambertMaterial color="#56c156" />
+            </mesh>
+
             {buildings.map((b, index) => (
                 <Building key={`building-${index}`} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} isDigitalHub={b.isDigitalHub} />
             ))}
              {parkTrees.map((t, index) => (
                 <Tree key={`tree-${index}`} position={t.position} />
             ))}
-            <Fountain position={[0, 0, 0]} />
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
-                <planeGeometry args={[100, 100]} />
-                <meshLambertMaterial color="#56c156" />
-            </mesh>
+            {streetlights.map((sl, index) => (
+                <Streetlight key={`streetlight-${index}`} position={sl.position} rotation={sl.rotation} />
+            ))}
+            <Fountain position={[0, 0, 2]} />
         </group>
     );
 };
