@@ -1,7 +1,8 @@
 
 'use client';
 
-import { issues as allIssues } from '@/lib/data';
+import { issues as initialIssues } from '@/lib/data';
+import type { Issue } from '@/lib/types';
 import { StatCard } from './components/stat-card';
 import { TrendingUp, CheckCircle, Clock, Star, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +11,32 @@ import { ResolutionTimeChart } from './components/resolution-time-chart';
 import { DepartmentPerformanceChart } from './components/department-performance-chart';
 import { ActivityFeed } from './components/activity-feed';
 import { BeforeAfterGallery } from './components/before-after-gallery';
+import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
+const LOCAL_STORAGE_KEY = 'civicseva_issues';
 
 export default function AdminAnalyticsPage() {
+    const [allIssues, setAllIssues] = useState<Issue[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // This effect runs on the client-side
+        const storedIssuesJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        const storedIssues: Issue[] = storedIssuesJSON ? JSON.parse(storedIssuesJSON) : [];
+        
+        const issueMap = new Map<string, Issue>();
+
+        initialIssues.forEach(issue => issueMap.set(issue.id, issue));
+        storedIssues.forEach(issue => issueMap.set(issue.id, issue));
+
+        const uniqueIssues = Array.from(issueMap.values());
+        
+        setAllIssues(uniqueIssues);
+        setIsLoading(false);
+    }, []);
+
+
     const totalIssues = allIssues.length;
     const resolvedThisMonth = allIssues.filter(i => 
         i.status === 'Resolved' && 
@@ -22,6 +46,33 @@ export default function AdminAnalyticsPage() {
     // Dummy data for example purposes
     const avgResolutionTime = 3.2; // in days
     const userSatisfaction = 4.5; // out of 5
+
+     if (isLoading) {
+        return (
+             <div className="space-y-8">
+                <div className="text-center">
+                    <Skeleton className="h-8 w-1/2 mx-auto mb-2" />
+                    <Skeleton className="h-4 w-2/3 mx-auto" />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 space-y-8">
+                        <Skeleton className="h-[400px] w-full" />
+                        <Skeleton className="h-[400px] w-full" />
+                    </div>
+                    <div className="space-y-8">
+                        <Skeleton className="h-[400px] w-full" />
+                        <Skeleton className="h-[400px] w-full" />
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-8">

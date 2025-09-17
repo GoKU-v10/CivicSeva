@@ -44,7 +44,8 @@ export default function AdminPage() {
 
     useEffect(() => {
         // This effect runs on the client-side
-        const storedIssues: Issue[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+        const storedIssuesJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        const storedIssues: Issue[] = storedIssuesJSON ? JSON.parse(storedIssuesJSON) : [];
         
         // Combine and remove duplicates, preferring stored (newer) issues
         const issueMap = new Map<string, Issue>();
