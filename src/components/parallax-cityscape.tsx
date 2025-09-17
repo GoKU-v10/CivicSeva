@@ -476,11 +476,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={2.5} color="#FFFFFF" />
+      <ambientLight intensity={3} color="#FFFFFF" />
       <directionalLight 
         color="#FFFFFF"
-        position={[40, 20, -30]}
-        intensity={4.5}
+        position={[40, 20, 30]}
+        intensity={6}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -492,11 +492,11 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#aaccff', 40, 120]} />
+      <fog attach="fog" args={['#ffad99', 40, 120]} />
       <City />
-       <mesh position={[40, 20, -30]}>
+       <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#FFFF99" emissive="#FFFF99" emissiveIntensity={1} />
+            <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={1} />
       </mesh>
     </>
   );
@@ -504,7 +504,7 @@ const Scene = () => {
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-gradient-to-b from-sky-400 to-sky-200">
+    <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to bottom, #ff9a9e, #fad0c4)' }}>
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
