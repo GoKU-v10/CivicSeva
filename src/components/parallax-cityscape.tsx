@@ -1,6 +1,6 @@
 
 'use client';
-import React, { useRef, useMemo, useEffect, Suspense } from 'react';
+import React, { useRef, useMemo, useEffect, Suspense, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -12,16 +12,22 @@ const createBuildingTexture = () => {
     const context = canvas.getContext('2d');
   
     if (!context) {
-      return new THREE.MeshLambertMaterial({ color: '#A9A9A9' });
+      return new THREE.MeshLambertMaterial({ color: '#1A1A1A' });
     }
   
-    context.fillStyle = '#A9A9A9';
+    // Base dark color for night
+    context.fillStyle = '#1A1A1A';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
-    context.fillStyle = '#444';
+    // Windows
     for (let y = 8; y < canvas.height - 8; y += 16) {
         for (let x = 8; x < canvas.width - 8; x += 16) {
-            context.fillRect(x, y, 10, 10);
+            if (Math.random() > 0.4) {
+                 context.fillStyle = '#111'; // Off window
+            } else {
+                 context.fillStyle = '#FFD700'; // Lit window
+            }
+            context.fillRect(x + Math.random() * 2 - 1, y + Math.random() * 2 - 1, 8 + Math.random() * 4 -2, 8 + Math.random() * 4 -2);
         }
     }
 
@@ -52,17 +58,17 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
             mainDepth = 4;
         }
 
-        const roofColor = '#696969';
+        const roofColor = '#222222';
         let buildingColor: string;
 
         if (isHospital) {
-            buildingColor = '#FFFFFF';
+            buildingColor = '#AAAAAA';
         } else if (isDigitalHub) {
             buildingColor = '#222222';
         } else if (isSilver) {
-            buildingColor = '#C0C0C0';
+            buildingColor = '#333333';
         } else {
-            buildingColor = '#D2B48C';
+            buildingColor = '#282828';
         }
         
         const windowTexture = createBuildingTexture();
@@ -146,11 +152,11 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
                 <group position={[0, 6.5, doorZPosition]}>
                     <mesh>
                         <boxGeometry args={[1.5, 0.4, 0.1]} />
-                        <meshStandardMaterial color="#FF0000" flatShading={true} />
+                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={1} flatShading={true} />
                     </mesh>
                     <mesh>
                         <boxGeometry args={[0.4, 1.5, 0.1]} />
-                        <meshStandardMaterial color="#FF0000" flatShading={true} />
+                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={1} flatShading={true} />
                     </mesh>
                 </group>
                 
@@ -199,11 +205,11 @@ const Tree = ({ position }: { position: [number, number, number] }) => {
         <group position={position}>
             <mesh position={[0, 0.5, 0]} castShadow>
                 <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
-                <meshLambertMaterial color="#8B4513" />
+                <meshLambertMaterial color="#3A2A1A" />
             </mesh>
             <mesh position={[0, 1.5, 0]} castShadow>
                 <coneGeometry args={[1, 2, 8]} />
-                <meshLambertMaterial color="#2E8B57" />
+                <meshLambertMaterial color="#004000" />
             </mesh>
         </group>
     )
@@ -215,17 +221,17 @@ const Fountain = ({ position }: { position: [number, number, number] }) => {
             {/* Base */}
             <mesh position={[0, 0.1, 0]} receiveShadow>
                 <cylinderGeometry args={[1.5, 1.5, 0.2, 16]} />
-                <meshLambertMaterial color="#AAAAAA" />
+                <meshLambertMaterial color="#444444" />
             </mesh>
             {/* Water */}
             <mesh position={[0, 0.2, 0]}>
                 <cylinderGeometry args={[1.4, 1.4, 0.1, 16]} />
-                <meshStandardMaterial color="#87CEEB" transparent opacity={0.7} />
+                <meshStandardMaterial color="#334466" transparent opacity={0.7} />
             </mesh>
              {/* Centerpiece */}
             <mesh position={[0, 0.6, 0]} castShadow>
                 <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
-                <meshLambertMaterial color="#888888" />
+                <meshLambertMaterial color="#333333" />
             </mesh>
         </group>
     )
@@ -247,7 +253,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={4} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={5} />
             </mesh>
         </group>
     )
@@ -266,9 +272,9 @@ const Road = ({ position, size, markings }: { position: [number, number, number]
         for (let i = -numDashes / 2; i < numDashes / 2; i++) {
             const pos = i * (dashLength + gapLength);
             if (isVertical) {
-                marks.push(<mesh key={i} position={[0, 0.01, pos]}><boxGeometry args={[0.1, 0.01, dashLength]} /><meshLambertMaterial color="#E0E0E0" /></mesh>);
+                marks.push(<mesh key={i} position={[0, 0.01, pos]}><boxGeometry args={[0.1, 0.01, dashLength]} /><meshLambertMaterial color="#999999" /></mesh>);
             } else {
-                 marks.push(<mesh key={i} position={[pos, 0.01, 0]}><boxGeometry args={[dashLength, 0.01, 0.1]} /><meshLambertMaterial color="#E0E0E0" /></mesh>);
+                 marks.push(<mesh key={i} position={[pos, 0.01, 0]}><boxGeometry args={[dashLength, 0.01, 0.1]} /><meshLambertMaterial color="#999999" /></mesh>);
             }
         }
         return marks;
@@ -285,6 +291,75 @@ const Road = ({ position, size, markings }: { position: [number, number, number]
         </group>
     )
 }
+
+const Fireworks = () => {
+    const pointsRef = useRef<THREE.Points>(null!);
+    const [explosions, setExplosions] = useState<any[]>([]);
+
+    const gravity = new THREE.Vector3(0, -9.8, 0);
+
+    // Trigger a new explosion periodically
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const newExplosion = {
+                id: Math.random(),
+                position: new THREE.Vector3(
+                    (Math.random() - 0.5) * 40,
+                    20 + Math.random() * 10,
+                    (Math.random() - 0.5) * 40
+                ),
+                color: new THREE.Color().setHSL(Math.random(), 1.0, 0.5),
+                particles: Array.from({ length: 200 }, () => ({
+                    position: new THREE.Vector3(),
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5),
+                        (Math.random() - 0.5),
+                        (Math.random() - 0.5)
+                    ).normalize().multiplyScalar(Math.random() * 15 + 5),
+                    life: 2 + Math.random() * 2, // 2-4 seconds
+                })),
+                startTime: Date.now(),
+            };
+            setExplosions(prev => [...prev.filter(exp => (Date.now() - exp.startTime) < 4000), newExplosion]);
+        }, 1000 + Math.random() * 1500); // New explosion every 1-2.5 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useFrame((state, delta) => {
+        if (!pointsRef.current) return;
+
+        const positions = [];
+        const colors = [];
+        
+        explosions.forEach(exp => {
+            exp.particles.forEach((p: any) => {
+                p.velocity.add(gravity.clone().multiplyScalar(delta));
+                p.position.add(p.velocity.clone().multiplyScalar(delta));
+                p.life -= delta;
+
+                if (p.life > 0) {
+                    positions.push(exp.position.x + p.position.x, exp.position.y + p.position.y, exp.position.z + p.position.z);
+                    const fade = p.life / (2 + Math.random() * 2); // Use original life for fade calc
+                    colors.push(exp.color.r * fade, exp.color.g * fade, exp.color.b * fade);
+                }
+            });
+        });
+
+        const geometry = pointsRef.current.geometry;
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.color.needsUpdate = true;
+    });
+
+    return (
+        <points ref={pointsRef}>
+            <bufferGeometry />
+            <pointsMaterial size={0.2} vertexColors={true} transparent={true} opacity={0.8} />
+        </points>
+    );
+};
 
 
 const City = () => {
@@ -368,7 +443,7 @@ const City = () => {
             {/* Base ground and roads */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
-                <meshLambertMaterial color="#4A4A4A" />
+                <meshLambertMaterial color="#2A2A2A" />
             </mesh>
             <Road position={[0, 0, -10]} size={[40, 0.1, 4]} markings={true} />
             <Road position={[10, 0, -10]} size={[4, 0.1, 40]} markings={true} />
@@ -377,7 +452,7 @@ const City = () => {
             {/* Park Area */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
                 <planeGeometry args={[18, 24]} />
-                <meshLambertMaterial color="#3A5F0B" />
+                <meshLambertMaterial color="#003300" />
             </mesh>
 
             {buildings.map((b, index) => (
@@ -437,11 +512,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight color="#FFDAB9" intensity={1.5} />
+      <ambientLight color="#404080" intensity={0.6} />
       <directionalLight 
-        color="#FFA500"
+        color="#8080FF" // Moonlight color
         position={[40, 20, -30]}
-        intensity={6}
+        intensity={0.8}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -452,19 +527,16 @@ const Scene = () => {
         shadow-camera-bottom={-60}
         shadow-bias={-0.005}
       />
-      <mesh position={[40, 20, -30]}>
-        <sphereGeometry args={[3, 32, 32]} />
-        <meshStandardMaterial emissive="#FFFF99" color="#FFFF99" emissiveIntensity={2} />
-      </mesh>
-      <fog attach="fog" args={['#F28500', 30, 100]} />
+      <fog attach="fog" args={['#050515', 40, 120]} />
       <City />
+      <Fireworks />
     </>
   );
 };
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#F28500] to-[#E6E6FA]">
+    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050515] to-[#101028]">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
