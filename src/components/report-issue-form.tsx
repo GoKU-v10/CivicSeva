@@ -201,7 +201,10 @@ export function ReportIssueForm() {
                     });
                     if (result && result.category) {
                         setAiSuggestion(result);
-                        form.setValue('category', result.category, { shouldValidate: true });
+                        // Only set the value if the user hasn't already selected a category
+                        if (!form.getValues('category')) {
+                            form.setValue('category', result.category, { shouldValidate: true });
+                        }
                     }
                 } catch (error) {
                     console.error("AI categorization failed:", error);
@@ -632,5 +635,7 @@ export function ReportIssueForm() {
         </Card>
     );
 }
+
+    
 
     
