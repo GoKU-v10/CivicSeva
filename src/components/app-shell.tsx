@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -29,6 +29,7 @@ import {
   LifeBuoy,
   Target,
   Users,
+  LogOut,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -37,7 +38,19 @@ import { useToast } from '@/hooks/use-toast';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { toast } = useToast();
+
+  const handleLogout = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    sessionStorage.removeItem('is_citizen_logged_in');
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+    });
+    router.push('/login');
+  };
+
 
   const menuItems = [
     {
@@ -157,6 +170,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </Link>
                     </SidebarMenuItem>
                 ))}
+                 <SidebarMenuItem>
+                    <SidebarMenuButton
+                        onClick={handleLogout}
+                        tooltip={{
+                            children: "Logout",
+                        }}
+                    >
+                        <LogOut />
+                        <span>Logout</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarSeparator />
                  <div className="p-2">
                     <div className="p-2 flex items-center gap-2 rounded-lg bg-sidebar-accent">
