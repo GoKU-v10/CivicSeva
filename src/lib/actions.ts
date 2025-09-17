@@ -161,32 +161,38 @@ export async function updateIssueAction(formData: FormData) {
 
 const UpdateIssueDetailsSchema = z.object({
   issueId: z.string(),
-  status: z.enum(['Reported', 'In Progress', 'Resolved']).optional(),
-  department: z.string().optional(),
+  status: z.enum(['Reported', 'In Progress', 'Resolved']).optional().nullable(),
+  department: z.string().optional().nullable(),
   localIssues: z.string().optional(),
 });
 
 
 export async function updateIssueDetailsAction(formData: FormData) {
   try {
-    const validatedData = UpdateIssueDetailsSchema.parse({
+    const rawData = {
       issueId: formData.get('issueId'),
       status: formData.get('status'),
       department: formData.get('department'),
       localIssues: formData.get('localIssues'),
-    });
+    };
+    
+    const validatedData = UpdateIssueDetailsSchema.parse(rawData);
 
     const { issueId, status, department, localIssues: localIssuesJSON } = validatedData;
     
     // Combine initial issues with issues from localStorage
     const allIssues = [...initialIssues];
     if (localIssuesJSON) {
-        const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
-        parsedLocalIssues.forEach(localIssue => {
-            if (!allIssues.some(i => i.id === localIssue.id)) {
-                allIssues.push(localIssue);
-            }
-        });
+        try {
+            const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
+            parsedLocalIssues.forEach(localIssue => {
+                if (!allIssues.some(i => i.id === localIssue.id)) {
+                    allIssues.push(localIssue);
+                }
+            });
+        } catch (e) {
+            console.error("Failed to parse localIssues JSON:", e);
+        }
     }
 
     const issueIndex = allIssues.findIndex((i) => i.id === issueId);
@@ -196,6 +202,12 @@ export async function updateIssueDetailsAction(formData: FormData) {
 
     const issueToUpdate = { ...allIssues[issueIndex] };
     let updateDescription = '';
+    let statusUpdated = false;
+
+    if (department) {
+        issueToUpdate.department = department;
+        updateDescription = `Assigned to ${department}.`;
+    }
 
     if (status) {
         issueToUpdate.status = status;
@@ -203,15 +215,16 @@ export async function updateIssueDetailsAction(formData: FormData) {
         if (status === 'Resolved') {
             issueToUpdate.resolvedAt = new Date().toISOString();
         }
+        statusUpdated = true;
     }
-    if (department) {
-        issueToUpdate.department = department;
-        updateDescription = `Assigned to ${department}.`;
+    
+    if(!updateDescription) {
+        throw new Error("No update data provided.");
     }
 
     issueToUpdate.updates.push({
         timestamp: new Date().toISOString(),
-        status: issueToUpdate.status,
+        status: statusUpdated ? status! : issueToUpdate.status,
         description: updateDescription,
     });
     
