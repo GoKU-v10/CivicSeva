@@ -1,33 +1,27 @@
 
 'use client';
-import React, { useRef, useMemo, useEffect, Suspense, useState } from 'react';
+import React, { useRef, useMemo, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
-const createBuildingTexture = () => {
+const createBuildingTexture = (isSilver: boolean, isTan: boolean) => {
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 128;
     const context = canvas.getContext('2d');
   
     if (!context) {
-      return new THREE.MeshLambertMaterial({ color: '#1A1A1A' });
+      return new THREE.MeshLambertMaterial({ color: '#333' });
     }
   
-    // Base dark color for night
-    context.fillStyle = '#1A1A1A';
+    context.fillStyle = isSilver ? '#404040' : (isTan ? '#4a443a' : '#383838');
     context.fillRect(0, 0, canvas.width, canvas.height);
   
-    // Windows
-    for (let y = 8; y < canvas.height - 8; y += 16) {
-        for (let x = 8; x < canvas.width - 8; x += 16) {
-            if (Math.random() > 0.4) {
-                 context.fillStyle = '#111'; // Off window
-            } else {
-                 context.fillStyle = '#FFD700'; // Lit window
-            }
-            context.fillRect(x + Math.random() * 2 - 1, y + Math.random() * 2 - 1, 8 + Math.random() * 4 -2, 8 + Math.random() * 4 -2);
+    for (let y = 8; y < canvas.height - 8; y += 12) {
+        for (let x = 6; x < canvas.width - 6; x += 10) {
+            context.fillStyle = 'rgba(0,0,0,0.6)';
+            context.fillRect(x, y, 6, 8);
         }
     }
 
@@ -39,7 +33,7 @@ const createBuildingTexture = () => {
     return texture;
 };
   
-const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: [number, number, number], isHospital?: boolean, isSilver?: boolean, isDigitalHub?: boolean }) => {
+const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { position: [number, number, number], isHospital?: boolean, isSilver?: boolean, isTan?: boolean, isDigitalHub?: boolean }) => {
     const ref = useRef<THREE.Group>(null!);
 
     const buildingData = useMemo(() => {
@@ -67,11 +61,13 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
             buildingColor = '#222222';
         } else if (isSilver) {
             buildingColor = '#333333';
+        } else if (isTan) {
+            buildingColor = '#554433';
         } else {
             buildingColor = '#282828';
         }
         
-        const windowTexture = createBuildingTexture();
+        const windowTexture = createBuildingTexture(!!isSilver, !!isTan);
 
 
         // Main tower
@@ -119,7 +115,7 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
         });
 
         return parts;
-    }, [isHospital, isSilver, isDigitalHub]);
+    }, [isHospital, isSilver, isTan, isDigitalHub]);
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
@@ -152,11 +148,11 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
                 <group position={[0, 6.5, doorZPosition]}>
                     <mesh>
                         <boxGeometry args={[1.5, 0.4, 0.1]} />
-                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={1} flatShading={true} />
+                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={0.6} flatShading={true} />
                     </mesh>
                     <mesh>
                         <boxGeometry args={[0.4, 1.5, 0.1]} />
-                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={1} flatShading={true} />
+                        <meshStandardMaterial color="#FF0000" emissive="#FF0000" emissiveIntensity={0.6} flatShading={true} />
                     </mesh>
                 </group>
                 
@@ -177,12 +173,12 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
                     <group position={[0, 7.5, doorZPosition]} rotation={[0, Math.PI, 0]}>
                         <mesh position={[0, 0, 0]}>
                             <sphereGeometry args={[0.2, 16, 16]} />
-                            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
+                            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
                         </mesh>
                         {[1, 2, 3].map(i => (
                             <mesh key={i} rotation={[0, 0, 0]}>
                                 <torusGeometry args={[i * 0.4, 0.1, 8, 32, Math.PI / 2]} />
-                                <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
+                                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
                             </mesh>
                         ))}
                     </group>
@@ -191,7 +187,7 @@ const Building = ({ position, isHospital, isSilver, isDigitalHub }: { position: 
                      {[3, 5, 10].map(y => (
                         <mesh key={y} position={[0, y, 0]}>
                             <boxGeometry args={[4.1, 0.15, 4.1]} />
-                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={1.5} />
+                             <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={0.5} />
                         </mesh>
                      ))}
                 </>
@@ -226,7 +222,7 @@ const Fountain = ({ position }: { position: [number, number, number] }) => {
             {/* Water */}
             <mesh position={[0, 0.2, 0]}>
                 <cylinderGeometry args={[1.4, 1.4, 0.1, 16]} />
-                <meshStandardMaterial color="#334466" transparent opacity={0.7} />
+                <meshStandardMaterial color="#88aaff" transparent opacity={0.6} />
             </mesh>
              {/* Centerpiece */}
             <mesh position={[0, 0.6, 0]} castShadow>
@@ -253,7 +249,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={5} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={1} />
             </mesh>
         </group>
     )
@@ -291,75 +287,6 @@ const Road = ({ position, size, markings }: { position: [number, number, number]
         </group>
     )
 }
-
-const Fireworks = () => {
-    const pointsRef = useRef<THREE.Points>(null!);
-    const [explosions, setExplosions] = useState<any[]>([]);
-
-    const gravity = new THREE.Vector3(0, -9.8, 0);
-
-    // Trigger a new explosion periodically
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const newExplosion = {
-                id: Math.random(),
-                position: new THREE.Vector3(
-                    (Math.random() - 0.5) * 40,
-                    20 + Math.random() * 10,
-                    (Math.random() - 0.5) * 40
-                ),
-                color: new THREE.Color().setHSL(Math.random(), 1.0, 0.5),
-                particles: Array.from({ length: 200 }, () => ({
-                    position: new THREE.Vector3(),
-                    velocity: new THREE.Vector3(
-                        (Math.random() - 0.5),
-                        (Math.random() - 0.5),
-                        (Math.random() - 0.5)
-                    ).normalize().multiplyScalar(Math.random() * 15 + 5),
-                    life: 2 + Math.random() * 2, // 2-4 seconds
-                })),
-                startTime: Date.now(),
-            };
-            setExplosions(prev => [...prev.filter(exp => (Date.now() - exp.startTime) < 4000), newExplosion]);
-        }, 1000 + Math.random() * 1500); // New explosion every 1-2.5 seconds
-
-        return () => clearInterval(interval);
-    }, []);
-
-    useFrame((state, delta) => {
-        if (!pointsRef.current) return;
-
-        const positions = [];
-        const colors = [];
-        
-        explosions.forEach(exp => {
-            exp.particles.forEach((p: any) => {
-                p.velocity.add(gravity.clone().multiplyScalar(delta));
-                p.position.add(p.velocity.clone().multiplyScalar(delta));
-                p.life -= delta;
-
-                if (p.life > 0) {
-                    positions.push(exp.position.x + p.position.x, exp.position.y + p.position.y, exp.position.z + p.position.z);
-                    const fade = p.life / (2 + Math.random() * 2); // Use original life for fade calc
-                    colors.push(exp.color.r * fade, exp.color.g * fade, exp.color.b * fade);
-                }
-            });
-        });
-
-        const geometry = pointsRef.current.geometry;
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        geometry.attributes.position.needsUpdate = true;
-        geometry.attributes.color.needsUpdate = true;
-    });
-
-    return (
-        <points ref={pointsRef}>
-            <bufferGeometry />
-            <pointsMaterial size={0.2} vertexColors={true} transparent={true} opacity={0.8} />
-        </points>
-    );
-};
 
 
 const City = () => {
@@ -400,9 +327,11 @@ const City = () => {
                 const distToHub = Math.sqrt(Math.pow(x - digitalHubPosition[0], 2) + Math.pow(z - digitalHubPosition[2], 2));
                 if (distToHub < 6) continue;
 
+                const randomValue = Math.random();
                 buildingData.push({
                     position: [x, 0, z] as [number, number, number],
-                    isSilver: Math.random() > 0.5,
+                    isSilver: randomValue > 0.66,
+                    isTan: randomValue > 0.33 && randomValue <= 0.66,
                 });
             }
         }
@@ -456,7 +385,7 @@ const City = () => {
             </mesh>
 
             {buildings.map((b, index) => (
-                <Building key={`building-${index}`} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} isDigitalHub={b.isDigitalHub} />
+                <Building key={`building-${index}`} position={b.position} isHospital={b.isHospital} isSilver={b.isSilver} isTan={b.isTan} isDigitalHub={b.isDigitalHub} />
             ))}
              {parkTrees.map((t, index) => (
                 <Tree key={`tree-${index}`} position={t.position} />
@@ -512,11 +441,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight color="#404080" intensity={0.6} />
+      <ambientLight color="#ffc085" intensity={0.5} />
       <directionalLight 
-        color="#8080FF" // Moonlight color
+        color="#ffd5a1"
         position={[40, 20, -30]}
-        intensity={0.8}
+        intensity={2.5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -526,17 +455,21 @@ const Scene = () => {
         shadow-camera-top={60}
         shadow-camera-bottom={-60}
         shadow-bias={-0.005}
+        shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#050515', 40, 120]} />
+      <fog attach="fog" args={['#ff8c42', 40, 120]} />
       <City />
-      <Fireworks />
+       <mesh position={[40, 20, -30]}>
+            <sphereGeometry args={[2, 32, 32]} />
+            <meshStandardMaterial color="#fff5e1" emissive="#fff5e1" emissiveIntensity={2} />
+      </mesh>
     </>
   );
 };
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050515] to-[#101028]">
+    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#ff8c42] via-[#ffb38a] to-[#ffc9a6]">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
@@ -545,5 +478,7 @@ export default function ParallaxCityscape() {
     </div>
   );
 }
+
+    
 
     
