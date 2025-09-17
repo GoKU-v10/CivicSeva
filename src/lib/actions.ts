@@ -6,7 +6,7 @@ import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
 import { revalidatePath } from 'next/cache';
 import { issues as initialIssues } from './data';
-import type { Issue, IssueCategory, IssueStatus } from './types';
+import type { Issue, IssueCategory } from './types';
 
 const SuggestDescriptionSchema = z.object({
   photoDataUri: z.string(),
@@ -161,7 +161,7 @@ export async function updateIssueAction(formData: FormData) {
 
 const UpdateIssueDetailsSchema = z.object({
   issueId: z.string(),
-  status: z.nativeEnum(IssueStatus).optional(),
+  status: z.enum(['Reported', 'In Progress', 'Resolved']).optional(),
   department: z.string().optional(),
   localIssues: z.string().optional(),
 });
