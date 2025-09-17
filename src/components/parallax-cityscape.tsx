@@ -257,7 +257,7 @@ const Streetlight = ({ position, rotation }: { position: [number, number, number
             {/* Light */}
             <mesh position={[0, 2.9, 1]}>
                 <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={50} />
+                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0} />
             </mesh>
         </group>
     )
@@ -476,11 +476,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.5} color="#FFDDBB" />
+      <ambientLight intensity={2.5} color="#FFFFFF" />
       <directionalLight 
-        color="#FFDDBB"
+        color="#FFFFFF"
         position={[40, 20, -30]}
-        intensity={3.5}
+        intensity={4.5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -492,11 +492,11 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#ffad99', 40, 120]} />
+      <fog attach="fog" args={['#aaccff', 40, 120]} />
       <City />
        <mesh position={[40, 20, -30]}>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#FFDDBB" emissive="#FFDDBB" emissiveIntensity={2} />
+            <meshStandardMaterial color="#FFFF99" emissive="#FFFF99" emissiveIntensity={1} />
       </mesh>
     </>
   );
@@ -504,7 +504,7 @@ const Scene = () => {
 
 export default function ParallaxCityscape() {
   return (
-    <div className="absolute inset-0 z-0 bg-gradient-to-b from-orange-300 via-purple-300 to-blue-400">
+    <div className="absolute inset-0 z-0 bg-gradient-to-b from-sky-400 to-sky-200">
       <Canvas shadows>
         <Suspense fallback={null}>
             <Scene />
