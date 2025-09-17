@@ -54,6 +54,7 @@ export async function createIssueAction(formData: FormData) {
         // In a real app, you might use the AI categorization as a suggestion
         // or for backend routing.
         const userCategory = validatedData.category as IssueCategory;
+        const now = new Date().toISOString();
 
         const newIssue: Issue = {
             id: `IS-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -70,10 +71,10 @@ export async function createIssueAction(formData: FormData) {
             status: 'Reported',
             category: userCategory,
             priority: 'Medium', // Default priority
-            reportedAt: new Date().toISOString(),
+            reportedAt: now,
             department: 'Pending Assignment', // Default department
             updates: [
-                { timestamp: new Date().toISOString(), status: 'Reported', description: 'Issue submitted by citizen.' },
+                { timestamp: now, status: 'Reported', description: 'Issue submitted by citizen.' },
             ],
         };
 
@@ -109,17 +110,12 @@ export async function updateIssueAction(formData: FormData) {
         });
         
         // Combine initial data with data from local storage
-        const allIssues: Issue[] = [...initialIssues];
+        let allIssues: Issue[] = [...initialIssues];
         if (validatedData.localIssues) {
-            const parsedLocalIssues = JSON.parse(validatedData.localIssues) as Issue[];
-            parsedLocalIssues.forEach(localIssue => {
-                const existingIndex = allIssues.findIndex(i => i.id === localIssue.id);
-                if (existingIndex === -1) {
-                    allIssues.push(localIssue);
-                } else {
-                    allIssues[existingIndex] = localIssue;
-                }
-            });
+             const localIssuesParsed: Issue[] = JSON.parse(validatedData.localIssues);
+             const issueMap = new Map(allIssues.map(i => [i.id, i]));
+             localIssuesParsed.forEach(i => issueMap.set(i.id, i));
+             allIssues = Array.from(issueMap.values());
         }
 
         const issueIndex = allIssues.findIndex(i => i.id === validatedData.issueId);
@@ -278,14 +274,18 @@ export async function deleteIssueAction(formData: FormData) {
             }
         }
         
-        const issueExists = allIssues.some(i => i.id === issueId);
-        if (!issueExists) {
+        const issueIndex = allIssues.findIndex(i => i.id === issueId);
+        if (issueIndex === -1) {
             throw new Error(`Issue not found: ${issueId}`);
         }
 
         // In a real database, you'd perform a delete operation here.
-        // For our simulation, we just need to confirm it can be deleted
-        // and let the client-side handle the state removal.
+        // For our simulation, we remove it from the in-memory array.
+        // This change will only persist for the lifecycle of the server.
+        const initialIssueIndex = initialIssues.findIndex(i => i.id === issueId);
+        if (initialIssueIndex > -1) {
+            initialIssues.splice(initialIssueIndex, 1);
+        }
         
         return { success: true, deletedIssueId: issueId };
 
