@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { issues as initialIssues } from "@/lib/data";

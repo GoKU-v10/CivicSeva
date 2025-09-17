@@ -157,5 +157,3 @@ export const columns: ColumnDef<Issue>[] = [
     cell: (cell) => <DataTableRowActions cell={cell} />,
   },
 ]
-
-
