@@ -316,7 +316,6 @@ const City = () => {
                 
                 // Keep park area clear
                 if (Math.abs(x) < 8 && z > -8) continue;
-                if (Math.abs(x) < 4) continue; // Clear main road
 
                 // Avoid placing buildings on top of special buildings
                 const distToHospital = Math.sqrt(Math.pow(x - hospitalPosition[0], 2) + Math.pow(z - hospitalPosition[2], 2));
@@ -351,8 +350,9 @@ const City = () => {
     const streetlights = useMemo(() => {
         const lightData = [];
         for (let z = -30; z <= 8; z += 10) {
-            lightData.push({ position: [3, 0, z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] });
-            lightData.push({ position: [-3, 0, z] as [number, number, number], rotation: [0, Math.PI, 0] as [number, number, number] });
+            if (z > -8 && z < 12) continue; // Don't put lights in park
+            lightData.push({ position: [8, 0, z] as [number, number, number], rotation: [0, Math.PI, 0] as [number, number, number] });
+            lightData.push({ position: [-8, 0, z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] });
         }
         for (let x = -20; x <= 20; x += 10) {
              if (Math.abs(x) < 4) continue;
@@ -369,8 +369,10 @@ const City = () => {
                 <planeGeometry args={[100, 100]} />
                 <meshLambertMaterial color="#444444" />
             </mesh>
-            <Road position={[0, 0, -10]} size={[40, 0.1, 2]} />
-            <Road position={[0, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[0, 0, -10]} size={[40, 0.1, 4]} markings={true} />
+            <Road position={[15, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+            <Road position={[-15, 0, 0]} size={[4, 0.1, 40]} markings={true} />
+
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 2]} receiveShadow>
                 <planeGeometry args={[14, 14]} />
                 <meshLambertMaterial color="#56c156" />
@@ -433,22 +435,22 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={0.8} />
+      <ambientLight intensity={1} />
       <directionalLight 
-        position={[20, 40, -30]}
-        intensity={2.5}
+        position={[40, 50, -40]}
+        intensity={4}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
-        shadow-camera-far={100}
-        shadow-camera-left={-50}
-        shadow-camera-right={50}
-        shadow-camera-top={50}
-        shadow-camera-bottom={-50}
+        shadow-camera-far={150}
+        shadow-camera-left={-60}
+        shadow-camera-right={60}
+        shadow-camera-top={60}
+        shadow-camera-bottom={-60}
       />
-      <mesh position={[20, 40, -30]}>
+      <mesh position={[40, 50, -40]}>
         <sphereGeometry args={[3, 32, 32]} />
-        <meshStandardMaterial emissive="#FFDD00" color="#FFDD00" emissiveIntensity={3} />
+        <meshStandardMaterial emissive="#FFFFFF" color="#FFFFFF" emissiveIntensity={2} />
       </mesh>
       <fog attach="fog" args={['#87CEEB', 25, 80]} />
       <City />
