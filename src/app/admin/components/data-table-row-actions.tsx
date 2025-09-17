@@ -25,20 +25,30 @@ import { useState } from "react"
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
-  onUpdateIssue: (issue: Issue) => void;
 }
 
 const departments = ["Public Works", "Sanitation", "Transportation", "Parks & Recreation", "Water Dept."];
 
 export function DataTableRowActions<TData extends {id: string}>({
   row,
-  onUpdateIssue
 }: DataTableRowActionsProps<TData>) {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const issue = row.original as Issue;
-  
+  const onUpdateIssue = (row.original as any).onUpdateIssue || (row.table.options.meta as any)?.onUpdateIssue;
+
+
   const handleUpdate = async (updateData: {status?: IssueStatus, department?: string}) => {
+    if (!onUpdateIssue) {
+        console.error("onUpdateIssue function is not available.");
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "A configuration error prevented the update.",
+        });
+        return;
+    }
+
     setIsUpdating(true);
     const formData = new FormData();
     formData.append('issueId', issue.id);

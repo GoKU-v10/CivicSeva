@@ -29,7 +29,6 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableToolbar } from "./data-table-toolbar"
-import { DataTableRowActions } from "./data-table-row-actions"
 import type { Issue } from "@/lib/types"
 
 
@@ -72,21 +71,10 @@ export function DataTable<TData extends {id: string}, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    // Pass meta to table
     meta: {
       onUpdateIssue: onUpdateIssue,
     },
   })
-
-  // Hack to add the onUpdateIssue to the actions column
-  const finalColumns = React.useMemo(() => {
-    const actionsColumn = columns.find(c => c.id === 'actions');
-    if (actionsColumn) {
-        actionsColumn.cell = ({ row }) => <DataTableRowActions row={row} onUpdateIssue={onUpdateIssue} />;
-    }
-    return columns;
-  }, [columns, onUpdateIssue]);
-
 
   return (
     <div className="space-y-4">
