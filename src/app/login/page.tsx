@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ShieldCheck, LogIn, User, UserCog, Building, Lock, Fingerprint } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createIssueAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -65,7 +65,6 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [role, setRole] = useState('citizen');
-  const [hasTriggeredSignIn, setHasTriggeredSignIn] = useState(false);
 
   const handleSignIn = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -115,14 +114,6 @@ export function LoginForm() {
         router.push(redirectUrl);
     }
   };
-
-  useEffect(() => {
-    if (!hasTriggeredSignIn) {
-      handleSignIn();
-      setHasTriggeredSignIn(true);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasTriggeredSignIn]);
 
   return (
     <Card className="w-full max-w-md">
