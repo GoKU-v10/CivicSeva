@@ -86,26 +86,6 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
             size: [mainWidth, 0.2, mainDepth] as [number, number, number],
             color: roofColor
         });
-
-        // Lower section (bungalow-like)
-        if (mainHeight < 5 && !isHospital && !isDigitalHub) {
-            const sideHeight = 1 + Math.random() * 2;
-            const sideWidth = mainWidth * (0.6 + Math.random() * 0.4);
-            const sideDepth = mainDepth * (0.6 + Math.random() * 0.4);
-            const sideX = (mainWidth / 2 + sideWidth / 2) * (Math.random() > 0.5 ? 1 : -1);
-            
-            parts.push({
-                position: [sideX, sideHeight / 2, 0] as [number, number, number],
-                size: [sideWidth, sideHeight, sideDepth] as [number, number, number],
-                texture: windowTexture.clone(),
-                color: buildingColor
-            });
-             parts.push({
-                position: [sideX, sideHeight + 0.1, 0] as [number, number, number],
-                size: [sideWidth, 0.2, sideDepth] as [number, number, number],
-                color: roofColor
-            });
-        }
         
         // Apply texture repeats based on geometry
         parts.forEach(part => {
@@ -475,11 +455,11 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={1.5} color="#ff8c69" />
+      <ambientLight intensity={2.5} color="#FFFFFF" />
       <directionalLight 
-        color="#FDB813"
+        color="#FFFFFF"
         position={[40, 20, 30]}
-        intensity={4}
+        intensity={5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -491,7 +471,7 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#E67171', 60, 120]} />
+      <fog attach="fog" args={['#E67171', 80, 140]} />
       <City />
        <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
