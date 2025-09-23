@@ -128,7 +128,7 @@ export default function CommunityMap() {
               <div className="font-sans">
                 <h3 className="font-bold text-base mb-1">{issue.category}</h3>
                 <p className="text-sm">{issue.title}</p>
-                <a href={`/track/${issue.id}`} target="_blank" rel="noopener noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">
+                <a href={`/dashboard/my-issues/${issue.id}`} target="_blank" rel="noopener noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">
                   View Details
                 </a>
               </div>

@@ -101,7 +101,7 @@ export function RecentIssueTimeline({ issue }: { issue: Issue }) {
                     ))}
                 </div>
                  <Button asChild className="w-full mt-4">
-                    <Link href={`/track/${issue.id}`}>
+                    <Link href={`/dashboard/my-issues/${issue.id}`}>
                         View Full Details
                     </Link>
                 </Button>

@@ -96,7 +96,7 @@ export function IssueCard({ issue }: IssueCardProps) {
 
         <div className="w-full flex gap-2">
             <Button asChild className="flex-1" variant="default" size="sm">
-                <Link href={`/track/${issue.id}`}>
+                <Link href={`/dashboard/my-issues/${issue.id}`}>
                     View Details <ArrowRight className="ml-2" />
                 </Link>
             </Button>

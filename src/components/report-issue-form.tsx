@@ -306,7 +306,7 @@ export function ReportIssueForm() {
             toast({ title: 'Success!', description: 'Issue submitted successfully.' });
             sessionStorage.setItem('newly_submitted_issue', JSON.stringify(result.issue));
             localStorage.removeItem('pending_issue_report');
-            router.push('/track');
+            router.push('/dashboard/my-issues');
         } else {
             toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
         }
@@ -335,7 +335,7 @@ export function ReportIssueForm() {
             }
             
             setIsSubmitting(true);
-            router.push('/login?redirect=/track&action=submit_issue');
+            router.push('/login?redirect=/dashboard/my-issues&action=submit_issue');
         }
     };
     

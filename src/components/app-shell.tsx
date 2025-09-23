@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: LayoutDashboard,
     },
     {
-      href: '/track',
+      href: '/dashboard/my-issues',
       label: 'My Issues',
       icon: Target,
       badge: "3"
@@ -93,10 +93,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const allItems = [...menuItems, ...bottomMenuItems];
 
   const getPageTitle = () => {
-    // Handle the new /track and /track/[id] routes
-    if (pathname.startsWith('/track')) return 'My Issues';
+    // Handle the new /dashboard/my-issues and /dashboard/my-issues/[id] routes
+    if (pathname.startsWith('/dashboard/my-issues')) return 'My Issues';
     
-    const currentItem = allItems.find(item => item.href !== '/dashboard' && item.href !== '/track' && pathname.startsWith(item.href));
+    const currentItem = allItems.find(item => item.href !== '/dashboard' && item.href !== '/dashboard/my-issues' && pathname.startsWith(item.href));
     if (currentItem) return currentItem.label;
     if(pathname === '/dashboard') return 'Dashboard';
     
