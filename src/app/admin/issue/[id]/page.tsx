@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { issues as initialIssues } from "@/lib/data";
@@ -12,7 +13,7 @@ import { IssueStatusBadge } from "@/components/issue-status-badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Image from "next/image";
 import { format } from "date-fns";
-import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow, ShieldQuestion, Upload } from "lucide-react";
+import { MapPin, Building, Clock, Calendar, CheckCircle2, Star, MessageSquare, AlertTriangle, Edit, Loader2, ArrowLeft, User, Workflow, ShieldQuestion, Upload, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +22,8 @@ import { priorities } from "../../components/columns";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { updateIssueDetailsAction } from "@/lib/actions";
+import { updateIssueDetailsAction, deleteAfterPhotoAction } from "@/lib/actions";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) {
@@ -48,7 +50,32 @@ function TimelineItem({ item, isLast }: { item: IssueUpdate, isLast: boolean }) 
     )
 }
 
-function ImageGallery({ images }: { images: IssueImage[] }) {
+function ImageGallery({ issue, images, onIssueUpdate }: { issue: Issue; images: IssueImage[], onIssueUpdate: (updatedIssue: Issue) => void }) {
+    const { toast } = useToast();
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteAfterPhoto = async () => {
+        setIsDeleting(true);
+
+        const formData = new FormData();
+        formData.append('issueId', issue.id);
+
+        const localIssues = localStorage.getItem('civicseva_issues');
+        if (localIssues) {
+            formData.append('localIssues', localIssues);
+        }
+
+        const result = await deleteAfterPhotoAction(formData);
+
+        if (result.success && result.issue) {
+            onIssueUpdate(result.issue);
+            toast({ title: "Success", description: "'After' photo has been deleted." });
+        } else {
+            toast({ variant: 'destructive', title: 'Delete Failed', description: result.error });
+        }
+        setIsDeleting(false);
+    };
+
     if (!images || images.length === 0) {
         return (
             <div className="flex items-center justify-center h-64 bg-muted rounded-lg border-2 border-dashed">
@@ -69,6 +96,29 @@ function ImageGallery({ images }: { images: IssueImage[] }) {
                             <CardContent className="relative aspect-video flex items-center justify-center p-6">
                                 <Image src={image.url} alt={image.caption} fill className="object-cover rounded-lg" data-ai-hint="issue photo" />
                                 <Badge className="absolute bottom-2 left-2">{image.caption}</Badge>
+                                {image.caption.toLowerCase() === 'after' && (
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8">
+                                                {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 className="size-4" />}
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will permanently delete the 'After' photo. This action cannot be undone.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={handleDeleteAfterPhoto} disabled={isDeleting}>
+                                                    Yes, delete photo
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
@@ -326,7 +376,7 @@ export default function AdminIssueDetailPage() {
                              <AfterPhotoDialog issue={issue} onIssueUpdate={handleIssueUpdate} />
                         </CardHeader>
                         <CardContent>
-                            <ImageGallery images={issue.images} />
+                            <ImageGallery issue={issue} images={issue.images} onIssueUpdate={handleIssueUpdate} />
                         </CardContent>
                     </Card>
 
@@ -439,3 +489,4 @@ export default function AdminIssueDetailPage() {
 }
 
     
+

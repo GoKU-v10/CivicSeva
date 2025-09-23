@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -294,4 +295,61 @@ export async function deleteIssueAction(formData: FormData) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
         return { success: false, error: errorMessage };
     }
+}
+
+const DeleteAfterPhotoSchema = z.object({
+  issueId: z.string(),
+  localIssues: z.string().optional(),
+});
+
+export async function deleteAfterPhotoAction(formData: FormData) {
+  try {
+    const validatedData = DeleteAfterPhotoSchema.parse({
+      issueId: formData.get('issueId'),
+      localIssues: formData.get('localIssues'),
+    });
+
+    const { issueId, localIssues: localIssuesJSON } = validatedData;
+
+    let allIssues: Issue[] = [...initialIssues];
+    if (localIssuesJSON) {
+      try {
+        const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
+        const issueMap = new Map<string, Issue>();
+        allIssues.forEach(issue => issueMap.set(issue.id, issue));
+        parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
+        allIssues = Array.from(issueMap.values());
+      } catch (e) {
+        console.error("Failed to parse localIssues for photo deletion:", e);
+      }
+    }
+
+    const issueIndex = allIssues.findIndex((i) => i.id === issueId);
+    if (issueIndex === -1) {
+      throw new Error(`Issue not found: ${issueId}`);
+    }
+
+    const issueToUpdate = { ...allIssues[issueIndex] };
+    const afterImageIndex = issueToUpdate.images.findIndex(img => img.caption.toLowerCase() === 'after');
+
+    if (afterImageIndex === -1) {
+      throw new Error("'After' photo not found for this issue.");
+    }
+
+    issueToUpdate.images.splice(afterImageIndex, 1);
+
+    issueToUpdate.updates = [...issueToUpdate.updates, {
+        timestamp: new Date().toISOString(),
+        status: issueToUpdate.status,
+        description: "Administrator removed the 'After' photo.",
+    }];
+
+    return { success: true, issue: issueToUpdate };
+
+  } catch (error) {
+    console.error('Delete After Photo Action Error:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { success: false, error: errorMessage };
+  }
 }
