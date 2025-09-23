@@ -209,7 +209,7 @@ function EditIssueDialog({ issue, onIssueUpdate }: { issue: Issue, onIssueUpdate
                     Edit Issue
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Edit Issue</DialogTitle>
@@ -313,11 +313,11 @@ export default function IssueDetailPage() {
     const progress = issue.status === 'Resolved' ? 100 : issue.status === 'In Progress' ? 50 : 10;
 
     return (
-        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="space-y-8">
              <div className="flex justify-between items-start">
                 <div>
                     <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
-                    <h1 className="text-3xl font-bold">{issue.title}</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold">{issue.title}</h1>
                 </div>
                 {issue.status === 'Reported' && (
                     <EditIssueDialog issue={issue} onIssueUpdate={handleIssueUpdate} />
@@ -370,7 +370,7 @@ export default function IssueDetailPage() {
                     </Card>
 
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-6 lg:sticky lg:top-20">
                     <Card>
                         <CardHeader>
                             <CardTitle>Details</CardTitle>

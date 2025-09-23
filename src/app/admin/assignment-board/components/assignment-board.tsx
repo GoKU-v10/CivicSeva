@@ -48,7 +48,7 @@ export function AssignmentBoard({ unassigned, publicWorks, sanitation, transport
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
             <BoardColumn title="Unassigned" issues={unassigned} onDrop={handleDrop} onDragOver={handleDragOver} onDragStart={handleDragStart} />
             <BoardColumn title="Public Works" issues={publicWorks} onDrop={handleDrop} onDragOver={handleDragOver} onDragStart={handleDragStart} />
             <BoardColumn title="Sanitation" issues={sanitation} onDrop={handleDrop} onDragOver={handleDragOver} onDragStart={handleDragStart} />

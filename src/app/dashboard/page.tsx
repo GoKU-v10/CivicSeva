@@ -38,7 +38,7 @@ export default function HomePage() {
             <h1 className="text-3xl font-bold">Welcome back, Citizen!</h1>
             <p className="text-muted-foreground">Here's what's happening in your community.</p>
         </div>
-        <Button asChild size="lg">
+        <Button asChild size="lg" className="w-full md:w-auto">
             <Link href="/report">
                 <Camera className="mr-2"/>
                 Report a New Issue
