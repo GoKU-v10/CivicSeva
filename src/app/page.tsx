@@ -76,6 +76,7 @@ export default function LandingPage() {
             backgroundImage: "url('https://i.pinimg.com/1200x/fc/37/b6/fc37b6247386724a9ef3830162a744ad.jpg')",
           }}
         >
+          <div className="absolute inset-0 bg-black/30 z-10"></div>
           <div className="z-20 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
@@ -84,7 +85,7 @@ export default function LandingPage() {
               An AI-powered platform connecting citizens with municipal services for faster issue resolution.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild className="bg-black text-white hover:bg-gray-800">
                 <Link href="/report">
                   Report on Web
                   <ArrowRight className="ml-2" />
