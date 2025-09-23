@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -25,12 +26,6 @@ import { useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// Dynamically import the 3D scene to ensure it's client-side only
-const ParallaxCityscape = dynamic(() => import('@/components/parallax-cityscape'), {
-  ssr: false,
-  loading: () => <Skeleton className="absolute inset-0 z-0" />,
-});
 
 export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -75,10 +70,13 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-            <Suspense fallback={<Skeleton className="absolute inset-0 z-0" />}>
-                 <ParallaxCityscape />
-            </Suspense>
+        <section
+          className="relative h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center"
+          style={{
+            backgroundImage: "url('https://i.pinimg.com/1200x/03/4f/b3/034fb32699e23030c17e6d0776d0db8b.jpg')",
+          }}
+        >
+          <div className="absolute inset-0 bg-black/50 z-10" />
           <div className="z-20 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
@@ -309,3 +307,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
