@@ -71,7 +71,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section
-          className="relative h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center"
+          className="relative h-[calc(100vh-4rem)] w-full bg-cover bg-center bg-no-repeat flex items-center justify-center"
           style={{
             backgroundImage: "url('https://i.pinimg.com/1200x/fc/37/b6/fc37b6247386724a9ef3830162a744ad.jpg')",
           }}
@@ -91,7 +91,7 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2" />
                 </Link>
               </Button>
-              <Button size="lg">
+              <Button size="lg" variant="default">
                 Download Mobile App
               </Button>
             </div>
@@ -256,6 +256,22 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="for-departments" className="py-16 md:py-24">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="mx-auto max-w-4xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight text-primary">For Government Departments</h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                A simple, no-login-required way to provide status updates on civic issues. Keep citizens informed and build trust with transparent, real-time communication.
+              </p>
+              <Button asChild size="lg" className="mt-8">
+                <Link href="/department-update">
+                  Update Issue Status <ArrowRight className="ml-2" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <footer className="bg-sidebar text-sidebar-foreground py-12">
@@ -307,9 +323,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
