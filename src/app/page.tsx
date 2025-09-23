@@ -73,7 +73,7 @@ export default function LandingPage() {
         <section
           className="relative h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center"
           style={{
-            backgroundImage: "url('https://storage.googleapis.com/aai-web-samples/vision/publish/v1/city.jpg')",
+            backgroundImage: "url('https://i.pinimg.com/1200x/fc/37/b6/fc37b6247386724a9ef3830162a744ad.jpg')",
           }}
         >
           <div className="z-20 flex flex-col items-center text-center text-white p-4">
