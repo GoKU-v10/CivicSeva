@@ -256,9 +256,11 @@ export default function AdminIssueDetailPage() {
         } else {
              const initialIssueIndex = initialIssues.findIndex(i => i.id === updatedIssue.id);
              if (initialIssueIndex > -1) {
-                // This means the issue was from initialData, not yet in localStorage
-                // We don't add it directly, but let the main pages handle merging
+                // This means the issue was from initialData, and is now updated.
+                // We must add it to localStorage.
+                 localIssues.unshift(updatedIssue);
              } else {
+                 // This case should ideally not happen if data sources are consistent.
                  localIssues.unshift(updatedIssue);
              }
         }
@@ -297,12 +299,12 @@ export default function AdminIssueDetailPage() {
         <div className="space-y-8">
              <Button variant="outline" size="sm" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2" />
-                Back to Dashboard
+                Back
             </Button>
             
             <div className="flex justify-between items-start">
                 <div>
-                    <p className="text-sm text-muted-foreground font-mono">{issue.id}</p>
+                    <p className="text-sm text-muted-foreground font-mono">{issue.id.substring(0,9)}</p>
                     <h1 className="text-3xl font-bold">{issue.title}</h1>
                 </div>
                 <IssueStatusBadge status={issue.status} className="text-base py-1 px-3" />

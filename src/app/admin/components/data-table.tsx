@@ -79,6 +79,7 @@ export function DataTable<TData extends {id: string}, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     meta: {
+      issues: data,
       onUpdateIssue: onUpdateIssue,
       onDeleteIssue: onDeleteIssue,
     },

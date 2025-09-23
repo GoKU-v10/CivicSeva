@@ -74,6 +74,8 @@ export function DataTableRowActions<TData extends {id: string}>({
     const localIssues = localStorage.getItem('civicseva_issues');
     if (localIssues) {
       formData.append('localIssues', localIssues);
+    } else {
+      formData.append('localIssues', JSON.stringify((cell.table.options.meta as any)?.issues || []));
     }
 
     const result = await updateIssueDetailsAction(formData);
@@ -82,7 +84,7 @@ export function DataTableRowActions<TData extends {id: string}>({
         onUpdateIssue(result.issue);
         toast({
             title: "Success!",
-            description: `Issue #${issue.id} has been updated.`,
+            description: `Issue #${issue.id.substring(0,6)} has been updated.`,
         });
     } else {
         toast({
@@ -107,6 +109,8 @@ export function DataTableRowActions<TData extends {id: string}>({
     const localIssues = localStorage.getItem('civicseva_issues');
     if (localIssues) {
         formData.append('localIssues', localIssues);
+    } else {
+        formData.append('localIssues', JSON.stringify((cell.table.options.meta as any)?.issues || []));
     }
 
     const result = await deleteIssueAction(formData);
@@ -116,7 +120,7 @@ export function DataTableRowActions<TData extends {id: string}>({
         toast({
             variant: 'destructive',
             title: "Issue Deleted",
-            description: `Issue #${result.deletedIssueId} has been deleted.`,
+            description: `Issue #${result.deletedIssueId.substring(0,6)} has been deleted.`,
         });
     } else {
         toast({
@@ -202,7 +206,7 @@ export function DataTableRowActions<TData extends {id: string}>({
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete the issue
-                <span className="font-bold"> #{issue.id}</span>.
+                <span className="font-bold"> #{issue.id.substring(0,6)}</span>.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

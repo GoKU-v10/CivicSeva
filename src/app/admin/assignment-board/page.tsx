@@ -23,7 +23,12 @@ export default function AssignmentBoardPage() {
                 issue.id === updatedIssue.id ? updatedIssue : issue
             );
             
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
+            const storedIssues = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+            const updatedStoredIssues = storedIssues.map((i: Issue) => i.id === updatedIssue.id ? updatedIssue : i);
+            if (!updatedStoredIssues.some((i: Issue) => i.id === updatedIssue.id)) {
+                updatedStoredIssues.push(updatedIssue);
+            }
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedStoredIssues));
             
             return newIssues;
         });

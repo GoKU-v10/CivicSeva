@@ -20,8 +20,15 @@ export default function AdminPage() {
             const newIssues = prevIssues.map(issue => 
                 issue.id === updatedIssue.id ? updatedIssue : issue
             );
-            // Persist the entire updated list to localStorage
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
+            
+            // Also update localStorage
+            const storedIssues = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+            const updatedStoredIssues = storedIssues.map((i: Issue) => i.id === updatedIssue.id ? updatedIssue : i);
+            if (!updatedStoredIssues.some((i: Issue) => i.id === updatedIssue.id)) {
+                updatedStoredIssues.push(updatedIssue);
+            }
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedStoredIssues));
+
             return newIssues;
         });
     };
@@ -29,17 +36,15 @@ export default function AdminPage() {
     const removeIssueFromState = (issueId: string) => {
         setAllIssues(prevIssues => {
             const newIssues = prevIssues.filter(i => i.id !== issueId);
-            // Persist the entire updated list to localStorage
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
+            
+            // Also update localStorage
+            const storedIssues = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+            const updatedStoredIssues = storedIssues.filter((i: Issue) => i.id !== issueId);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedStoredIssues));
+
             return newIssues;
         });
     }
-    
-    // Wrap the AdminDashboard in a component that receives the update function
-    const DashboardWithUpdates = useCallback(() => {
-        return <AdminDashboard issues={allIssues} onUpdateIssue={updateIssueState} onDeleteIssue={removeIssueFromState} />;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allIssues]);
 
 
     useEffect(() => {
