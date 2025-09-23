@@ -7,7 +7,7 @@ import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
 import { revalidatePath } from 'next/cache';
 import { issues as initialIssues } from './data';
-import type { Issue, IssueCategory, IssueImage } from './types';
+import type { Issue, IssueCategory, IssueImage, IssueStatus } from './types';
 
 const SuggestDescriptionSchema = z.object({
   photoDataUri: z.string(),
@@ -156,10 +156,11 @@ export async function updateIssueAction(formData: FormData) {
 
 const UpdateIssueDetailsSchema = z.object({
   issueId: z.string(),
-  status: z.enum(['Reported', 'In Progress', 'Resolved']).optional().nullable(),
+  status: z.custom<IssueStatus>().optional().nullable(),
   department: z.string().optional().nullable(),
   afterPhotoDataUri: z.string().optional().nullable(),
   localIssues: z.string().optional(),
+  comments: z.string().optional().nullable(),
 });
 
 
@@ -171,11 +172,12 @@ export async function updateIssueDetailsAction(formData: FormData) {
       department: formData.get('department'),
       afterPhotoDataUri: formData.get('afterPhotoDataUri'),
       localIssues: formData.get('localIssues'),
+      comments: formData.get('comments'),
     };
     
     const validatedData = UpdateIssueDetailsSchema.parse(rawData);
 
-    const { issueId, status, department, afterPhotoDataUri, localIssues: localIssuesJSON } = validatedData;
+    const { issueId, status, department, afterPhotoDataUri, localIssues: localIssuesJSON, comments } = validatedData;
     
     let allIssues: Issue[] = [...initialIssues];
     if (localIssuesJSON) {
@@ -233,6 +235,14 @@ export async function updateIssueDetailsAction(formData: FormData) {
             updateDescription += ` Added 'After' photo.`
         } else {
             updateDescription = `Added 'After' photo.`
+        }
+    }
+
+    if (comments) {
+        if(updateDescription) {
+            updateDescription += ` Comment: "${comments}"`
+        } else {
+            updateDescription = `Comment added: "${comments}"`
         }
     }
     

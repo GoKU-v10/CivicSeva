@@ -1,7 +1,7 @@
 
 
 'use client';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,19 +19,26 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UploadCloud } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import Image from 'next/image';
+import { updateIssueDetailsAction } from '@/lib/actions';
+import { useRouter } from 'next/navigation';
 
 const updateStatusSchema = z.object({
   issueId: z.string().regex(/^IS-\d+$/, { message: "Invalid Issue ID format. Must be 'IS-' followed by numbers." }),
   departmentPin: z.string().length(4, { message: "PIN must be exactly 4 digits." }).regex(/^\d{4}$/, { message: "PIN must only contain numbers." }),
   status: z.string().min(1, 'Please select a status.'),
   comments: z.string().optional(),
+  afterPhoto: z.any().optional(),
 });
 
 export function DepartmentUpdateForm() {
     const { toast } = useToast();
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
 
     const form = useForm<z.infer<typeof updateStatusSchema>>({
         resolver: zodResolver(updateStatusSchema),
@@ -42,25 +49,63 @@ export function DepartmentUpdateForm() {
             comments: '',
         },
     });
+    
+    const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setPhotoPreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                setPhotoDataUri(loadEvent.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
-    const onSubmit = (values: z.infer<typeof updateStatusSchema>) => {
+    const onSubmit = async (values: z.infer<typeof updateStatusSchema>) => {
        setIsSubmitting(true);
        
-       // Simulate API call and PIN validation
-       setTimeout(() => {
-        console.log("Form submitted:", values);
+        const formData = new FormData();
+        formData.append('issueId', values.issueId);
+        formData.append('status', values.status);
+        if (values.comments) {
+            formData.append('comments', values.comments);
+        }
+        if (photoDataUri) {
+            formData.append('afterPhotoDataUri', photoDataUri);
+        }
         
-        // In a real app, you would have a server action here to validate the PIN
-        // against the issue's assigned department and then update the database.
+        // In a real app, the PIN would be validated on the server against the issue's department
+        // For this demo, we'll just pass it along but not use it.
         
-        toast({
-            title: "Update Successful!",
-            description: `Status for issue ${values.issueId} has been updated to "${values.status}". The citizen has been notified.`,
-        });
+        const localIssues = localStorage.getItem('civicseva_issues');
+        if (localIssues) {
+          formData.append('localIssues', localIssues);
+        }
 
-        form.reset();
+        const result = await updateIssueDetailsAction(formData);
+
+        if (result.success && result.issue) {
+            toast({
+                title: "Update Successful!",
+                description: `Status for issue ${values.issueId} has been updated.`,
+            });
+            form.reset();
+            setPhotoPreview(null);
+            setPhotoDataUri(null);
+            
+            // Redirect to the public tracking page for the updated issue
+            router.push(`/track/${result.issue.id}`);
+
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Update Failed",
+                description: result.error || "An unknown error occurred.",
+            });
+        }
+
         setIsSubmitting(false);
-       }, 1500);
     };
     
 
@@ -117,6 +162,32 @@ export function DepartmentUpdateForm() {
                                 <SelectItem value="Cannot Fix">Cannot Fix</SelectItem>
                             </SelectContent>
                             </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                     <FormField
+                        control={form.control}
+                        name="afterPhoto"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Upload "After" Photo (Optional)</FormLabel>
+                            <FormControl>
+                                 <Input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        field.onChange(e.target.files);
+                                        handlePhotoChange(e);
+                                    }} 
+                                />
+                            </FormControl>
+                             {photoPreview && (
+                                <div className="relative aspect-video mt-2 rounded-md overflow-hidden border">
+                                    <Image src={photoPreview} alt="After photo preview" fill className="object-cover" />
+                                </div>
+                            )}
                             <FormMessage />
                         </FormItem>
                         )}
