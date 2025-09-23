@@ -27,15 +27,15 @@ export function BoardColumn({ title, issues, onDrop, onDragOver, onDragStart }: 
                     <Badge variant="secondary" className="text-sm">{issues.length}</Badge>
                 </h3>
             </div>
-            <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                    {issues.map(issue => (
+            <ScrollArea className="flex-1 p-2">
+                <div className="space-y-2">
+                    {issues.map((issue, index) => (
                         <div key={issue.id} draggable onDragStart={(e) => onDragStart(e, issue.id)}>
                             <IssueCard issue={issue} />
                         </div>
                     ))}
                      {issues.length === 0 && (
-                        <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg">
+                        <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg m-2">
                             <p className="text-sm text-muted-foreground">Drop issues here.</p>
                         </div>
                     )}
