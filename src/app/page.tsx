@@ -76,7 +76,7 @@ export default function LandingPage() {
             backgroundImage: "url('https://i.pinimg.com/1200x/03/4f/b3/034fb32699e23030c17e6d0776d0db8b.jpg')",
           }}
         >
-          <div className="absolute inset-0 bg-black/50 z-10" />
+          <div className="absolute inset-0 bg-black/30 z-10" />
           <div className="z-20 flex flex-col items-center text-center text-white p-4">
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl text-shadow-lg">
               Report Civic Issues
@@ -307,5 +307,7 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
 
     
