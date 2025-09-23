@@ -91,7 +91,7 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2" />
                 </Link>
               </Button>
-              <Button size="lg" variant="secondary">
+              <Button size="lg">
                 Download Mobile App
               </Button>
             </div>
@@ -307,6 +307,8 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
 
     
 
