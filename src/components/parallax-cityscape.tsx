@@ -40,8 +40,8 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
     const buildingData = useMemo(() => {
         const parts = [];
         let mainHeight = 4 + Math.random() * 10;
-        let mainWidth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
-        let mainDepth = mainHeight < 6 ? 3 + Math.random() * 2 : 2 + Math.random();
+        let mainWidth = 2 + Math.random();
+        let mainDepth = 2 + Math.random();
         
         if (isHospital) {
             mainHeight = 8;
@@ -59,11 +59,11 @@ const Building = ({ position, isHospital, isSilver, isTan, isDigitalHub }: { pos
         if (isHospital) {
             buildingColor = '#FFFFFF';
         } else if (isDigitalHub) {
-            buildingColor = '#101010'; // Updated to black
+            buildingColor = '#101010'; 
         } else if (isSilver) {
             buildingColor = '#C0C0C0';
         } else if (isTan) {
-            buildingColor = '#D2B48C'; // A slightly different tan
+            buildingColor = '#D2B48C';
         } else {
             buildingColor = '#A9A9A9';
         }
@@ -455,14 +455,14 @@ const Scene = () => {
   return (
     <>
       <PerspectiveCamera makeDefault ref={cameraRef} position={[0, 10, 25]} fov={75} />
-      <ambientLight intensity={2.5} color="#FFFFFF" />
+      <ambientLight intensity={3.5} color="#FFFFFF" />
       <directionalLight 
         color="#FFFFFF"
         position={[40, 20, 30]}
-        intensity={5}
+        intensity={6}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-camera-far={150}
         shadow-camera-left={-60}
         shadow-camera-right={60}
@@ -471,7 +471,7 @@ const Scene = () => {
         shadow-bias={-0.005}
         shadow-normalBias={0.02}
       />
-      <fog attach="fog" args={['#E67171', 80, 140]} />
+      <fog attach="fog" args={['#E73C65', 100, 160]} />
       <City />
        <mesh position={[40, 20, 30]}>
             <sphereGeometry args={[2, 32, 32]} />
@@ -479,7 +479,7 @@ const Scene = () => {
       </mesh>
       <EffectComposer>
         <Vignette eskil={false} offset={0.15} darkness={0.5} />
-        <BrightnessContrast brightness={-0.05} contrast={0.15} />
+        <BrightnessContrast brightness={-0.06} contrast={0.15} />
       </EffectComposer>
     </>
   );
@@ -488,7 +488,7 @@ const Scene = () => {
 export default function ParallaxCityscape() {
   return (
     <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to bottom, #ff9a9e, #fad0c4)' }}>
-      <Canvas shadows>
+      <Canvas shadows dpr={[1, 2]}>
         <Suspense fallback={null}>
             <Scene />
         </Suspense>
