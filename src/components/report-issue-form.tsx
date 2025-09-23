@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { createIssueAction } from '@/lib/actions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import type { Issue } from '@/lib/types';
 
 
 const reportIssueSchema = z.object({
@@ -187,13 +188,12 @@ export function ReportIssueForm() {
         setPhotoDataUris(prev => [...prev, ...dataUris]);
         form.setValue('photos', [...(form.getValues('photos') || []), ...files], { shouldValidate: true });
 
-        // Trigger AI category suggestion
         if (dataUris.length > 0 && location.latitude && location.longitude) {
             startSuggestionTransition(async () => {
                 try {
                     const result = await categorizeIssue({
                         photoDataUri: dataUris[0],
-                        description: '', // Can be empty for initial category suggestion
+                        description: '', 
                         location: {
                             latitude: location.latitude!,
                             longitude: location.longitude!,
@@ -201,7 +201,6 @@ export function ReportIssueForm() {
                     });
                     if (result && result.category) {
                         setAiSuggestion(result);
-                        // Only set the value if the user hasn't already selected a category
                         if (!form.getValues('category')) {
                             form.setValue('category', result.category, { shouldValidate: true });
                         }
@@ -288,13 +287,22 @@ export function ReportIssueForm() {
         formData.append('description', values.description);
         formData.append('category', values.category);
         formData.append('address', location.address);
-        formData.append('photoDataUri', photoDataUris[0]); // Assuming one photo for now
+        formData.append('photoDataUri', photoDataUris[0]);
         if (location.latitude) formData.append('latitude', String(location.latitude));
         if (location.longitude) formData.append('longitude', String(location.longitude));
+
+        const localIssuesJSON = localStorage.getItem('civicseva_issues');
+        if(localIssuesJSON) {
+            formData.append('localIssues', localIssuesJSON);
+        }
 
         const result = await createIssueAction(formData);
 
         if (result.success && result.issue) {
+            const localIssues: Issue[] = localIssuesJSON ? JSON.parse(localIssuesJSON) : [];
+            localIssues.unshift(result.issue);
+            localStorage.setItem('civicseva_issues', JSON.stringify(localIssues));
+
             toast({ title: 'Success!', description: 'Issue submitted successfully.' });
             sessionStorage.setItem('newly_submitted_issue', JSON.stringify(result.issue));
             localStorage.removeItem('pending_issue_report');
@@ -333,7 +341,6 @@ export function ReportIssueForm() {
     
     useEffect(() => {
         if (!isCameraOpen) {
-            // Stop camera stream when dialog closes
             if (videoRef.current && videoRef.current.srcObject) {
                 const stream = videoRef.current.srcObject as MediaStream;
                 stream.getTracks().forEach(track => track.stop());
@@ -372,7 +379,6 @@ export function ReportIssueForm() {
                 context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
                 const dataUri = canvas.toDataURL('image/jpeg');
                 
-                // Convert data URI to File
                 fetch(dataUri)
                     .then(res => res.blob())
                     .then(blob => {
@@ -635,7 +641,3 @@ export function ReportIssueForm() {
         </Card>
     );
 }
-
-    
-
-    

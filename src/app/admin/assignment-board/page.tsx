@@ -4,7 +4,7 @@
 import { AssignmentBoard } from "./components/assignment-board";
 import { issues as initialIssues } from "@/lib/data";
 import type { Issue } from "@/lib/types";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { updateIssueDetailsAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
@@ -23,8 +23,6 @@ export default function AssignmentBoardPage() {
                 issue.id === updatedIssue.id ? updatedIssue : issue
             );
             
-            // Update localStorage with the entire new list of issues
-            // We store all issues, not just deltas, to ensure consistency
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIssues));
             
             return newIssues;
@@ -36,7 +34,6 @@ export default function AssignmentBoardPage() {
         formData.append('issueId', issueId);
         formData.append('department', department);
         
-        // Pass the entire current state to the server action
         formData.append('localIssues', JSON.stringify(allIssues));
 
         const result = await updateIssueDetailsAction(formData);
@@ -53,22 +50,17 @@ export default function AssignmentBoardPage() {
                 title: "Assignment Failed",
                 description: result.error,
             });
+            // Optional: Re-fetch or revert state if the server fails
         }
     };
 
 
      useEffect(() => {
-        // This effect runs on the client-side
         const storedIssuesJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
         const storedIssues: Issue[] = storedIssuesJSON ? JSON.parse(storedIssuesJSON) : [];
         
-        // Combine and remove duplicates, preferring stored (newer) issues
         const issueMap = new Map<string, Issue>();
-
-        // Add initial issues first
         initialIssues.forEach(issue => issueMap.set(issue.id, issue));
-
-        // Overwrite with stored issues, which are more up-to-date
         storedIssues.forEach(issue => issueMap.set(issue.id, issue));
 
         const uniqueIssues = Array.from(issueMap.values());
@@ -78,7 +70,6 @@ export default function AssignmentBoardPage() {
     }, []);
 
 
-    // For demonstration, we'll filter issues that need assignment.
     const unassignedIssues = allIssues.filter(issue => issue.department === 'Pending Assignment');
     const publicWorksIssues = allIssues.filter(issue => issue.department === 'Public Works');
     const sanitationIssues = allIssues.filter(issue => issue.department === 'Sanitation');

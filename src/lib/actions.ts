@@ -36,6 +36,7 @@ const CreateIssueSchema = z.object({
     longitude: z.coerce.number(),
     category: z.string(),
     address: z.string(),
+    localIssues: z.string().optional(),
 });
 
 
@@ -48,11 +49,9 @@ export async function createIssueAction(formData: FormData) {
             longitude: formData.get('longitude'),
             category: formData.get('category'),
             address: formData.get('address'),
+            localIssues: formData.get('localIssues'),
         });
 
-        // For the prototype, we'll use the user-selected category.
-        // In a real app, you might use the AI categorization as a suggestion
-        // or for backend routing.
         const userCategory = validatedData.category as IssueCategory;
         const now = new Date().toISOString();
 
@@ -77,10 +76,6 @@ export async function createIssueAction(formData: FormData) {
                 { timestamp: now, status: 'Reported', description: 'Issue submitted by citizen.' },
             ],
         };
-
-        // This is a server-side action. It doesn't have direct access to client localStorage.
-        // The client that calls this action will be responsible for adding the new issue
-        // to its local state and localStorage.
         
         return { success: true, message: 'Issue reported successfully!', issue: newIssue };
 
@@ -96,7 +91,6 @@ const UpdateIssueSchema = z.object({
     issueId: z.string(),
     description: z.string().min(10, 'Description must be at least 10 characters.'),
     photoDataUri: z.string().optional(),
-    // We pass the stringified issues from localStorage to the server action
     localIssues: z.string().optional(), 
 });
 
@@ -109,7 +103,6 @@ export async function updateIssueAction(formData: FormData) {
             localIssues: formData.get('localIssues'),
         });
         
-        // Combine initial data with data from local storage
         let allIssues: Issue[] = [...initialIssues];
         if (validatedData.localIssues) {
              const localIssuesParsed: Issue[] = JSON.parse(validatedData.localIssues);
@@ -135,18 +128,20 @@ export async function updateIssueAction(formData: FormData) {
 
         if(validatedData.photoDataUri) {
             issueToUpdate.imageUrl = validatedData.photoDataUri;
-            issueToUpdate.images = [{ url: validatedData.photoDataUri, caption: 'Updated user photo' }];
+            const beforeImageIndex = issueToUpdate.images.findIndex(i => i.caption.toLowerCase().includes('before'));
+            if (beforeImageIndex !== -1) {
+                issueToUpdate.images[beforeImageIndex].url = validatedData.photoDataUri;
+            } else {
+                 issueToUpdate.images.push({ url: validatedData.photoDataUri, caption: 'Before' });
+            }
         }
         
-        // Add an update to the timeline
         issueToUpdate.updates.push({
             timestamp: new Date().toISOString(),
             status: 'Reported',
             description: 'Issue details updated by citizen.'
         });
 
-        // This only updates the in-memory array for the current request.
-        // The client-side logic will handle updating localStorage.
         allIssues[issueIndex] = issueToUpdate;
 
         return { success: true, issue: issueToUpdate };
@@ -187,16 +182,13 @@ export async function updateIssueDetailsAction(formData: FormData) {
             const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
             const issueMap = new Map<string, Issue>();
             
-            // Add initial issues to map
             allIssues.forEach(issue => issueMap.set(issue.id, issue));
-            // Add/overwrite with local issues
             parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
 
             allIssues = Array.from(issueMap.values());
 
         } catch (e) {
             console.error("Failed to parse localIssues JSON:", e);
-            // Continue with initial issues if parsing fails
         }
     }
 
@@ -216,7 +208,6 @@ export async function updateIssueDetailsAction(formData: FormData) {
 
     if (status && status !== issueToUpdate.status) {
         issueToUpdate.status = status;
-        // If a department change was also made, combine the descriptions
         if (updateDescription) {
             updateDescription += ` Status updated to ${status}.`
         } else {
@@ -245,7 +236,6 @@ export async function updateIssueDetailsAction(formData: FormData) {
     }
     
     if(!updateDescription) {
-        // If no change was made but it was called, succeed silently
         return { success: true, issue: issueToUpdate };
     }
 
@@ -255,7 +245,6 @@ export async function updateIssueDetailsAction(formData: FormData) {
         description: updateDescription,
     }];
     
-    // Return the completely updated issue object
     return { success: true, issue: issueToUpdate };
 
   } catch (error) {
@@ -285,14 +274,11 @@ export async function deleteIssueAction(formData: FormData) {
              try {
                 const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
                 const issueMap = new Map<string, Issue>();
-                // Add initial issues to map
                 allIssues.forEach(issue => issueMap.set(issue.id, issue));
-                // Add/overwrite with local issues
                 parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
                 allIssues = Array.from(issueMap.values());
             } catch (e) {
                 console.error("Failed to parse localIssues for deletion:", e);
-                // Continue with initial data if parsing fails
             }
         }
         
@@ -301,10 +287,6 @@ export async function deleteIssueAction(formData: FormData) {
             throw new Error(`Issue not found: ${issueId}`);
         }
 
-        // In a real database, you'd perform a delete operation here.
-        // For our simulation, we just confirm it can be deleted.
-        // The client-side will handle the actual removal from its state and localStorage.
-        
         return { success: true, deletedIssueId: issueId };
 
     } catch (error) {

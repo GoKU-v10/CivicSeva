@@ -125,7 +125,7 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
             </div>
-            <DashboardWithUpdates />
+            <AdminDashboard issues={allIssues} onUpdateIssue={updateIssueState} onDeleteIssue={removeIssueFromState} />
         </div>
     );
 }
