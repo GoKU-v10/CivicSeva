@@ -131,6 +131,19 @@ export function DataTableRowActions<TData extends {id: string}>({
     }
     setIsDeleting(false);
   }
+  
+  const handleResolveClick = () => {
+    const hasAfterPhoto = issue.images.some(img => img.caption.toLowerCase().includes('after'));
+    if (!hasAfterPhoto) {
+        toast({
+            variant: "destructive",
+            title: "Cannot Resolve Issue",
+            description: "Please upload an 'After' photo from the issue detail page before marking it as resolved.",
+        });
+        return;
+    }
+    handleUpdate({ status: 'Resolved' });
+  };
 
 
   return (
@@ -184,7 +197,7 @@ export function DataTableRowActions<TData extends {id: string}>({
                             <Wrench className="mr-2 h-4 w-4" />
                             In Progress
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdate({ status: 'Resolved' })}>
+                        <DropdownMenuItem onClick={handleResolveClick}>
                             <CheckCircle2 className="mr-2 h-4 w-4" />
                             Resolved
                         </DropdownMenuItem>
