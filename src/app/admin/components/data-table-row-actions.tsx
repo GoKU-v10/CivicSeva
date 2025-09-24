@@ -41,7 +41,7 @@ interface DataTableRowActionsProps<TData> {
 
 const departments = ["Public Works", "Sanitation", "Transportation", "Parks & Recreation", "Water Dept."];
 
-export function DataTableRowActions<TData extends {id: string}>({
+export function DataTableRowActions<TData extends Issue>({
   cell,
 }: DataTableRowActionsProps<TData>) {
   const { toast } = useToast();
@@ -102,34 +102,39 @@ export function DataTableRowActions<TData extends {id: string}>({
         toast({ variant: "destructive", title: "Delete Failed", description: "Configuration error." });
         return;
     }
-    setIsDeleting(true);
+    
+    try {
+        setIsDeleting(true);
+        
+        const formData = new FormData();
+        formData.append('issueId', issue.id);
+        
+        // Call the server action
+        const result = await deleteIssueAction(formData);
 
-    const formData = new FormData();
-    formData.append('issueId', issue.id);
-    const localIssues = localStorage.getItem('civicseva_issues');
-    if (localIssues) {
-        formData.append('localIssues', localIssues);
-    } else {
-        formData.append('localIssues', JSON.stringify((cell.table.options.meta as any)?.issues || []));
-    }
-
-    const result = await deleteIssueAction(formData);
-
-    if (result.success && result.deletedIssueId) {
-        onDeleteIssue(result.deletedIssueId);
-        toast({
-            variant: 'destructive',
-            title: "Issue Deleted",
-            description: `Issue #${result.deletedIssueId.substring(0,6)} has been deleted.`,
-        });
-    } else {
+        if (result.success) {
+            // Update the UI by calling the parent component's onDeleteIssue
+            onDeleteIssue(issue.id);
+            
+            // Show success message
+            toast({
+                variant: 'default',
+                title: "Success",
+                description: `Issue #${issue.id.substring(0,6)} has been deleted.`,
+            });
+        } else {
+            throw new Error(result.error || 'Failed to delete issue');
+        }
+    } catch (error) {
+        console.error('Error deleting issue:', error);
         toast({
             variant: "destructive",
             title: "Delete Failed",
-            description: result.error,
+            description: error instanceof Error ? error.message : 'An unknown error occurred',
         });
+    } finally {
+        setIsDeleting(false);
     }
-    setIsDeleting(false);
   }
   
   const handleResolveClick = () => {

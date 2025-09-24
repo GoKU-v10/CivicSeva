@@ -273,31 +273,14 @@ const DeleteIssueSchema = z.object({
 
 export async function deleteIssueAction(formData: FormData) {
     try {
-        const validatedData = DeleteIssueSchema.parse({
-            issueId: formData.get('issueId'),
-            localIssues: formData.get('localIssues'),
-        });
+        const issueId = formData.get('issueId') as string;
         
-        const { issueId, localIssues: localIssuesJSON } = validatedData;
-        
-        let allIssues: Issue[] = [...initialIssues];
-        if (localIssuesJSON) {
-             try {
-                const parsedLocalIssues = JSON.parse(localIssuesJSON) as Issue[];
-                const issueMap = new Map<string, Issue>();
-                allIssues.forEach(issue => issueMap.set(issue.id, issue));
-                parsedLocalIssues.forEach(issue => issueMap.set(issue.id, issue));
-                allIssues = Array.from(issueMap.values());
-            } catch (e) {
-                console.error("Failed to parse localIssues for deletion:", e);
-            }
+        if (!issueId) {
+            throw new Error('Issue ID is required');
         }
         
-        const issueExists = allIssues.some(i => i.id === issueId);
-        if (!issueExists) {
-            throw new Error(`Issue not found: ${issueId}`);
-        }
-
+        // Just return success - the actual deletion is handled by the client-side state update
+        // The AdminPage component will handle updating its own state and localStorage
         return { success: true, deletedIssueId: issueId };
 
     } catch (error) {

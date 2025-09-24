@@ -25,7 +25,11 @@ const statusConfig = {
 };
 
 export function IssueStatusBadge({ status, className }: IssueStatusBadgeProps) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] || {
+    icon: <CircleAlert className="size-3" />,
+    color: 'bg-gray-500 hover:bg-gray-500',
+  };
+  
   return (
     <Badge className={cn('flex items-center gap-1.5 text-white', config.color, className)}>
       {config.icon}

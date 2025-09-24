@@ -52,8 +52,8 @@ export function IssueCard({ issue }: IssueCardProps) {
     }
   }, [issue.reportedAt, issue.id]);
   
-  const beforeImage = issue.images.find(img => img.caption.toLowerCase().includes('before'));
-  const afterImage = issue.images.find(img => img.caption.toLowerCase().includes('after'));
+  const beforeImage = (issue.images || []).find(img => img.caption?.toLowerCase().includes('before'));
+  const afterImage = (issue.images || []).find(img => img.caption?.toLowerCase().includes('after'));
   const CategoryIcon = categoryIcons[issue.category] || HelpCircleIcon;
 
   return (
