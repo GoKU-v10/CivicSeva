@@ -34,6 +34,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Only match admin and dashboard routes to avoid conflicts
     '/admin/:path*',
     '/dashboard/:path*'
   ]
