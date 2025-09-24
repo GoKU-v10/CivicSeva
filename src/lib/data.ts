@@ -38,7 +38,7 @@ export const issues: Issue[] = [
     imageHint: 'trash can',
     images: [
        { url: 'https://i.pinimg.com/1200x/07/4e/1a/074e1afeeae49ddb39969fbdba4bd8af.jpg', caption: 'Before' },
-       { url: 'https://i.pinimg.com/564x/4b/c0/8b/4bc08b53213a7a9e9e1b268e2782e4f0.jpg', caption: 'After' },
+       { url: 'https://i.pinimg.com/1200x/74/99/92/749992e8739bc3eb1183990e14dbe05d.jpg', caption: 'After' },
     ],
     location: {
       latitude: 40.7739,
