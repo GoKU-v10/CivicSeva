@@ -333,14 +333,24 @@ export default function AdminIssueDetailPage() {
 
     }, [id]);
 
-    useEffect(() => {
-        if(issue === null) {
-            notFound();
-        }
-    }, [issue]);
-
+    // Show loading skeleton while checking for the issue
     if (issue === undefined) {
         return <AdminIssueDetailSkeleton />;
+    }
+
+    // Show not found message if issue doesn't exist
+    if (issue === null) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+                <ShieldQuestion className="h-16 w-16 text-muted-foreground mb-4" />
+                <h2 className="text-2xl font-bold tracking-tight mb-2">Issue Not Found</h2>
+                <p className="text-muted-foreground mb-6">The issue you're looking for doesn't exist or may have been removed.</p>
+                <Button onClick={() => router.push('/admin')}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Dashboard
+                </Button>
+            </div>
+        );
     }
 
     const priority = priorities.find(p => p.value === issue.priority);
