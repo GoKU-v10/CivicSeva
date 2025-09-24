@@ -1,9 +1,13 @@
 
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, LogOut, ShieldCheck, UserCog, LayoutGrid, List, Settings, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +22,31 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const isAuthenticated = sessionStorage.getItem('is_citizen_logged_in') === 'true';
+    const isAdminAuthenticated = sessionStorage.getItem('is_admin_logged_in') === 'true';
+
+    // Also check cookies as fallback for server-side rendering
+    const getCookie = (name: string) => {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
+    };
+
+    const cookieAuthenticated = getCookie('is_citizen_logged_in') === 'true';
+    const cookieAdminAuthenticated = getCookie('is_admin_logged_in') === 'true';
+
+    if (!isAuthenticated && !isAdminAuthenticated && !cookieAuthenticated && !cookieAdminAuthenticated) {
+      // Redirect to login if not authenticated
+      router.push('/login?redirect=/admin');
+    }
+  }, [router]);
+
   return (
     <div className="min-h-screen bg-muted/40">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">

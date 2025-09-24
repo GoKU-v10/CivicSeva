@@ -17,9 +17,22 @@ export default function DashboardLayout({
   useEffect(() => {
     // This code runs only on the client, after the component has mounted.
     try {
-        const loggedIn = sessionStorage.getItem('is_citizen_logged_in') === 'true';
-        setIsLoggedIn(loggedIn);
-        if (!loggedIn) {
+        const sessionLoggedIn = sessionStorage.getItem('is_citizen_logged_in') === 'true';
+
+        // Also check cookies as fallback for server-side rendering
+        const getCookie = (name: string) => {
+          if (typeof document === 'undefined') return null;
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop()?.split(';').shift();
+          return null;
+        };
+
+        const cookieLoggedIn = getCookie('is_citizen_logged_in') === 'true';
+
+        setIsLoggedIn(sessionLoggedIn || cookieLoggedIn);
+
+        if (!sessionLoggedIn && !cookieLoggedIn) {
             router.replace('/login');
         }
     } catch (error) {

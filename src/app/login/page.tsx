@@ -68,15 +68,22 @@ export function LoginForm() {
 
   const handleSignIn = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    
-    // Simulate setting a session for the citizen
+
+    // Set session storage for client-side access
     sessionStorage.setItem('is_citizen_logged_in', 'true');
 
     if (role === 'admin' || role === 'official') {
-        const redirectUrl = '/admin'; // Or a specific official dashboard
+        sessionStorage.setItem('is_admin_logged_in', 'true');
+
+        // Set cookies for server-side middleware access (for Vercel deployment)
+        document.cookie = 'is_admin_logged_in=true; path=/; max-age=86400; SameSite=Lax';
+        const redirectUrl = '/admin';
         router.push(redirectUrl);
         return;
     }
+
+    // Set cookie for server-side middleware access
+    document.cookie = 'is_citizen_logged_in=true; path=/; max-age=86400; SameSite=Lax';
 
     const action = searchParams.get('action');
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
@@ -85,7 +92,7 @@ export function LoginForm() {
         const pendingReportJSON = localStorage.getItem('pending_issue_report');
         if (pendingReportJSON) {
             const pendingReport = JSON.parse(pendingReportJSON);
-            
+
             const formData = new FormData();
             formData.append('description', pendingReport.description);
             formData.append('category', pendingReport.category);
