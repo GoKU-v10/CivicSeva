@@ -212,28 +212,74 @@ export function ReportIssueForm() {
         }
     }
     
-    const handleSuggestDescription = () => {
-        if (photoDataUris.length === 0 || !location.latitude) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Please upload a photo and ensure location is set before using AI Suggest.' });
+    const handleSuggestDescription = async () => {
+        if (photoDataUris.length === 0) {
+            toast({ 
+                variant: 'destructive', 
+                title: 'Photo Required', 
+                description: 'Please upload a photo of the issue first.' 
+            });
+            return;
+        }
+
+        if (!location.latitude || !location.longitude) {
+            toast({ 
+                variant: 'destructive', 
+                title: 'Location Required', 
+                description: 'Please enable location services and try again.' 
+            });
             return;
         }
 
         startSuggestionTransition(async () => {
             try {
-                const result = await suggestIssueDescription({
-                    photoDataUri: photoDataUris[0],
-                    locationData: JSON.stringify({ lat: location.latitude, lon: location.longitude }),
+                console.log('Starting AI suggestion with data:', {
+                    hasPhoto: photoDataUris.length > 0,
+                    photoStartsWith: photoDataUris[0]?.substring(0, 30) + '...',
+                    location: { lat: location.latitude, lon: location.longitude }
                 });
 
-                if (result.suggestedDescription) {
-                    form.setValue('description', result.suggestedDescription, { shouldValidate: true });
-                    toast({ title: 'Success', description: 'AI has generated a description for you.' });
+                const result = await suggestIssueDescription({
+                    photoDataUri: photoDataUris[0],
+                    locationData: JSON.stringify({ 
+                        lat: location.latitude, 
+                        lon: location.longitude,
+                        address: location.address
+                    }),
+                });
+
+                console.log('AI Suggestion Result:', result);
+
+                if (result?.suggestedDescription) {
+                    form.setValue('description', result.suggestedDescription, { 
+                        shouldValidate: true 
+                    });
+                    toast({ 
+                        title: 'AI Suggestion', 
+                        description: 'Here\'s a suggested description for your issue.' 
+                    });
                 } else {
-                    toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: 'Could not generate a suggestion.' });
+                    throw new Error('No suggestion was generated');
                 }
             } catch (error) {
-                 toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: 'An error occurred while generating the description.' });
-                 console.error(error);
+                console.error('AI Suggestion Error:', error);
+                
+                // More specific error messages based on error type
+                let errorMessage = 'An error occurred while generating the description.';
+                
+                if (error instanceof Error) {
+                    if (error.message.includes('network') || error.message.includes('fetch')) {
+                        errorMessage = 'Network error. Please check your connection and try again.';
+                    } else if (error.message.includes('image') || error.message.includes('photo')) {
+                        errorMessage = 'Could not process the uploaded image. Please try a different photo.';
+                    }
+                }
+                
+                toast({ 
+                    variant: 'destructive', 
+                    title: 'AI Suggestion Failed', 
+                    description: errorMessage 
+                });
             }
         });
     };
@@ -544,35 +590,94 @@ export function ReportIssueForm() {
                             <div className="flex justify-between items-center">
                                 <FormLabel>4. Description</FormLabel>
                                 <div className="flex items-center gap-2">
-                                    <Button type="button" variant="ghost" size="icon" className={cn("h-8 w-8", isListening && "bg-red-500/20 text-red-500")} onClick={handleVoiceToText}>
-                                        <Mic className="size-4" />
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className={cn(
+                                            "h-8 w-8 transition-colors",
+                                            isListening 
+                                                ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
+                                                : "hover:bg-muted/50"
+                                        )} 
+                                        onClick={handleVoiceToText}
+                                        title="Voice input"
+                                    >
+                                        {isListening ? (
+                                            <div className="relative flex items-center justify-center">
+                                                <div className="absolute h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                                                <Mic className="size-4 relative" />
+                                            </div>
+                                        ) : (
+                                            <Mic className="size-4" />
+                                        )}
                                     </Button>
-                                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}>
-                                        {isSuggesting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
-                                        AI Suggest
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={handleSuggestDescription} 
+                                        disabled={isSuggesting || photoDataUris.length === 0 || !location.latitude}
+                                        className="gap-2"
+                                    >
+                                        {isSuggesting ? (
+                                            <>
+                                                <Loader2 className="size-4 animate-spin" />
+                                                <span>Generating...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className={cn(
+                                                    "size-4",
+                                                    photoDataUris.length === 0 || !location.latitude 
+                                                        ? "text-muted-foreground/50" 
+                                                        : "text-amber-500"
+                                                )} />
+                                                <span>AI Suggest</span>
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>
+                            
                             <div className="relative">
-                               <FormControl>
-                                    <Textarea placeholder="Describe the issue you see..." rows={6} {...field} maxLength={500} className="pr-24"/>
+                                <FormControl>
+                                    <Textarea 
+                                        placeholder={
+                                            photoDataUris.length === 0 
+                                                ? "Upload a photo first for AI-powered suggestions"
+                                                : !location.latitude
+                                                    ? "Enable location for better AI suggestions"
+                                                    : "Describe the issue or click 'AI Suggest' to generate a description"
+                                        } 
+                                        rows={6} 
+                                        {...field} 
+                                        maxLength={500} 
+                                        className="pr-24 min-h-[140px]"
+                                        disabled={photoDataUris.length === 0}
+                                    />
                                 </FormControl>
-                                <div className="absolute top-2 right-2">
+                                
+                                <div className="absolute top-2 right-2 flex gap-1">
                                     <FormField
                                         control={form.control}
                                         name="language"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select 
+                                                    onValueChange={field.onChange} 
+                                                    defaultValue={field.value}
+                                                    disabled={isListening}
+                                                >
                                                     <FormControl>
                                                         <SelectTrigger className="w-auto text-xs h-7">
-                                                            <SelectValue placeholder="Language" />
+                                                            <SelectValue placeholder="Lang" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
                                                         <SelectItem value="en">English</SelectItem>
-                                                        <SelectItem value="hi">Hindi</SelectItem>
-                                                        <SelectItem value="mr">Marathi</SelectItem>
+                                                        <SelectItem value="hi">हिंदी</SelectItem>
+                                                        <SelectItem value="mr">मराठी</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </FormItem>
@@ -580,10 +685,34 @@ export function ReportIssueForm() {
                                     />
                                 </div>
                             </div>
-                            <FormDescription className="flex justify-between">
-                                <span>Provide as much detail as possible.</span>
-                                <span>{descriptionLength} / 500</span>
-                            </FormDescription>
+                            
+                            <div className="flex justify-between items-center mt-1">
+                                <FormDescription className="text-xs">
+                                    {photoDataUris.length === 0 ? (
+                                        <span className="text-amber-600 flex items-center">
+                                            <Info className="h-3 w-3 mr-1" />
+                                            Add a photo to enable AI suggestions
+                                        </span>
+                                    ) : !location.latitude ? (
+                                        <span className="text-amber-600 flex items-center">
+                                            <Info className="h-3 w-3 mr-1" />
+                                            Enable location for better suggestions
+                                        </span>
+                                    ) : (
+                                        <span className="text-muted-foreground">
+                                            {field.value ? "Edit the description as needed" : "Click 'AI Suggest' to generate a description"}
+                                        </span>
+                                    )}
+                                </FormDescription>
+                                <span className={cn(
+                                    "text-xs",
+                                    descriptionLength > 450 ? "text-amber-500" : "text-muted-foreground",
+                                    descriptionLength > 490 && "font-medium"
+                                )}>
+                                    {descriptionLength}/500
+                                </span>
+                            </div>
+                            
                             <FormMessage />
                         </FormItem>
                         )}
