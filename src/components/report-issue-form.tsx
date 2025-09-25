@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { suggestIssueDescription } from '@/ai/flows/ai-suggest-issue-description';
 import { categorizeIssue } from '@/ai/flows/ai-categorize-issue';
-import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle, LocateFixed, Camera } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, Loader2, Mic, Info, AlertTriangle, LocateFixed, Camera, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -74,6 +74,8 @@ export function ReportIssueForm() {
 
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const [currentCamera, setCurrentCamera] = useState<'front' | 'back'>('front');
+    const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
     const videoRef = useRef<HTMLVideoElement>(null);
 
 
@@ -89,6 +91,18 @@ export function ReportIssueForm() {
         },
     });
 
+    const getAvailableCameras = async () => {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            setAvailableCameras(videoDevices);
+            return videoDevices;
+        } catch (error) {
+            console.error('Error enumerating devices:', error);
+            return [];
+        }
+    };
+    
     const photoInputRef = useRef<HTMLInputElement>(null);
     
     const detectLocation = useCallback(async () => {
@@ -291,7 +305,7 @@ export function ReportIssueForm() {
             return;
         }
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognition) {
             toast({ variant: 'destructive', title: 'Error', description: 'Speech recognition is not supported in this browser.' });
             return;
@@ -391,12 +405,35 @@ export function ReportIssueForm() {
                 const stream = videoRef.current.srcObject as MediaStream;
                 stream.getTracks().forEach(track => track.stop());
             }
+            // Reset to front camera when dialog closes
+            setCurrentCamera('front');
             return;
         }
 
         const getCameraPermission = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Get available cameras
+                const cameras = await getAvailableCameras();
+
+                // Find the appropriate camera based on current selection
+                let selectedCamera = cameras.find(cam =>
+                    currentCamera === 'front'
+                        ? cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
+                        : cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('environment')
+                );
+
+                // If no specific camera found, use the first available camera
+                if (!selectedCamera && cameras.length > 0) {
+                    selectedCamera = cameras[0];
+                }
+
+                const constraints: MediaStreamConstraints = {
+                    video: selectedCamera
+                        ? { deviceId: { exact: selectedCamera.deviceId } }
+                        : { facingMode: currentCamera === 'front' ? 'user' : 'environment' }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 setHasCameraPermission(true);
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
@@ -413,7 +450,7 @@ export function ReportIssueForm() {
         };
 
         getCameraPermission();
-    }, [isCameraOpen, toast]);
+    }, [isCameraOpen, currentCamera, toast]);
 
     const handleCapture = () => {
         if (videoRef.current) {
@@ -433,6 +470,52 @@ export function ReportIssueForm() {
                     });
             }
             setIsCameraOpen(false);
+        }
+    };
+
+    const handleFlipCamera = async () => {
+        const nextCamera = currentCamera === 'front' ? 'back' : 'front';
+        setCurrentCamera(nextCamera);
+
+        // Stop current stream
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+        }
+
+        try {
+            // Get available cameras
+            const cameras = await getAvailableCameras();
+
+            // Find the appropriate camera based on new selection
+            let selectedCamera = cameras.find(cam =>
+                nextCamera === 'front'
+                    ? cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
+                    : cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('environment')
+            );
+
+            // If no specific camera found, use the first available camera
+            if (!selectedCamera && cameras.length > 0) {
+                selectedCamera = cameras[0];
+            }
+
+            const constraints: MediaStreamConstraints = {
+                video: selectedCamera
+                    ? { deviceId: { exact: selectedCamera.deviceId } }
+                    : { facingMode: nextCamera === 'front' ? 'user' : 'environment' }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+        } catch (error) {
+            console.error('Error switching camera:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Camera Switch Failed',
+                description: 'Could not switch camera. Please try again.',
+            });
         }
     };
     
@@ -514,7 +597,7 @@ export function ReportIssueForm() {
                                             </DialogTrigger>
                                             <DialogContent className="max-w-md">
                                                 <DialogHeader>
-                                                <DialogTitle>Live Camera</DialogTitle>
+                                                <DialogTitle>Live Camera - {currentCamera === 'front' ? 'Front' : 'Back'} Camera</DialogTitle>
                                                 </DialogHeader>
                                                 <div className="space-y-4">
                                                     <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay muted playsInline />
@@ -527,9 +610,21 @@ export function ReportIssueForm() {
                                                             </AlertDescription>
                                                         </Alert>
                                                     )}
-                                                    <Button onClick={handleCapture} className="w-full" disabled={!hasCameraPermission}>
-                                                        <Camera className="mr-2" /> Capture Photo
-                                                    </Button>
+                                                    <div className="flex gap-2">
+                                                        <Button onClick={handleCapture} className="flex-1" disabled={!hasCameraPermission}>
+                                                            <Camera className="mr-2" /> Capture Photo
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={handleFlipCamera}
+                                                            disabled={!hasCameraPermission || availableCameras.length <= 1}
+                                                            title="Flip Camera"
+                                                        >
+                                                            <RotateCcw className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </DialogContent>
                                         </Dialog>
