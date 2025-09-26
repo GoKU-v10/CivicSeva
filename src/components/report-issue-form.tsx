@@ -228,19 +228,29 @@ export function ReportIssueForm() {
     
     const handleSuggestDescription = async () => {
         if (photoDataUris.length === 0) {
-            toast({ 
-                variant: 'destructive', 
-                title: 'Photo Required', 
-                description: 'Please upload a photo of the issue first.' 
+            toast({
+                variant: 'destructive',
+                title: 'Photo Required',
+                description: 'Please upload a photo of the issue first.'
             });
             return;
         }
 
         if (!location.latitude || !location.longitude) {
-            toast({ 
-                variant: 'destructive', 
-                title: 'Location Required', 
-                description: 'Please enable location services and try again.' 
+            toast({
+                variant: 'destructive',
+                title: 'Location Required',
+                description: 'Please enable location services and try again.'
+            });
+            return;
+        }
+
+        // Check if AI is available
+        if (!process.env.NEXT_PUBLIC_GOOGLE_GENAI_API_KEY) {
+            toast({
+                variant: 'destructive',
+                title: 'AI Service Unavailable',
+                description: 'AI suggestion feature is currently unavailable. Please describe the issue manually.'
             });
             return;
         }
@@ -255,8 +265,8 @@ export function ReportIssueForm() {
 
                 const result = await suggestIssueDescription({
                     photoDataUri: photoDataUris[0],
-                    locationData: JSON.stringify({ 
-                        lat: location.latitude, 
+                    locationData: JSON.stringify({
+                        lat: location.latitude,
                         lon: location.longitude,
                         address: location.address
                     }),
@@ -265,34 +275,36 @@ export function ReportIssueForm() {
                 console.log('AI Suggestion Result:', result);
 
                 if (result?.suggestedDescription) {
-                    form.setValue('description', result.suggestedDescription, { 
-                        shouldValidate: true 
+                    form.setValue('description', result.suggestedDescription, {
+                        shouldValidate: true
                     });
-                    toast({ 
-                        title: 'AI Suggestion', 
-                        description: 'Here\'s a suggested description for your issue.' 
+                    toast({
+                        title: 'AI Suggestion',
+                        description: 'Here\'s a suggested description for your issue.'
                     });
                 } else {
                     throw new Error('No suggestion was generated');
                 }
             } catch (error) {
                 console.error('AI Suggestion Error:', error);
-                
+
                 // More specific error messages based on error type
                 let errorMessage = 'An error occurred while generating the description.';
-                
+
                 if (error instanceof Error) {
-                    if (error.message.includes('network') || error.message.includes('fetch')) {
+                    if (error.message.includes('API key') || error.message.includes('auth')) {
+                        errorMessage = 'AI service configuration error. Please try again later or describe the issue manually.';
+                    } else if (error.message.includes('network') || error.message.includes('fetch')) {
                         errorMessage = 'Network error. Please check your connection and try again.';
                     } else if (error.message.includes('image') || error.message.includes('photo')) {
                         errorMessage = 'Could not process the uploaded image. Please try a different photo.';
                     }
                 }
-                
-                toast({ 
-                    variant: 'destructive', 
-                    title: 'AI Suggestion Failed', 
-                    description: errorMessage 
+
+                toast({
+                    variant: 'destructive',
+                    title: 'AI Suggestion Failed',
+                    description: errorMessage
                 });
             }
         });
