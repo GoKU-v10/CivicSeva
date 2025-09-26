@@ -412,31 +412,55 @@ export function ReportIssueForm() {
 
         const getCameraPermission = async () => {
             try {
-                // Get available cameras
-                const cameras = await getAvailableCameras();
-
-                // Find the appropriate camera based on current selection
-                let selectedCamera = cameras.find(cam =>
-                    currentCamera === 'front'
-                        ? cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
-                        : cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('environment')
-                );
-
-                // If no specific camera found, use the first available camera
-                if (!selectedCamera && cameras.length > 0) {
-                    selectedCamera = cameras[0];
-                }
-
-                const constraints: MediaStreamConstraints = {
-                    video: selectedCamera
-                        ? { deviceId: { exact: selectedCamera.deviceId } }
-                        : { facingMode: currentCamera === 'front' ? 'user' : 'environment' }
+                // First, request basic camera permission without specifying device
+                // This ensures the browser permission popup appears
+                const basicConstraints: MediaStreamConstraints = {
+                    video: { facingMode: currentCamera === 'front' ? 'user' : 'environment' }
                 };
 
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
                 setHasCameraPermission(true);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
+
+                // Now enumerate cameras to find the best match
+                const cameras = await getAvailableCameras();
+
+                // If we have specific cameras available, we can switch to the appropriate one
+                if (cameras.length > 0) {
+                    let selectedCamera = cameras.find(cam =>
+                        currentCamera === 'front'
+                            ? cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
+                            : cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('environment')
+                    );
+
+                    // If no specific camera found, use the first available camera
+                    if (!selectedCamera) {
+                        selectedCamera = cameras[0];
+                    }
+
+                    // If we found a different camera, switch to it
+                    if (selectedCamera && selectedCamera.deviceId !== stream.getVideoTracks()[0].getSettings().deviceId) {
+                        // Stop current stream and get new one with specific device
+                        stream.getTracks().forEach(track => track.stop());
+
+                        const specificConstraints: MediaStreamConstraints = {
+                            video: { deviceId: { exact: selectedCamera.deviceId } }
+                        };
+
+                        const newStream = await navigator.mediaDevices.getUserMedia(specificConstraints);
+                        if (videoRef.current) {
+                            videoRef.current.srcObject = newStream;
+                        }
+                    } else {
+                        // Use the current stream
+                        if (videoRef.current) {
+                            videoRef.current.srcObject = stream;
+                        }
+                    }
+                } else {
+                    // No specific cameras found, use the basic stream
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                    }
                 }
             } catch (error) {
                 console.error('Error accessing camera:', error);
@@ -484,30 +508,53 @@ export function ReportIssueForm() {
         }
 
         try {
-            // Get available cameras
-            const cameras = await getAvailableCameras();
-
-            // Find the appropriate camera based on new selection
-            let selectedCamera = cameras.find(cam =>
-                nextCamera === 'front'
-                    ? cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
-                    : cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('environment')
-            );
-
-            // If no specific camera found, use the first available camera
-            if (!selectedCamera && cameras.length > 0) {
-                selectedCamera = cameras[0];
-            }
-
-            const constraints: MediaStreamConstraints = {
-                video: selectedCamera
-                    ? { deviceId: { exact: selectedCamera.deviceId } }
-                    : { facingMode: nextCamera === 'front' ? 'user' : 'environment' }
+            // First, request basic camera permission with new facing mode
+            const basicConstraints: MediaStreamConstraints = {
+                video: { facingMode: nextCamera === 'front' ? 'user' : 'environment' }
             };
 
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
+            const stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
+
+            // Now enumerate cameras to find the best match
+            const cameras = await getAvailableCameras();
+
+            // If we have specific cameras available, we can switch to the appropriate one
+            if (cameras.length > 0) {
+                let selectedCamera = cameras.find(cam =>
+                    nextCamera === 'front'
+                        ? cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
+                        : cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('environment')
+                );
+
+                // If no specific camera found, use the first available camera
+                if (!selectedCamera) {
+                    selectedCamera = cameras[0];
+                }
+
+                // If we found a different camera, switch to it
+                if (selectedCamera && selectedCamera.deviceId !== stream.getVideoTracks()[0].getSettings().deviceId) {
+                    // Stop current stream and get new one with specific device
+                    stream.getTracks().forEach(track => track.stop());
+
+                    const specificConstraints: MediaStreamConstraints = {
+                        video: { deviceId: { exact: selectedCamera.deviceId } }
+                    };
+
+                    const newStream = await navigator.mediaDevices.getUserMedia(specificConstraints);
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = newStream;
+                    }
+                } else {
+                    // Use the current stream
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                    }
+                }
+            } else {
+                // No specific cameras found, use the basic stream
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
             }
         } catch (error) {
             console.error('Error switching camera:', error);
