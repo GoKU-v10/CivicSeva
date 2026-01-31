@@ -354,14 +354,20 @@ export function ReportIssueForm() {
     };
 
     const submitIssue = async (values: z.infer<typeof reportIssueSchema>) => {
+        if (photoDataUris.length === 0) {
+            toast({ variant: 'destructive', title: 'Submission Failed', description: 'Please upload at least one photo.' });
+            setIsSubmitting(false);
+            return;
+        }
+
         setIsSubmitting(true);
         const formData = new FormData();
         formData.append('description', values.description);
         formData.append('category', values.category);
-        formData.append('address', location.address);
+        formData.append('address', values.address);
         formData.append('photoDataUri', photoDataUris[0]);
-        if (location.latitude) formData.append('latitude', String(location.latitude));
-        if (location.longitude) formData.append('longitude', String(location.longitude));
+        if (location.latitude !== null) formData.append('latitude', String(location.latitude));
+        if (location.longitude !== null) formData.append('longitude', String(location.longitude));
 
         const localIssuesJSON = localStorage.getItem('civicseva_issues');
         if(localIssuesJSON) {
@@ -386,10 +392,6 @@ export function ReportIssueForm() {
     }
 
     const onSubmit = (values: z.infer<typeof reportIssueSchema>) => {
-        if (!location.latitude || !location.longitude) {
-            form.setError('address', { type: 'manual', message: 'Location is required. Please try again or enter manually.' });
-            return;
-        }
         const isLoggedIn = sessionStorage.getItem('is_citizen_logged_in') === 'true';
 
         if (isLoggedIn) {
@@ -405,7 +407,7 @@ export function ReportIssueForm() {
             } catch (error) {
                 console.error("Could not save report data to local storage", error);
             }
-            
+
             setIsSubmitting(true);
             router.push('/login?redirect=/dashboard/my-issues&action=submit_issue');
         }

@@ -33,11 +33,11 @@ export async function suggestDescriptionAction(formData: FormData) {
 const CreateIssueSchema = z.object({
     description: z.string().min(10, 'Description must be at least 10 characters.'),
     photoDataUri: z.string().min(1, 'Please upload a photo.'),
-    latitude: z.coerce.number(),
-    longitude: z.coerce.number(),
+    latitude: z.coerce.number().optional().default(0),
+    longitude: z.coerce.number().optional().default(0),
     category: z.string(),
     address: z.string(),
-    localIssues: z.string().optional(),
+    localIssues: z.string().optional().nullable(),
 });
 
 
