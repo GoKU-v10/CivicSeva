@@ -42,3 +42,10 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Java/Maven backend (safe to include in repo but exclude build artifacts)
+civicseva-backend/target/
+civicseva-backend/*.log
+civicseva-backend/.mvn/
+civicseva-backend/mvnw
+civicseva-backend/mvnw.cmd
