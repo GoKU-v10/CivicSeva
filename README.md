@@ -206,5 +206,3 @@ The backend is designed with best practices including:
 - Scalable database design
 - RESTful API design
 - Documentation and testing
-
-You can now confidently call this a **complete full-stack CivicSeva project**! 🎉
